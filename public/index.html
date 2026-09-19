@@ -1491,6 +1491,8 @@
         </div>` : '';
       const photoStrip = img.photos.length > 1
         ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
+      const buyerNote = (img.sold && img.buyerName)
+        ? `<div class="uploader-tag" style="color:var(--green);">✓ Verkauft an: <b>${img.buyerName}</b> — bitte übergeben</div>` : '';
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
@@ -1504,6 +1506,7 @@
             <textarea placeholder="Beschreibung..." onclick="event.stopPropagation();" onchange="setImageDescription('${img.id}', this.value)" rows="2" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif;">${(img.description||'').replace(/</g,'&lt;')}</textarea>
           </div>
           <div class="uploader-tag">eingestellt von ${img.uploadedByName}</div>
+          ${buyerNote}
           ${adminControls}
         </div>`;
     }).join('');

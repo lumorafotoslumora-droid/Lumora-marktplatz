@@ -491,6 +491,11 @@ function publicImage(img, user){
     out.canManage = true;
     out.canSetPrice = admin || isOwner;
     out.canDelete = admin || isOwner;
+    if(img.sold){
+      const sale = db.purchases.find(p => p.imageId === img.id);
+      const buyer = sale ? db.users.find(u => u.id === sale.userId) : null;
+      out.buyerName = buyer ? buyer.name : (img.wonByEmail || null);
+    }
   }
   return out;
 }
