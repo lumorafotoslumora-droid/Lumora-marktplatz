@@ -380,7 +380,7 @@
       <div class="extra-card">
         <div class="extra-icon">📰</div>
         <h3 data-i18n="newsletter_title">Newsletter</h3>
-        <p data-i18n="newsletter_sub">Trag dich ein und verpasse keine neuen Bilder und Aktionen mehr.</p>
+        <p data-i18n="newsletter_sub">Trag dich ein und verpasse keine neuen Produkte und Aktionen mehr.</p>
         <div class="extra-row">
           <input type="email" id="newsletterInput" placeholder="deine@email.com">
           <button class="btn solid" onclick="subscribeNewsletter()" data-i18n="newsletter_btn">Abonnieren</button>
@@ -390,17 +390,17 @@
     </div>
 
     <div class="spotlight-section" id="spotlightSection" style="display:none;">
-      <p class="eyebrow">✨ Bild des Monats</p>
+      <p class="eyebrow">✨ Produkt des Monats</p>
       <div class="spotlight-card" id="spotlightCard"></div>
     </div>
 
     <div class="steps-section">
       <p class="eyebrow">So funktioniert's</p>
-      <h2 class="section-title">In drei Schritten zu deinem Bild</h2>
+      <h2 class="section-title">In drei Schritten zu deinem Produkt</h2>
       <div class="steps-grid">
-        <div class="step-item"><div class="step-num">1</div><h3>Konto erstellen</h3><p>Kostenlos registriert in unter einer Minute — nur für Kunden.</p></div>
-        <div class="step-item"><div class="step-num">2</div><h3>Bild aussuchen</h3><p>Durchstöbere die Galerie, filtere nach Preis oder Tags, oder lade Gratisbilder direkt herunter.</p></div>
-        <div class="step-item"><div class="step-num">3</div><h3>Sicher bezahlen</h3><p>Zahlung über Stripe — dein Bild ist sofort in deinem Konto verfügbar.</p></div>
+        <div class="step-item"><div class="step-num">1</div><h3>Konto erstellen</h3><p>Ein Familienmitglied mit Admin-Zugang richtet dir ein Konto ein.</p></div>
+        <div class="step-item"><div class="step-num">2</div><h3>Produkt aussuchen</h3><p>Durchstöbere die Galerie und filtere nach Preis oder Tags.</p></div>
+        <div class="step-item"><div class="step-num">3</div><h3>Sicher bezahlen</h3><p>Zahlung über Stripe — der Verkäufer wird informiert und übergibt dir das Produkt.</p></div>
       </div>
     </div>
 
@@ -408,9 +408,9 @@
       <p class="eyebrow">Warum Lumora?</p>
       <div class="features-grid">
         <div class="feature-item"><div class="feature-icon">🔒</div><h3>Sichere Zahlung</h3><p>Abwicklung über Stripe — deine Zahlungsdaten laufen nie über unseren Server.</p></div>
-        <div class="feature-item"><div class="feature-icon">🌍</div><h3>16 Sprachen</h3><p>Die ganze Seite und alle E-Mails in deiner Sprache.</p></div>
-        <div class="feature-item"><div class="feature-icon">⭐</div><h3>Echte Bewertungen</h3><p>Nur von Kunden, die das Bild wirklich besitzen.</p></div>
-        <div class="feature-item"><div class="feature-icon">🎁</div><h3>Regelmäßige Gewinnspiele</h3><p>Immer wieder die Chance auf ein Gratisbild.</p></div>
+        <div class="feature-item"><div class="feature-icon">👪</div><h3>Nur für uns</h3><p>Keine öffentliche Registrierung — Konten gibt's nur für die Familie.</p></div>
+        <div class="feature-item"><div class="feature-icon">⭐</div><h3>Echte Bewertungen</h3><p>Nur von Käufern, die das Produkt wirklich erhalten haben.</p></div>
+        <div class="feature-item"><div class="feature-icon">🎁</div><h3>Regelmäßige Gewinnspiele</h3><p>Immer wieder die Chance auf ein Gratisprodukt.</p></div>
       </div>
     </div>
 
@@ -513,10 +513,10 @@
   </section>
 
   <section class="view" id="view-admin">
-    <div class="hero" style="margin-bottom:24px;"><p class="eyebrow">Verwaltung</p><h2 style="font-size:28px;">Bilder verwalten</h2></div>
+    <div class="hero" style="margin-bottom:24px;"><p class="eyebrow">Verwaltung</p><h2 style="font-size:28px;">Produkte verwalten</h2></div>
 
     <div class="admin-tabs">
-      <button class="active" data-atab="content" onclick="switchAdminTab('content')">🖼️ Bilder</button>
+      <button class="active" data-atab="content" onclick="switchAdminTab('content')">🖼️ Produkte</button>
       <button data-atab="sales" onclick="switchAdminTab('sales')">📊 Verkäufe</button>
       <button id="atab-dashboard" data-atab="dashboard" onclick="switchAdminTab('dashboard')">📈 Übersicht</button>
       <button id="atab-flags" data-atab="flags" onclick="switchAdminTab('flags')">🚩 Meldungen</button>
@@ -561,7 +561,7 @@
             <thead>
               <tr style="text-align:left; border-bottom:1px solid var(--line); color:var(--muted); font-family:'Space Mono',monospace; font-size:11px; text-transform:uppercase;">
                 <th style="padding:8px 10px;">Käufer</th>
-                <th style="padding:8px 10px;">Bild</th>
+                <th style="padding:8px 10px;">Produkt</th>
                 <th style="padding:8px 10px;" id="salesUploaderCol">Hochgeladen von</th>
                 <th style="padding:8px 10px;">Preis</th>
                 <th style="padding:8px 10px;">Datum</th>
@@ -583,8 +583,8 @@
 
     <div class="admin-subview" id="admintab-flags">
       <div class="panel-card" id="flagsPanel" style="max-width:600px;">
-        <h3>🚩 Gemeldete Bilder</h3>
-        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Kunden können problematische Bilder melden — hier siehst du alle Meldungen.</p>
+        <h3>🚩 Gemeldete Produkte</h3>
+        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Kunden können problematische Produkte melden — hier siehst du alle Meldungen.</p>
         <div class="team-list" id="flagsList"></div>
       </div>
     </div>
@@ -592,8 +592,8 @@
     <div class="admin-subview" id="admintab-promo">
       <div class="panel-card" id="promoPanel" style="max-width:520px;">
         <h3>Aktionen</h3>
-        <div class="promo-row"><input type="checkbox" id="promoFirstFree" onchange="savePromos()"><label>Erstes Bild gratis<small>Einmalig pro Kundenkonto</small></label></div>
-        <div class="promo-row"><input type="checkbox" id="promoTwoForOne" onchange="savePromos()"><label>2 für 1<small>Günstigeres von je 2 Bildern gratis</small></label></div>
+        <div class="promo-row"><input type="checkbox" id="promoFirstFree" onchange="savePromos()"><label>Erstes Produkt gratis<small>Einmalig pro Kundenkonto</small></label></div>
+        <div class="promo-row"><input type="checkbox" id="promoTwoForOne" onchange="savePromos()"><label>2 für 1<small>Günstigeres von je 2 Produkten gratis</small></label></div>
         <div class="promo-row"><input type="checkbox" id="promoPercent" onchange="savePromos()"><label>Prozent-Rabatt</label><input type="number" id="promoPercentValue" value="20" onchange="savePromos()"> %</div>
       </div>
     </div>
@@ -601,7 +601,7 @@
     <div class="admin-subview" id="admintab-accounts">
       <div class="panel-card" id="accountsPanel" style="max-width:480px;">
         <h3>Konten</h3>
-        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Es gibt keine öffentliche Registrierung — nur du kannst hier Konten für andere Personen anlegen. Jedes Konto kann eigene Bilder hochladen, verkaufen und einkaufen.</p>
+        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Es gibt keine öffentliche Registrierung — nur du kannst hier Konten für andere Personen anlegen. Jedes Konto kann eigene Produkte einstellen, verkaufen und einkaufen.</p>
         <div class="team-list" id="accountsList"></div>
         <div class="team-form">
           <input type="text" id="newAccName" placeholder="Name">
@@ -635,7 +635,7 @@
           <label>Gewinnspiel auf der Seite anzeigen<small>Wenn ausgeschaltet, ist die Teilnahme-Box für Besucher nicht sichtbar</small></label>
         </div>
         <div class="team-list" id="raffleList"></div>
-        <label style="display:block; font-family:'Space Mono',monospace; font-size:10.5px; color:var(--muted); margin:14px 0 6px; text-transform:uppercase;">Welches Bild gewinnt der Gewinner?</label>
+        <label style="display:block; font-family:'Space Mono',monospace; font-size:10.5px; color:var(--muted); margin:14px 0 6px; text-transform:uppercase;">Welches Produkt gewinnt der Gewinner?</label>
         <select id="raffleImageSelect" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:9px 10px; border-radius:var(--radius-sm); margin-bottom:10px;"></select>
         <button class="btn solid" style="width:100%;" onclick="drawRaffleWinner()">Gewinner auslosen &amp; Code automatisch senden</button>
         <div class="redeem-msg" id="raffleWinnerMsg" style="margin-top:12px;"></div>
@@ -677,7 +677,7 @@
 
         <div style="margin-top:20px; padding-top:16px; border-top:1px solid var(--line);">
           <p style="font-family:'Space Mono',monospace; font-size:10.5px; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin:0 0 8px;">Automatische Mail</p>
-          <p style="font-size:12px; color:var(--muted); margin:0 0 12px;">Verschickt automatisch in einstellbaren Abständen "Es gibt neue Bilder!" (falls neu hochgeladen wurde) oder sonst eine allgemeine Erinnerung. Letzte automatische Mail: <b id="dailyLastSent" style="color:var(--ink);">–</b></p>
+          <p style="font-size:12px; color:var(--muted); margin:0 0 12px;">Verschickt automatisch in einstellbaren Abständen "Es gibt neue Produkte!" (falls neu eingestellt wurde) oder sonst eine allgemeine Erinnerung. Letzte automatische Mail: <b id="dailyLastSent" style="color:var(--ink);">–</b></p>
           <label style="display:block; font-family:'Space Mono',monospace; font-size:10.5px; color:var(--muted); margin:0 0 6px; text-transform:uppercase;">Wie oft senden?</label>
           <select id="dailyIntervalSelect" onchange="saveDailyInterval()" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:9px 10px; border-radius:var(--radius-sm); margin-bottom:14px;">
             <option value="1">Alle 1 Stunde</option>
@@ -700,7 +700,7 @@
     <div class="admin-subview" id="admintab-update">
       <div class="panel-card" id="updatePanel" style="max-width:100%;">
         <h3>🔄 Website aktualisieren</h3>
-        <p style="color:var(--muted); font-size:12.5px; margin:-8px 0 14px;">Füge hier den kompletten Code ein, den du von Claude bekommst, und veröffentliche ihn — ohne dass Bilder oder Konten verloren gehen.</p>
+        <p style="color:var(--muted); font-size:12.5px; margin:-8px 0 14px;">Füge hier den kompletten Code ein, den du von Claude bekommst, und veröffentliche ihn — ohne dass Produkte oder Konten verloren gehen.</p>
         <textarea id="updateHtmlInput" placeholder="Kompletten HTML-Code hier einfügen..." style="width:100%; height:160px; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:12px; border-radius:var(--radius-sm); font-family:'Space Mono',monospace; font-size:11.5px; margin-bottom:12px;"></textarea>
         <button class="btn solid" onclick="updateFrontend()">Veröffentlichen</button>
         <div class="redeem-msg" id="updateMsg" style="margin-top:12px;"></div>
@@ -745,27 +745,27 @@
   const I18N = {
     de: {
       nav_gallery:"Galerie", nav_cart:"Warenkorb", nav_account:"Mein Konto", nav_support:"Support",
-      brand_tagline:"Fotografie", logout_btn:"Abmelden",
+      brand_tagline:"Marktplatz", logout_btn:"Abmelden",
       hero_badge:"✦ Läuft auf einem echten Server",
-      hero_title_html:'Fotografie, die etwas <span class="accent-word">hermacht</span>.',
-      hero_sub:"Kuratierte Bilder und Videos zum Kauf oder kostenlosen Download — für alle Besucher gemeinsam sichtbar.",
-      hero_cta1:"Galerie durchsuchen", hero_cta2:"Konto erstellen", hero_note:"Kostenlos ansehen · Kein Abo nötig · Sofort startklar",
-      shop_empty:"Noch keine Bilder vorhanden.",
+      hero_title_html:'Marktplatz, auf dem <span class="accent-word">jeder</span> verkauft.',
+      hero_sub:"Produkte von echten Verkäufern — durchsuchen, entdecken und sicher kaufen.",
+      hero_cta1:"Produkte durchsuchen", hero_cta2:"Zu meinem Konto", hero_note:"Kostenlos ansehen · Konten nur auf Einladung · Sichere Bezahlung",
+      shop_empty:"Noch keine Produkte vorhanden.",
       redeem_title:"Code einlösen", redeem_sub:"Hast du von uns einen 7-stelligen Code bekommen? Gib ihn ein und lade dein Bild direkt herunter.", redeem_btn:"Einlösen",
-      raffle_title:"Gewinnspiel", raffle_sub:"Trag deine E-Mail ein und nimm an der Verlosung eines Gratisbildes teil.", raffle_btn:"Teilnehmen",
-      newsletter_title:"Newsletter", newsletter_sub:"Trag dich ein und verpasse keine neuen Bilder und Aktionen mehr.", newsletter_btn:"Abonnieren",
+      raffle_title:"Gewinnspiel", raffle_sub:"Trag deine E-Mail ein und nimm an der Verlosung eines Gratisprodukts teil.", raffle_btn:"Teilnehmen",
+      newsletter_title:"Newsletter", newsletter_sub:"Trag dich ein und verpasse keine neuen Produkte und Aktionen mehr.", newsletter_btn:"Abonnieren",
       cart_eyebrow:"Kasse", cart_title:"Warenkorb", cart_empty:"Dein Warenkorb ist leer.", cart_subtotal:"Zwischensumme", cart_bundle:"Aktionsrabatt", cart_total:"Gesamt", cart_checkout_btn:"Zur Kasse",
       account_eyebrow:"Konto", account_title:"Mein Konto",
       login_title:"Willkommen zurück", login_sub:"Melde dich mit deinem bestehenden Zugang an", login_label_id:"Name oder E-Mail", label_password:"Passwort", login_btn:"Anmelden",
-      register_title:"Konto erstellen", register_sub:"Kostenlos — nur für Kunden", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", register_btn:"Konto erstellen",
+      register_title:"Kein eigenes Konto?", register_sub:"Konten werden ausschließlich vom Admin erstellt — melde dich bei uns, um Zugang zu bekommen.", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", register_btn:"Konto erstellen",
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
-      my_purchases:"Meine gekauften Bilder", no_purchases:"Noch keine Bilder gekauft.",
+      my_purchases:"Meine Bestellungen", no_purchases:"Noch nichts gekauft.",
       support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Schreib uns eine Nachricht direkt hier auf der Seite, oder per E-Mail.",
       support_form_title:"Nachricht senden", support_form_sub:"Wir antworten dir per E-Mail, falls du eine angibst.",
       label_name_optional:"Name (optional)", label_email_optional:"E-Mail (optional, für Antwort)", label_message:"Nachricht", support_send_btn:"Nachricht senden", support_or_email:"Oder schreib uns direkt:",
-      footer_tagline:"Fotografie zum Kauf oder kostenlosen Download.", footer_product:"Produkt", footer_company:"Unternehmen", footer_about:"Über uns", footer_ownserver:"Läuft auf eigenem Server",
-      chat_greeting:"Hallo! 👋 Frag mich alles rund um Lumora — z.B. wie man ein Bild kauft, einen Code einlöst, ein Konto erstellt oder den Newsletter abonniert.",
+      footer_tagline:"Marktplatz für die Familie — verkaufen und kaufen.", footer_product:"Produkt", footer_company:"Unternehmen", footer_about:"Über uns", footer_ownserver:"Läuft auf eigenem Server",
+      chat_greeting:"Hallo! 👋 Frag mich alles rund um Lumora — z.B. wie man ein Produkt kauft oder verkauft, oder den Newsletter abonniert.",
       cart_add:"+ In den Warenkorb", cart_in_cart:"✓ Im Warenkorb", download_btn:"Herunterladen", free_tag:"GRATIS", remove_btn:"Entfernen",
       role_admin:"Admin", role_customer:"Kunde",
       stat_purchased:"Gekaufte Produkte", stat_member_since:"Mitglied seit", greeting_hello:"Hallo, {name} 👋",
@@ -1333,7 +1333,7 @@
 
   function exportSalesCsv(){
     if(lastSalesRows.length === 0){ alert('Keine Verkäufe zum Exportieren.'); return; }
-    const header = ['Käufer','E-Mail','Bild','Hochgeladen von','Preis','Datum'];
+    const header = ['Käufer','E-Mail','Produkt','Eingestellt von','Preis','Datum'];
     const rows = lastSalesRows.map(r => [r.buyerName, r.buyerEmail, r.imageName, r.uploadedByName, r.pricePaid.toFixed(2), new Date(r.purchasedAt).toLocaleDateString('de-DE')]);
     const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell||'').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -1471,7 +1471,7 @@
     if(!select) return;
     const paidImages = images.filter(img => !img.sold);
     if(paidImages.length === 0){
-      select.innerHTML = '<option value="">Keine bezahlten Bilder vorhanden</option>';
+      select.innerHTML = '<option value="">Keine verfügbaren Produkte vorhanden</option>';
     } else {
       const prevValue = select.value;
       select.innerHTML = paidImages.map(img => `<option value="${img.id}">${coverPhoto(img).type === 'video' ? '🎬' : '🖼'} ${img.name || img.id.slice(0,6)} — ${fmt(img.price)}</option>`).join('');
@@ -1675,10 +1675,10 @@
   async function drawRaffleWinner(){
     const msgEl = document.getElementById('raffleWinnerMsg');
     const imageId = document.getElementById('raffleImageSelect').value;
-    if(!imageId){ msgEl.textContent = 'Bitte zuerst ein Bild auswählen.'; msgEl.className = 'redeem-msg err'; return; }
+    if(!imageId){ msgEl.textContent = 'Bitte zuerst ein Produkt auswählen.'; msgEl.className = 'redeem-msg err'; return; }
     try {
       const r = await api('/api/raffle/draw', { method:'POST', body:{ imageId } });
-      msgEl.innerHTML = `🎉 Gewinner: <b>${r.winner}</b><br>Code: <b>${r.code}</b> (24h gültig)<br>${r.emailSent ? '✅ Gewinner-E-Mail verschickt.' : '⚠️ E-Mail-Versand nicht eingerichtet.'}<br>${r.loserCount} Verlierer benachrichtigt (${r.loserEmailsSent} E-Mails verschickt).`;
+      msgEl.innerHTML = `🎉 Gewinner: <b>${r.winner}</b><br>Produkt: <b>${r.product}</b><br>${r.emailSent ? '✅ Gewinner-E-Mail verschickt.' : '⚠️ E-Mail-Versand nicht eingerichtet.'}<br>${r.loserCount} Verlierer benachrichtigt (${r.loserEmailsSent} E-Mails verschickt).`;
       msgEl.className = 'redeem-msg ok';
       await loadImages();
       loadRaffleList();
@@ -1715,7 +1715,7 @@
     msgEl.textContent = 'Wird gesendet...'; msgEl.className = 'redeem-msg ok';
     try {
       const r = await api('/api/newsletter/send-daily-now', { method:'POST' });
-      msgEl.textContent = r.skipped ? 'Keine Abonnenten vorhanden.' : `✅ An ${r.sentCount} von ${r.total} gesendet (${r.newImagesCount} neue Bilder erkannt).`;
+      msgEl.textContent = r.skipped ? 'Keine Abonnenten vorhanden.' : `✅ An ${r.sentCount} von ${r.total} gesendet (${r.newImagesCount} neue Produkte erkannt).`;
       msgEl.className = 'redeem-msg ok';
       loadDailyStatus();
     } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
@@ -1861,7 +1861,7 @@
       const tiles = [
         [r.totalRevenue !== undefined ? fmt(r.totalRevenue) : '–', 'Umsatz gesamt'],
         [r.totalPurchases, 'Verkäufe'],
-        [r.totalImages, 'Bilder'],
+        [r.totalImages, 'Produkte'],
         [r.totalCustomers, 'Konten'],
         [r.raffleParticipants, 'Gewinnspiel-Teilnehmer'],
         [r.newsletterSubscribers, 'Newsletter-Abonnenten'],
@@ -1973,11 +1973,11 @@
     } else if(promos && promos.percent && promos.percentValue > 0){
       msg = `🔥 Gerade ${promos.percentValue}% Rabatt auf alles im Warenkorb!`;
     } else if(promos && promos.twoForOne){
-      msg = `🛍️ Aktion: 2 Bilder kaufen, das günstigere gibt's gratis dazu!`;
+      msg = `🛍️ Aktion: 2 Produkte kaufen, das günstigere gibt's gratis dazu!`;
     } else if(promos && promos.firstFree){
-      msg = `✨ Neu hier? Dein erstes Bild ist gratis!`;
+      msg = `✨ Dein erstes Produkt ist gratis!`;
     } else {
-      msg = `📰 Verpass keine neuen Bilder — <a onclick="document.getElementById('newsletterInput').scrollIntoView({behavior:'smooth', block:'center'})">jetzt Newsletter abonnieren →</a>`;
+      msg = `📰 Verpass keine neuen Produkte — <a onclick="document.getElementById('newsletterInput').scrollIntoView({behavior:'smooth', block:'center'})">jetzt Newsletter abonnieren →</a>`;
     }
     textEl.innerHTML = msg;
     banner.style.display = 'flex';
@@ -1988,7 +1988,7 @@
       const r = await api('/api/public-stats');
       if(r.totalImages === 0) return;
       const el = document.getElementById('trustStrip');
-      const parts = [`<span><b>${r.totalImages}</b> Bilder</span>`];
+      const parts = [`<span><b>${r.totalImages}</b> Produkte</span>`];
       if(r.totalCustomers > 0) parts.push(`<span><b>${r.totalCustomers}</b> Kunden</span>`);
       if(r.avgRating !== null) parts.push(`<span><b>${r.avgRating}★</b> Ø-Bewertung (${r.reviewCount})</span>`);
       el.innerHTML = parts.join('');
@@ -2006,7 +2006,7 @@
       <div>
         <h3 style="font-family:'Fraunces',serif; font-size:22px; margin:0 0 8px;">${best.name}</h3>
         ${best.avgRating !== null ? `<div style="margin-bottom:10px;">${starsHtml(best.avgRating, best.reviewCount)}</div>` : ''}
-        <p style="color:var(--muted); font-size:13.5px; margin:0 0 16px;">${best.isBestseller ? 'Unser meistgekauftes Bild — schau es dir an!' : 'Eines unserer beliebtesten Bilder.'}</p>
+        <p style="color:var(--muted); font-size:13.5px; margin:0 0 16px;">${best.isBestseller ? 'Unser meistgekauftes Produkt — schau es dir an!' : 'Eines unserer beliebtesten Produkte.'}</p>
         <button class="btn solid" onclick="openLightbox('${best.id}')">Ansehen</button>
       </div>`;
   }
@@ -2028,10 +2028,10 @@
 
   const FAQ_DISPLAY = {
     de: [
-      ['Wie erstelle ich ein Konto?', 'Kostenlos: Geh zu "Mein Konto" → "Konto erstellen" und trag Name, Geburtstag, E-Mail und Passwort ein.'],
-      ['Wie bezahle ich?', 'Bild in den Warenkorb legen, zur Kasse gehen und sicher per Karte über Stripe bezahlen. Deine Zahlungsdaten laufen nie über unseren Server.'],
-      ['Was ist ein Bild-Code?', 'Ein 7-stelliger Code, den du z.B. beim Gewinnspiel gewinnst — einfach im Feld "Code einlösen" eintragen, um dein Bild direkt zu bekommen.'],
-      ['Kann ich Bilder bewerten?', 'Ja — sobald du ein Bild besitzt (gekauft oder gratis), kannst du es in der Großansicht mit Sternen bewerten und eine Rezension schreiben.'],
+      ['Wie bekomme ich ein Konto?', 'Es gibt keine Selbst-Registrierung — nur der Admin kann Konten anlegen. Sprich ihn einfach an, dann richtet er dir eines ein.'],
+      ['Wie bezahle ich?', 'Produkt in den Warenkorb legen, zur Kasse gehen und sicher per Karte über Stripe bezahlen. Deine Zahlungsdaten laufen nie über unseren Server.'],
+      ['Wie bekomme ich das Produkt, wenn ich bezahlt habe?', 'Der Verkäufer sieht nach deinem Kauf deinen Namen bei seinem Produkt und übergibt es dir persönlich — es gibt keinen Versand.'],
+      ['Kann ich Produkte bewerten?', 'Ja — sobald du ein Produkt gekauft hast, kannst du es in der Großansicht mit Sternen bewerten und eine Rezension schreiben.'],
       ['Gibt es Rabatte?', 'Manchmal laufen Aktionen wie "2 für 1" oder Prozent-Rabatte — die siehst du automatisch im Warenkorb, wenn sie aktiv sind.'],
       ['Gibt es die Seite in meiner Sprache?', 'Ja, oben rechts kannst du aus 16 Sprachen wählen — die Auswahl wird gespeichert und gilt auch für unsere E-Mails an dich.'],
     ],
@@ -2142,7 +2142,7 @@
       if(r.freeCheckout){
         cart.clear();
         await loadImages();
-        alert('Kauf erfolgreich! Deine Bilder findest du jetzt unter "Mein Konto".');
+        alert('Kauf erfolgreich! Deine Bestellungen findest du jetzt unter "Mein Konto".');
         switchView('account');
         return;
       }
@@ -2161,7 +2161,7 @@
       const sessionId = params.get('session_id');
       try {
         const r = await api('/api/checkout/confirm', { method:'POST', body:{ sessionId } });
-        alert(`Zahlung erfolgreich! ${r.itemCount} Bild(er) sind jetzt in deinem Konto verfügbar.`);
+        alert(`Zahlung erfolgreich! ${r.itemCount} Produkt(e) sind jetzt in deinem Konto verfügbar.`);
         await loadImages();
         switchView('account');
       } catch(e){
@@ -2255,7 +2255,7 @@
   function closeLightbox(){ document.getElementById('lightbox').classList.remove('show'); document.removeEventListener('keydown', lbKey); window.history.replaceState({}, '', window.location.pathname + window.location.search); }
 
   async function reportImage(id){
-    const reason = prompt('Was stimmt mit diesem Bild nicht? (kurze Beschreibung)');
+    const reason = prompt('Was stimmt mit diesem Produkt nicht? (kurze Beschreibung)');
     if(reason === null) return;
     try {
       await api('/api/flags', { method:'POST', body:{ imageId: id, reason } });
@@ -2369,7 +2369,7 @@
   function handleFiles(fileList){
     if(!fileList || fileList.length===0) return;
     const valid = [...fileList].filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
-    if(valid.length !== fileList.length) alert('Nur Bild- oder Videodateien werden akzeptiert.');
+    if(valid.length !== fileList.length) alert('Nur Foto- oder Videodateien werden akzeptiert.');
     pendingPhotoFiles = pendingPhotoFiles.concat(valid).slice(0, 8);
     renderPhotoPreview();
   }
@@ -2422,29 +2422,27 @@
   // ---------- Chat-Bot (rein regelbasiert, ohne externen KI-Dienst) ----------
   const FAQ_I18N = {
     de: [
-      { keywords: ['konto','erstell','registrier','account'], answer: 'Kostenlos: Geh zu "Mein Konto" → "Konto erstellen" und trag Name, Geburtstag, E-Mail und Passwort ein.' },
+      { keywords: ['konto','erstell','registrier','account'], answer: 'Es gibt keine Selbst-Registrierung — nur der Admin kann dir ein Konto einrichten. Sprich ihn einfach an.' },
       { keywords: ['anmelden','einloggen','login'], answer: 'Unter "Mein Konto" kannst du dich mit deiner E-Mail (oder deinem Namen) und Passwort anmelden.' },
-      { keywords: ['kauf','bezahl','kasse'], answer: 'Klick bei einem Bild auf "In den Warenkorb", geh dann zu "Warenkorb" und bezahle sicher per Karte.' },
-      { keywords: ['code','einlös','eingeb','7-stellig'], answer: 'In der Galerie findest du die Box "Code einlösen" — dort den 7-stelligen Code eingeben, den du von uns bekommen hast.' },
-      { keywords: ['gültig','24 stunden','abgelaufen','ablauf'], answer: 'Ein Code bleibt gültig, bis er benutzt wird. Wird er erneuert, bleibt der alte Code noch 24 Stunden zusätzlich gültig.' },
+      { keywords: ['kauf','bezahl','kasse'], answer: 'Klick bei einem Produkt auf "In den Warenkorb", geh dann zu "Warenkorb" und bezahle sicher per Karte.' },
+      { keywords: ['erhalt','übergabe','abholen','liefer','versand'], answer: 'Es gibt keinen Versand — der Verkäufer sieht nach deinem Kauf deinen Namen und übergibt dir das Produkt persönlich.' },
       { keywords: ['passwort'], answer: 'Unter "Mein Konto" gibt es den Bereich "Passwort ändern".' },
-      { keywords: ['gratis','kostenlos','umsonst'], answer: 'Bilder, die mit "GRATIS" markiert sind, kannst du direkt ohne Kauf herunterladen.' },
+      { keywords: ['verkauf','einstellen','anbieten','inserat'], answer: 'Unter "Verwaltung" kannst du oben ein neues Produkt einstellen — Titel, Beschreibung, Preis und Fotos.' },
       { keywords: ['rabatt','aktion','prozent'], answer: 'Manchmal laufen Aktionen wie "2 für 1" oder Prozent-Rabatte — die siehst du automatisch im Warenkorb.' },
       { keywords: ['newsletter','abonnier'], answer: 'In der Galerie kannst du dich mit deiner E-Mail für den Newsletter eintragen.' },
       { keywords: ['gewinnspiel','gewinn','verlosung'], answer: 'Falls aktiv, findest du in der Galerie eine Box zum Mitmachen.' },
       { keywords: ['support','kontakt','hilfe','problem'], answer: 'Über den "Support"-Tab oben kannst du uns direkt eine Nachricht schreiben.' },
       { keywords: ['mitarbeiter','job','arbeiten','verkaufen'], answer: 'Es gibt keine Mitarbeiter — aber jede:r kann bei uns verkaufen, sobald der Admin ein Konto dafür eingerichtet hat.' },
-      { keywords: ['gekauft','wo finde','meine bilder'], answer: 'Unter "Mein Konto" im Bereich "Meine gekauften Bilder".' },
-      { keywords: ['bestätig'], answer: 'Nach der Registrierung bekommst du eine Bestätigungsmail.' },
-      { keywords: ['video'], answer: 'Ja, neben Bildern gibt es bei uns auch Videos.' },
+      { keywords: ['gekauft','wo finde','meine produkte','bestellung'], answer: 'Unter "Mein Konto" im Bereich "Meine Bestellungen".' },
+      { keywords: ['video'], answer: 'Ja, neben Fotos kannst du bei uns auch Videos zu deinem Produkt hochladen.' },
       { keywords: ['datenschutz','sicher','privat'], answer: 'Deine Zugangsdaten werden sicher verschlüsselt gespeichert.' },
-      { keywords: ['favorit','herz','merken'], answer: 'Mit dem Herz-Symbol bei jedem Bild kannst du es zu deinen Favoriten hinzufügen — sichtbar unter "Mein Konto".' },
-      { keywords: ['bewert','sterne','rezension'], answer: 'Nach einem Kauf kannst du ein Bild mit Sternen bewerten und eine kurze Rezension hinterlassen.' },
-      { keywords: ['suche','sortier','filter'], answer: 'Oben in der Galerie kannst du Bilder nach Namen suchen und nach Preis oder Datum sortieren.' },
+      { keywords: ['favorit','herz','merken'], answer: 'Mit dem Herz-Symbol bei jedem Produkt kannst du es zu deinen Favoriten hinzufügen — sichtbar unter "Mein Konto".' },
+      { keywords: ['bewert','sterne','rezension'], answer: 'Nach einem Kauf kannst du ein Produkt mit Sternen bewerten und eine kurze Rezension hinterlassen.' },
+      { keywords: ['suche','sortier','filter'], answer: 'Oben in der Galerie kannst du Produkte nach Namen suchen und nach Preis oder Datum sortieren.' },
       { keywords: ['sprache','language','ändern der sprache','sprache wechseln'], answer: 'Oben rechts kannst du über das Dropdown-Menü jederzeit die Sprache der Seite wechseln — wird automatisch für dich gespeichert.' },
       { keywords: ['hell','dunkel','design','modus','theme'], answer: 'Über den Mond-/Sonnen-Knopf oben kannst du zwischen hellem und dunklem Design wechseln.' },
-      { keywords: ['teilen','link kopieren','weiterleiten'], answer: 'In der Großansicht eines Bildes findest du den Button \'Teilen\' — er kopiert einen direkten Link zu diesem Bild.' },
-      { keywords: ['melden','beschwerde','problem mit bild'], answer: 'In der Großansicht eines Bildes gibt es den Button \'Melden\', falls mit einem Bild etwas nicht stimmt.' },
+      { keywords: ['teilen','link kopieren','weiterleiten'], answer: 'In der Großansicht eines Produkts findest du den Button \'Teilen\' — er kopiert einen direkten Link dazu.' },
+      { keywords: ['melden','beschwerde','problem mit bild'], answer: 'In der Großansicht eines Produkts gibt es den Button \'Melden\', falls etwas nicht stimmt.' },
     ],
     en: [
       { keywords: ['account','create','register','sign up'], answer: 'Free: Go to "My Account" → "Create account" and enter name, birthday, email and password.' },
@@ -2887,7 +2885,7 @@
 <div class="chat-window" id="chatWindow">
   <div class="chat-header"><b>Lumora-Hilfe 🤖</b><span onclick="toggleChat()">✕</span></div>
   <div class="chat-messages" id="chatMessages">
-    <div class="chat-msg bot" id="chatGreeting" data-i18n="chat_greeting">Hallo! 👋 Frag mich alles rund um Lumora — z.B. wie man ein Bild kauft, einen Code einlöst, ein Konto erstellt oder den Newsletter abonniert.</div>
+    <div class="chat-msg bot" id="chatGreeting" data-i18n="chat_greeting">Hallo! 👋 Frag mich alles rund um Lumora — z.B. wie man ein Produkt kauft oder verkauft, oder den Newsletter abonniert.</div>
   </div>
   <div class="chat-input-row">
     <input type="text" id="chatInput" placeholder="Deine Frage..." onkeydown="if(event.key==='Enter') sendChatMessage()">
