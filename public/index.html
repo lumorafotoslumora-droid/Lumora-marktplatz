@@ -179,10 +179,8 @@
   .review-item:last-child{ border-bottom:none; }
   .review-item .stars{ color:var(--amber); font-size:12px; letter-spacing:1px; }
   .frame img, .frame video{ width:100%; aspect-ratio:1/1; object-fit:cover; display:block; background:#000; }
-  .protect{ position:absolute; inset:0; z-index:2; }
-  .watermark{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:3; }
-  .watermark span{ position:absolute; transform: translate(-50%,-50%) rotate(-24deg); font-family:'Space Mono',monospace; letter-spacing:2px; color: rgba(255,255,255,0.4); text-shadow: 0 1px 3px rgba(0,0,0,0.55); white-space:nowrap; text-transform:uppercase; font-size:11px; }
-  .lightbox-body .watermark span{ font-size:18px; letter-spacing:3px; }
+  .lightbox-thumbs img{ width:52px; height:52px; object-fit:cover; border-radius:8px; cursor:pointer; opacity:0.55; flex-shrink:0; border:2px solid transparent; }
+  .lightbox-thumbs img.active{ opacity:1; border-color:var(--amber); }
   .del{ position:absolute; top:10px; left:10px; width:26px; height:26px; border-radius:50%; background:rgba(20,18,15,0.75); color:var(--danger); display:flex; align-items:center; justify-content:center; font-size:12px; cursor:pointer; z-index:6; }
   .tag{ position:absolute; top:10px; right:10px; font-family:'Space Mono',monospace; font-size:10.5px; padding:4px 9px; border-radius:999px; z-index:4; }
   .tag.free{ background: rgba(139,177,116,0.85); color:#0f1a0c; font-weight:700; }
@@ -343,17 +341,17 @@
       <div class="hero-glow g1"></div>
       <div class="hero-glow g2"></div>
       <span class="hero-badge" data-i18n="hero_badge">✦ Läuft auf einem echten Server</span>
-      <h2 data-i18n-html="hero_title_html">Fotografie, die etwas <span class="accent-word">hermacht</span>.</h2>
-      <p data-i18n="hero_sub">Kuratierte Bilder und Videos zum Kauf oder kostenlosen Download — für alle Besucher gemeinsam sichtbar.</p>
+      <h2 data-i18n-html="hero_title_html">Marktplatz, auf dem <span class="accent-word">jeder</span> verkauft.</h2>
+      <p data-i18n="hero_sub">Produkte von echten Verkäufern — durchsuchen, entdecken und sicher kaufen.</p>
       <div class="cta-row">
-        <button class="btn solid" onclick="document.getElementById('shopGrid').scrollIntoView({behavior:'smooth'})" data-i18n="hero_cta1">Galerie durchsuchen</button>
-        <button class="btn muted" onclick="switchView('account')" data-i18n="hero_cta2">Konto erstellen</button>
+        <button class="btn solid" onclick="document.getElementById('shopGrid').scrollIntoView({behavior:'smooth'})" data-i18n="hero_cta1">Produkte durchsuchen</button>
+        <button class="btn muted" onclick="switchView('account')" data-i18n="hero_cta2">Zu meinem Konto</button>
       </div>
-      <p class="hero-note" data-i18n="hero_note">Kostenlos ansehen · Kein Abo nötig · Sofort startklar</p>
+      <p class="hero-note" data-i18n="hero_note">Kostenlos ansehen · Konten nur auf Einladung · Sichere Bezahlung</p>
       <div class="trust-strip" id="trustStrip" style="display:none;"></div>
     </div>
     <div class="gallery-toolbar">
-      <input type="text" id="gallerySearchInput" placeholder="🔍 Bilder suchen..." oninput="onGallerySearchChange(this.value)">
+      <input type="text" id="gallerySearchInput" placeholder="🔍 Produkte suchen..." oninput="onGallerySearchChange(this.value)">
       <input type="number" id="galleryMinPrice" placeholder="Min €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
       <input type="number" id="galleryMaxPrice" placeholder="Max €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
       <select id="gallerySortSelect" onchange="onGallerySortChange(this.value)">
@@ -365,24 +363,13 @@
     </div>
     <div class="tag-chips" id="tagChips"></div>
     <div class="grid" id="shopGrid"></div>
-    <div class="empty" id="shopEmpty" style="display:none;" data-i18n="shop_empty">Noch keine Bilder vorhanden.</div>
+    <div class="empty" id="shopEmpty" style="display:none;" data-i18n="shop_empty">Noch keine Produkte vorhanden.</div>
 
     <div class="extras-grid">
-      <div class="extra-card">
-        <div class="extra-icon">🔑</div>
-        <h3 data-i18n="redeem_title">Code einlösen</h3>
-        <p data-i18n="redeem_sub">Hast du von uns einen 7-stelligen Code bekommen? Gib ihn ein und lade dein Bild direkt herunter.</p>
-        <div class="extra-row">
-          <input type="text" id="redeemInput" maxlength="7" placeholder="1234567">
-          <button class="btn solid" onclick="redeemCode()" data-i18n="redeem_btn">Einlösen</button>
-        </div>
-        <div class="redeem-msg" id="redeemMsg"></div>
-      </div>
-
       <div class="extra-card" id="raffleGiveawayCard">
         <div class="extra-icon">🎁</div>
         <h3 data-i18n="raffle_title">Gewinnspiel</h3>
-        <p data-i18n="raffle_sub">Trag deine E-Mail ein und nimm an der Verlosung eines Gratisbildes teil.</p>
+        <p data-i18n="raffle_sub">Trag deine E-Mail ein und nimm an der Verlosung eines Gratisprodukts teil.</p>
         <div class="extra-row">
           <input type="email" id="raffleInput" placeholder="deine@email.com">
           <button class="btn solid" onclick="enterRaffle()" data-i18n="raffle_btn">Teilnehmen</button>
@@ -493,15 +480,15 @@
         <button class="btn solid" style="width:100%;" onclick="changePassword()" data-i18n="change_pw_btn">Passwort speichern</button>
       </div>
       <div id="purchasesSection">
-        <p class="eyebrow" data-i18n="my_purchases">Meine gekauften Bilder</p>
+        <p class="eyebrow" data-i18n="my_purchases">Meine Bestellungen</p>
         <button class="btn muted" style="margin-bottom:14px; font-size:11.5px; padding:6px 12px;" onclick="exportMyPurchasesCsv()">📥 Als Liste exportieren</button>
         <div class="grid" id="purchasesGrid"></div>
-        <div class="empty" id="purchasesEmpty" style="display:none;" data-i18n="no_purchases">Noch keine Bilder gekauft.</div>
+        <div class="empty" id="purchasesEmpty" style="display:none;" data-i18n="no_purchases">Noch nichts gekauft.</div>
       </div>
       <div id="favoritesSection" style="margin-top:36px;">
         <p class="eyebrow">❤️ Meine Favoriten</p>
         <div class="grid" id="favoritesGrid"></div>
-        <div class="empty" id="favoritesEmpty" style="display:none;">Noch keine Favoriten — klick auf das Herz bei einem Bild in der Galerie.</div>
+        <div class="empty" id="favoritesEmpty" style="display:none;">Noch keine Favoriten — klick auf das Herz bei einem Produkt in der Galerie.</div>
       </div>
       <div id="recentSection" style="margin-top:36px;">
         <p class="eyebrow">🕓 Zuletzt angesehen</p>
@@ -543,10 +530,22 @@
     </div>
 
     <div class="admin-subview active" id="admintab-content">
-      <div id="dropzone" onclick="document.getElementById('fileInput').click()">＋ Bilder oder Videos hochladen — klicken oder hierher ziehen</div>
-      <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+      <div class="panel-card" id="newProductPanel" style="max-width:520px; margin-bottom:24px;">
+        <h3>➕ Neues Produkt einstellen</h3>
+        <div class="field"><label>Titel</label><input type="text" id="newProdName" placeholder="z.B. Vintage Lederjacke"></div>
+        <div class="field"><label>Beschreibung</label><textarea id="newProdDescription" rows="3" placeholder="Zustand, Größe, Material, Details..." style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:11px 13px; font-size:14px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif;"></textarea></div>
+        <div class="field"><label>Preis (€)</label><input type="number" id="newProdPrice" min="0" step="0.5" value="9.99"></div>
+        <div class="field">
+          <label>Fotos (mind. 1, max. 8)</label>
+          <div id="dropzone" onclick="document.getElementById('fileInput').click()">＋ Fotos oder Videos auswählen oder hierher ziehen</div>
+          <input type="file" id="fileInput" accept="image/*,video/*" multiple>
+          <div id="newProdPhotoPreview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
+        </div>
+        <button class="btn solid" style="width:100%; margin-top:8px;" onclick="submitNewProduct()">Produkt einstellen</button>
+        <div class="redeem-msg" id="newProductMsg" style="margin-top:10px;"></div>
+      </div>
       <div class="grid" id="adminGrid"></div>
-      <div class="empty" id="adminEmpty" style="display:none;">Noch keine Bilder vorhanden.</div>
+      <div class="empty" id="adminEmpty" style="display:none;">Noch keine Produkte eingestellt.</div>
     </div>
 
     <div class="admin-subview" id="admintab-sales">
@@ -726,7 +725,8 @@
   <button class="lightbox-nav prev" onclick="lightboxStep(-1)">‹</button>
   <button class="lightbox-nav next" onclick="lightboxStep(1)">›</button>
   <div class="lightbox-body">
-    <div style="position:relative;"><div id="lightboxMedia"></div><div class="protect" id="lightboxProtect" oncontextmenu="return false"></div><div class="watermark" id="lightboxWatermark"></div></div>
+    <div style="position:relative;"><div id="lightboxMedia"></div></div>
+    <div class="lightbox-thumbs" id="lightboxThumbs" style="display:flex; gap:6px; padding:8px 0; overflow-x:auto;"></div>
     <div class="lightbox-info">
       <div style="display:flex; flex-direction:column; gap:2px;">
         <span id="lightboxImageName" style="font-family:'Fraunces',serif; font-size:14px;"></span>
@@ -734,6 +734,7 @@
       </div>
       <div id="lightboxAction"></div>
     </div>
+    <p id="lightboxDescription" style="color:var(--muted); font-size:13px; margin:4px 0 0; white-space:pre-wrap;"></p>
     <div class="lightbox-counter" id="lightboxCounter"></div>
     <div class="lightbox-reviews" id="lightboxReviews"></div>
   </div>
@@ -767,7 +768,7 @@
       chat_greeting:"Hallo! 👋 Frag mich alles rund um Lumora — z.B. wie man ein Bild kauft, einen Code einlöst, ein Konto erstellt oder den Newsletter abonniert.",
       cart_add:"+ In den Warenkorb", cart_in_cart:"✓ Im Warenkorb", download_btn:"Herunterladen", free_tag:"GRATIS", remove_btn:"Entfernen",
       role_admin:"Admin", role_customer:"Kunde",
-      stat_purchased:"Gekaufte Bilder", stat_member_since:"Mitglied seit", greeting_hello:"Hallo, {name} 👋",
+      stat_purchased:"Gekaufte Produkte", stat_member_since:"Mitglied seit", greeting_hello:"Hallo, {name} 👋",
       err_invalid_email:"Diese E-Mail-Adresse sieht ungültig aus.", redeem_success:"Code gültig! Dein Bild wird heruntergeladen.", raffle_already:"Du nimmst bereits teil — viel Glück!", raffle_success:"Danke! Du nimmst jetzt an der Verlosung teil.", newsletter_already:"Du bist schon angemeldet!", newsletter_success:"Danke für dein Abo!",
       chat_fallback:"Das weiß ich leider nicht genau. Schreib uns gerne über <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — wir melden uns!"
     },
@@ -1253,6 +1254,7 @@
   let images = [];
   let cart = new Set();
   let lightboxId = null;
+  let lightboxPhotoIndex = 0;
 
   async function api(path, opts){
     opts = opts || {};
@@ -1269,16 +1271,16 @@
   function fmt(n){ n = Number(n)||0; return n.toFixed(2).replace('.', ',') + ' €'; }
   function pwChecks(p){ return { len: p.length>=8, upper: /[A-Z]/.test(p), number: /[0-9]/.test(p) }; }
 
-  const WATERMARK_POSITIONS = [[15,15],[65,12],[35,32],[85,30],[10,50],[55,50],[80,68],[25,72],[60,88],[5,90]];
-  function watermarkSpans(){ return WATERMARK_POSITIONS.map(([x,y]) => `<span style="left:${x}%; top:${y}%;">Lumora</span>`).join(''); }
+  function coverPhoto(img){ return (img.photos && img.photos[0]) || { url:'', type:'image' }; }
 
   function mediaTagHtml(img, opts){
     opts = opts || {};
-    if(img.type === 'video'){
-      const controlsAttr = opts.controls ? 'controls controlsList="nodownload"' : 'autoplay muted loop playsinline';
-      return `<video src="${img.url}" ${controlsAttr} oncontextmenu="return false" style="width:100%; ${opts.fill===false?'':'aspect-ratio:1/1; object-fit:cover;'} display:block; background:#000;"></video>`;
+    const photo = opts.photo || coverPhoto(img);
+    if(photo.type === 'video'){
+      const controlsAttr = opts.controls ? 'controls' : 'autoplay muted loop playsinline';
+      return `<video src="${photo.url}" ${controlsAttr} style="width:100%; ${opts.fill===false?'':'aspect-ratio:1/1; object-fit:cover;'} display:block; background:#000;"></video>`;
     }
-    return `<img src="${img.url}" alt="Bild" draggable="false" oncontextmenu="return false">`;
+    return `<img src="${photo.url}" alt="Produktfoto" draggable="false">`;
   }
 
   // ---------- Navigation ----------
@@ -1379,8 +1381,8 @@
     if(galleryTagFilter){
       list = list.filter(img => (img.tags||[]).includes(galleryTagFilter));
     }
-    if(galleryMinPrice !== null){ list = list.filter(img => img.free || img.price >= galleryMinPrice); }
-    if(galleryMaxPrice !== null){ list = list.filter(img => img.free || img.price <= galleryMaxPrice); }
+    if(galleryMinPrice !== null){ list = list.filter(img => img.price >= galleryMinPrice); }
+    if(galleryMaxPrice !== null){ list = list.filter(img => img.price <= galleryMaxPrice); }
     if(gallerySort === 'price_asc') list.sort((a,b) => a.price - b.price);
     else if(gallerySort === 'price_desc') list.sort((a,b) => b.price - a.price);
     else if(gallerySort === 'name') list.sort((a,b) => (a.name||'').localeCompare(b.name||''));
@@ -1440,9 +1442,11 @@
     renderTagChips();
     grid.innerHTML = list.map(img => {
       const inCart = cart.has(img.id);
-      const actionHtml = img.canDownload
-        ? `<button class="dl-btn wide" onclick="event.stopPropagation(); downloadImage('${img.id}')">${t('download_btn')}</button>`
-        : `<button class="cart-btn wide ${inCart?'in-cart':''}" onclick="event.stopPropagation(); toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`;
+      const actionHtml = img.sold
+        ? `<button class="dl-btn wide" disabled>Verkauft</button>`
+        : img.purchased
+          ? `<button class="dl-btn wide" disabled>✓ Gekauft</button>`
+          : `<button class="cart-btn wide ${inCart?'in-cart':''}" onclick="event.stopPropagation(); toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`;
       const badges = [
         img.isBestseller ? '<span class="badge-pill bestseller">🔥 Bestseller</span>' : '',
         (img.isNew && !img.isBestseller) ? '<span class="badge-pill new">✨ Neu</span>' : ''
@@ -1451,9 +1455,7 @@
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
-            <div class="protect" oncontextmenu="return false"></div>
-            ${img.canDownload ? '' : `<div class="watermark">${watermarkSpans()}</div>`}
-            <div class="tag ${img.free?'free':'paid'}">${img.free?t('free_tag'):fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Verkauft':fmt(img.price)}</div>
             ${badges ? `<div class="badge-row">${badges}</div>` : ''}
             <div class="fav-heart ${img.isFavorite?'active':''}" onclick="event.stopPropagation(); toggleFavorite('${img.id}')">${img.isFavorite?'❤️':'🤍'}</div>
           </div>
@@ -1467,12 +1469,12 @@
   function populateRaffleImageSelect(){
     const select = document.getElementById('raffleImageSelect');
     if(!select) return;
-    const paidImages = images.filter(img => !img.free);
+    const paidImages = images.filter(img => !img.sold);
     if(paidImages.length === 0){
       select.innerHTML = '<option value="">Keine bezahlten Bilder vorhanden</option>';
     } else {
       const prevValue = select.value;
-      select.innerHTML = paidImages.map(img => `<option value="${img.id}">${img.type === 'video' ? '🎬' : '🖼'} ${img.name || img.id.slice(0,6)} — ${fmt(img.price)}</option>`).join('');
+      select.innerHTML = paidImages.map(img => `<option value="${img.id}">${coverPhoto(img).type === 'video' ? '🎬' : '🖼'} ${img.name || img.id.slice(0,6)} — ${fmt(img.price)}</option>`).join('');
       if(paidImages.some(img => img.id === prevValue)) select.value = prevValue;
     }
   }
@@ -1485,27 +1487,23 @@
     grid.innerHTML = managed.map(img => {
       const adminControls = img.canSetPrice ? `
         <div class="admin-controls">
-          <input type="checkbox" ${img.free?'checked':''} onchange="setFree('${img.id}', this.checked)"> Gratis
-          <input type="number" min="0" step="0.5" value="${img.price}" ${img.free?'disabled':''} onchange="setPrice('${img.id}', this.value)"> €
+          <input type="number" min="0" step="0.5" value="${img.price}" ${img.sold?'disabled':''} onchange="setPrice('${img.id}', this.value)"> €
         </div>` : '';
-      const graceNote = (img.graceCodes && img.graceCodes.length>0)
-        ? `<div class="uploader-tag">Alter Code ${img.graceCodes[img.graceCodes.length-1].code} noch gültig bis ${new Date(img.graceCodes[img.graceCodes.length-1].expires).toLocaleString('de-DE')}</div>` : '';
+      const photoStrip = img.photos.length > 1
+        ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
             ${img.canDelete ? `<div class="del" onclick="event.stopPropagation(); deleteImage('${img.id}')">✕</div>` : ''}
-            <div class="tag ${img.free?'free':'paid'}">${img.free?'GRATIS':fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Verkauft':fmt(img.price)}</div>
           </div>
+          ${photoStrip}
           <div style="padding:10px 14px 0;">
-            <input type="text" value="${(img.name||'').replace(/"/g,'&quot;')}" placeholder="Bildname..." onclick="event.stopPropagation();" onchange="setImageName('${img.id}', this.value)" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif;">
+            <input type="text" value="${(img.name||'').replace(/"/g,'&quot;')}" placeholder="Produkttitel..." onclick="event.stopPropagation();" onchange="setImageName('${img.id}', this.value)" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif; margin-bottom:6px;">
+            <textarea placeholder="Beschreibung..." onclick="event.stopPropagation();" onchange="setImageDescription('${img.id}', this.value)" rows="2" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif;">${(img.description||'').replace(/</g,'&lt;')}</textarea>
           </div>
-          <div class="uploader-tag">hochgeladen von ${img.uploadedByName}</div>
-          <div class="code-row">
-            <div><span class="code-label">Code für Käufer</span><span class="code-val">${img.code}</span> <span style="cursor:pointer;" onclick="event.stopPropagation(); copyCode('${img.code}', this)" title="Code kopieren">📋</span></div>
-            <button class="sent-btn" onclick="event.stopPropagation(); markSent('${img.id}')">Gesendet ✓</button>
-          </div>
-          ${graceNote}
+          <div class="uploader-tag">eingestellt von ${img.uploadedByName}</div>
           ${adminControls}
         </div>`;
     }).join('');
@@ -1516,6 +1514,10 @@
     await api('/api/images/' + id, { method:'PATCH', body:{ name: name.trim() } });
     await loadImages();
   }
+  async function setImageDescription(id, description){
+    await api('/api/images/' + id, { method:'PATCH', body:{ description } });
+    await loadImages();
+  }
 
   function toggleCart(id){
     if(cart.has(id)) cart.delete(id); else cart.add(id);
@@ -1523,10 +1525,6 @@
     if(document.getElementById('lightbox').classList.contains('show') && lightboxId === id) renderLightboxInfo();
   }
 
-  async function setFree(id, val){
-    await api('/api/images/' + id, { method:'PATCH', body:{ free: val } });
-    await loadImages();
-  }
   async function setPrice(id, val){
     const num = parseFloat(val);
     if(isNaN(num) || num < 0){ alert('Bitte einen gültigen Preis von 0 oder mehr eingeben.'); await loadImages(); return; }
@@ -1537,30 +1535,6 @@
     await api('/api/images/' + id, { method:'DELETE' });
     cart.delete(id);
     await loadImages();
-  }
-  async function markSent(id){
-    await api('/api/images/' + id + '/mark-sent', { method:'POST' });
-    await loadImages();
-  }
-  function downloadImage(id){
-    const img = images.find(x => x.id === id);
-    if(!img || !img.canDownload) return;
-    const a = document.createElement('a');
-    a.href = img.url; a.download = ''; a.click();
-  }
-
-  async function redeemCode(){
-    const input = document.getElementById('redeemInput');
-    const msg = document.getElementById('redeemMsg');
-    try {
-      const r = await api('/api/redeem', { method:'POST', body:{ code: input.value.trim() } });
-      const a = document.createElement('a'); a.href = r.url; a.download=''; a.click();
-      msg.textContent = t('redeem_success'); msg.className = 'redeem-msg ok';
-      input.value = '';
-      await loadImages();
-    } catch(e){
-      msg.textContent = e.message; msg.className = 'redeem-msg err';
-    }
   }
 
   // ---------- Login / Registrierung ----------
@@ -2130,13 +2104,13 @@
   }
 
   async function renderCartView(){
-    const items = images.filter(img => cart.has(img.id) && !img.free && !img.purchased);
+    const items = images.filter(img => cart.has(img.id) && !img.sold && !img.purchased);
     const listEl = document.getElementById('cartItemsList'), emptyEl = document.getElementById('cartEmpty'), summaryEl = document.getElementById('cartSummary');
     if(items.length === 0){ listEl.innerHTML=''; emptyEl.style.display='block'; summaryEl.style.display='none'; return; }
     emptyEl.style.display='none'; summaryEl.style.display='block';
     listEl.innerHTML = items.map(img => `
       <div class="cart-item">${mediaTagHtml(img,{fill:true})}
-        <div style="flex:1;"><div>${img.name || (img.type==='video'?'Video':'Bild')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${fmt(img.price)}</div></div>
+        <div style="flex:1;"><div>${img.name || (coverPhoto(img).type==='video'?'Video':'Produkt')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${fmt(img.price)}</div></div>
         <button class="btn muted" style="padding:6px 12px; font-size:11px;" onclick="toggleCart('${img.id}'); renderCartView();">${t('remove_btn')}</button>
       </div>`).join('');
 
@@ -2200,14 +2174,14 @@
   // ---------- Konto ----------
   let lastMyPurchases = [];
   function exportMyPurchasesCsv(){
-    if(lastMyPurchases.length === 0){ alert('Du hast noch keine Bilder gekauft.'); return; }
-    const header = ['Bildname','Preis','Gekauft am'];
-    const rows = lastMyPurchases.map(img => [img.name, img.free ? 'Gratis' : fmt(img.price), new Date(img.createdAt).toLocaleDateString('de-DE')]);
+    if(lastMyPurchases.length === 0){ alert('Du hast noch nichts gekauft.'); return; }
+    const header = ['Produkt','Preis','Gekauft am'];
+    const rows = lastMyPurchases.map(img => [img.name, fmt(img.price), new Date(img.createdAt).toLocaleDateString('de-DE')]);
     const csv = [header, ...rows].map(row => row.map(cell => `"${String(cell||'').replace(/"/g,'""')}"`).join(';')).join('\n');
     const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'meine-lumora-bilder.csv';
+    a.href = url; a.download = 'meine-lumora-bestellungen.csv';
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
@@ -2237,7 +2211,7 @@
       document.getElementById('purchasesSection').style.display = 'block';
       const grid = document.getElementById('purchasesGrid'), empty = document.getElementById('purchasesEmpty');
       if(r.images.length === 0){ grid.innerHTML=''; empty.style.display='block'; }
-      else { empty.style.display='none'; grid.innerHTML = r.images.map(img => `<div class="frame"><div class="imgwrap" onclick="openLightbox('${img.id}')">${mediaTagHtml(img)}</div><div class="frame-foot" style="flex-direction:column; align-items:stretch; gap:8px;"><div style="font-size:12.5px; font-weight:500;">${img.name||''}</div><button class="dl-btn wide" onclick="event.stopPropagation(); downloadImage('${img.id}')">${t('download_btn')}</button></div></div>`).join(''); }
+      else { empty.style.display='none'; grid.innerHTML = r.images.map(img => `<div class="frame"><div class="imgwrap" onclick="openLightbox('${img.id}')">${mediaTagHtml(img)}</div><div class="frame-foot" style="flex-direction:column; align-items:stretch; gap:4px;"><div style="font-size:12.5px; font-weight:500;">${img.name||''}</div><div style="font-family:'Space Mono',monospace; font-size:11px; color:var(--green);">✓ Gekauft — ${fmt(img.price)}</div></div></div>`).join(''); }
 
       document.getElementById('favoritesSection').style.display = 'block';
       const favR = await api('/api/favorites');
@@ -2267,6 +2241,7 @@
   // ---------- Lightbox ----------
   function openLightbox(id){
     lightboxId = id;
+    lightboxPhotoIndex = 0;
     document.getElementById('lightbox').classList.add('show');
     renderLightboxInfo();
     document.addEventListener('keydown', lbKey);
@@ -2285,14 +2260,6 @@
     } catch(e){ alert(e.message); }
   }
 
-  function copyCode(code, el){
-    navigator.clipboard.writeText(code).then(() => {
-      const old = el.textContent;
-      el.textContent = '✓';
-      setTimeout(() => { el.textContent = old; }, 1200);
-    }).catch(()=>{});
-  }
-
   function copyShareLink(id){
     const url = window.location.origin + window.location.pathname + '#img=' + id;
     navigator.clipboard.writeText(url).then(() => {
@@ -2301,23 +2268,30 @@
     }).catch(()=>{});
   }
   function lbKey(e){ if(e.key==='Escape') closeLightbox(); if(e.key==='ArrowRight') lightboxStep(1); if(e.key==='ArrowLeft') lightboxStep(-1); }
-  function lightboxStep(dir){ const idx = images.findIndex(x=>x.id===lightboxId); if(idx===-1) return; lightboxId = images[(idx+dir+images.length)%images.length].id; renderLightboxInfo(); }
+  function lightboxStep(dir){ const idx = images.findIndex(x=>x.id===lightboxId); if(idx===-1) return; lightboxId = images[(idx+dir+images.length)%images.length].id; lightboxPhotoIndex = 0; renderLightboxInfo(); }
   function renderLightboxInfo(){
     const img = images.find(x => x.id === lightboxId);
     if(!img){ closeLightbox(); return; }
     const idx = images.findIndex(x => x.id === lightboxId);
-    document.getElementById('lightboxMedia').innerHTML = mediaTagHtml(img, { controls:true, fill:false });
-    document.getElementById('lightboxProtect').style.display = img.type==='video' ? 'none' : 'block';
-    document.getElementById('lightboxWatermark').innerHTML = img.canDownload ? '' : watermarkSpans();
+    if(lightboxPhotoIndex >= img.photos.length) lightboxPhotoIndex = 0;
+    document.getElementById('lightboxMedia').innerHTML = mediaTagHtml(img, { controls:true, fill:false, photo: img.photos[lightboxPhotoIndex] });
+    const thumbsEl = document.getElementById('lightboxThumbs');
+    if(thumbsEl){
+      thumbsEl.innerHTML = img.photos.length > 1 ? img.photos.map((p,i) => `<img src="${p.url}" class="${i===lightboxPhotoIndex?'active':''}" onclick="event.stopPropagation(); lightboxPhotoIndex=${i}; renderLightboxInfo();">`).join('') : '';
+    }
     const nameEl = document.getElementById('lightboxImageName');
     if(nameEl) nameEl.textContent = img.name || '';
+    const descEl = document.getElementById('lightboxDescription');
+    if(descEl) descEl.textContent = img.description || '';
     const priceEl = document.getElementById('lightboxPrice');
-    priceEl.textContent = img.free ? 'Gratis' : img.purchased ? 'Gekauft' : fmt(img.price);
-    priceEl.className = 'lb-price' + ((img.free||img.purchased)?' free':'');
+    priceEl.textContent = img.sold ? 'Verkauft' : img.purchased ? 'Gekauft' : fmt(img.price);
+    priceEl.className = 'lb-price' + ((img.sold||img.purchased)?' free':'');
     const inCart = cart.has(img.id);
-    document.getElementById('lightboxAction').innerHTML = (img.canDownload
-      ? `<button class="dl-btn" onclick="downloadImage('${img.id}')">${t('download_btn')}</button>`
-      : `<button class="cart-btn ${inCart?'in-cart':''}" onclick="toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`)
+    document.getElementById('lightboxAction').innerHTML = (img.sold
+      ? `<button class="dl-btn" disabled>Verkauft</button>`
+      : img.purchased
+        ? `<button class="dl-btn" disabled>✓ Gekauft</button>`
+        : `<button class="cart-btn ${inCart?'in-cart':''}" onclick="toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`)
       + ` <button class="btn muted" id="shareLinkBtn" style="padding:8px 12px; font-size:12px;" onclick="copyShareLink('${img.id}')">🔗 Teilen</button>`
       + (role() !== 'guest' ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="reportImage('${img.id}')">🚩 Melden</button>` : '');
     document.getElementById('lightboxCounter').textContent = (idx+1)+' / '+images.length;
@@ -2328,9 +2302,9 @@
   async function renderLightboxReviews(img){
     const box = document.getElementById('lightboxReviews');
     let formHtml = '';
-    if(img.canDownload && role() !== 'guest'){
+    if(img.purchased && role() !== 'guest'){
       formHtml = `
-        <p style="font-size:12px; color:var(--muted); margin:0 0 4px;">Wie findest du dieses Bild?</p>
+        <p style="font-size:12px; color:var(--muted); margin:0 0 4px;">Wie findest du dieses Produkt?</p>
         <div class="star-picker" id="starPicker">${[1,2,3,4,5].map(n=>`<span data-n="${n}" onclick="setStarRating(${n})">★</span>`).join('')}</div>
         <textarea id="reviewComment" placeholder="Kurze Rezension (optional)" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:9px 11px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif; margin-bottom:8px; resize:vertical; min-height:50px;"></textarea>
         <button class="btn solid" style="padding:8px 16px; font-size:12px;" onclick="submitReview('${img.id}')">Bewertung abschicken</button>
@@ -2387,22 +2361,54 @@
     } catch(e){}
   }
 
-  // ---------- Upload ----------
+  // ---------- Produkt einstellen ----------
+  let pendingPhotoFiles = [];
   function handleFiles(fileList){
     if(!fileList || fileList.length===0) return;
-    [...fileList].forEach(file => {
-      if(!file.type.startsWith('image/') && !file.type.startsWith('video/')){ alert('Bitte nur Bild- oder Videodateien auswählen.'); return; }
+    const valid = [...fileList].filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+    if(valid.length !== fileList.length) alert('Nur Bild- oder Videodateien werden akzeptiert.');
+    pendingPhotoFiles = pendingPhotoFiles.concat(valid).slice(0, 8);
+    renderPhotoPreview();
+  }
+  function renderPhotoPreview(){
+    const el = document.getElementById('newProdPhotoPreview');
+    if(!el) return;
+    el.innerHTML = pendingPhotoFiles.map((f,i) => `
+      <div style="position:relative;">
+        <img src="${URL.createObjectURL(f)}" style="width:60px; height:60px; object-fit:cover; border-radius:8px; display:block;">
+        <span onclick="removePendingPhoto(${i})" style="position:absolute; top:-6px; right:-6px; background:var(--danger); color:#fff; border-radius:50%; width:18px; height:18px; font-size:11px; display:flex; align-items:center; justify-content:center; cursor:pointer;">✕</span>
+      </div>`).join('');
+  }
+  function removePendingPhoto(i){ pendingPhotoFiles.splice(i, 1); renderPhotoPreview(); }
+
+  function fileToDataUrl(file){
+    return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      reader.onload = async (ev) => {
-        try {
-          await api('/api/images', { method:'POST', body:{ dataUrl: ev.target.result } });
-          await loadImages();
-        } catch(e){ alert('Upload fehlgeschlagen: ' + e.message); }
-      };
-      reader.onerror = () => alert('Datei "'+file.name+'" konnte nicht gelesen werden.');
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('Datei "'+file.name+'" konnte nicht gelesen werden.'));
       reader.readAsDataURL(file);
     });
   }
+
+  async function submitNewProduct(){
+    const msgEl = document.getElementById('newProductMsg');
+    const name = document.getElementById('newProdName').value.trim();
+    const description = document.getElementById('newProdDescription').value.trim();
+    const price = parseFloat(document.getElementById('newProdPrice').value);
+    if(!name){ msgEl.textContent = 'Bitte einen Titel eingeben.'; msgEl.className = 'redeem-msg err'; return; }
+    if(pendingPhotoFiles.length === 0){ msgEl.textContent = 'Bitte mindestens ein Foto hinzufügen.'; msgEl.className = 'redeem-msg err'; return; }
+    try {
+      const photos = await Promise.all(pendingPhotoFiles.map(fileToDataUrl));
+      await api('/api/images', { method:'POST', body:{ name, description, price: isNaN(price) ? undefined : price, photos } });
+      pendingPhotoFiles = []; renderPhotoPreview();
+      document.getElementById('newProdName').value = '';
+      document.getElementById('newProdDescription').value = '';
+      document.getElementById('newProdPrice').value = '9.99';
+      msgEl.textContent = 'Produkt eingestellt!'; msgEl.className = 'redeem-msg ok';
+      await loadImages();
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
+  }
+
   document.getElementById('fileInput').addEventListener('change', e => { handleFiles(e.target.files); e.target.value=''; });
   const dz = document.getElementById('dropzone');
   dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor='var(--amber)'; });

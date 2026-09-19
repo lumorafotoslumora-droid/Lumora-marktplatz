@@ -13,7 +13,6 @@ const UPLOADS_DIR = path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const ADMIN_NAME = 'Matic';
-const GRACE_PERIOD_MS = 24 * 60 * 60 * 1000;
 const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','ru','ar','zh','ja','ko','hi'];
 
 // Verzeichnisse sicherstellen (wichtig, falls der Ordner z.B. von GitHub leer war
@@ -237,17 +236,19 @@ function sendVerificationEmail(toEmail, verifyUrl, lang){
   return sendEmail(toEmail, et(lang,'verify_subject'), html);
 }
 
-function sendRaffleWinnerEmail(toEmail, code, siteUrl, lang){
+function sendRaffleWinnerEmail(toEmail, productName, siteUrl, lang){
   lang = lang || 'de';
+  const contactLine = lang === 'de'
+    ? 'Wir melden uns in Kürze bei dir per E-Mail, um die Übergabe zu klären.'
+    : 'We will contact you by email shortly to arrange the handover.';
+  const visitLabel = lang === 'de' ? 'Zur Website' : 'Visit the site';
   const html = `
     <div style="font-family:sans-serif; max-width:480px; margin:0 auto;">
       <h2>🎉 ${et(lang,'winner_title')}</h2>
       <p>${et(lang,'winner_body')}</p>
-      <p>${et(lang,'winner_code_label')}</p>
-      <p style="font-size:26px; font-weight:bold; letter-spacing:4px; background:#f0f0f0; padding:14px 18px; border-radius:8px; display:inline-block;">${code}</p>
-      <p><a href="${siteUrl}" style="background:#8f97ff; color:#141220; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block; margin-top:10px;">${et(lang,'winner_button')}</a></p>
-      <p style="color:#d9694f; font-weight:bold; margin-top:16px;">${et(lang,'winner_warning')}</p>
-      <p>${et(lang,'winner_hint')}</p>
+      <p style="font-size:20px; font-weight:bold; background:#f0f0f0; padding:14px 18px; border-radius:8px; display:inline-block;">${productName}</p>
+      <p>${contactLine}</p>
+      <p><a href="${siteUrl}" style="background:#8f97ff; color:#141220; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block; margin-top:10px;">${visitLabel}</a></p>
       <p style="margin-top:24px;">${et(lang,'signoff')}</p>
     </div>`;
   return sendEmail(toEmail, et(lang,'winner_subject'), html);
@@ -380,7 +381,6 @@ function isValidBirthday(str){
 
 // ---------- Hilfsfunktionen ----------
 function genId(){ return crypto.randomBytes(9).toString('hex'); }
-function genCode(){ return String(1000000 + Math.floor(Math.random() * 9000000)); }
 
 function hashPassword(password){
   const salt = crypto.randomBytes(16).toString('hex');
@@ -450,17 +450,6 @@ function sendJson(res, status, obj){
   res.end(body);
 }
 
-function purgeExpiredGrace(){
-  const now = Date.now();
-  let changed = false;
-  db.images.forEach(img => {
-    const before = img.graceCodes.length;
-    img.graceCodes = img.graceCodes.filter(g => g.expires > now);
-    if(img.graceCodes.length !== before) changed = true;
-  });
-  if(changed) saveDB(db);
-}
-
 function publicUser(u){
   return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de' };
 }
@@ -482,13 +471,12 @@ function publicImage(img, user){
   const isNew = (Date.now() - new Date(img.createdAt).getTime()) < 3 * 24 * 60 * 60 * 1000;
   const out = {
     id: img.id,
-    name: img.name || 'Unbenanntes Bild',
-    url: '/uploads/' + img.filename,
-    type: img.type,
+    name: img.name || 'Unbenanntes Produkt',
+    description: img.description || '',
+    photos: (img.photos || []).map(p => ({ url: '/uploads/' + p.filename, type: p.type })),
     price: img.price,
-    free: img.free,
+    sold: !!img.sold,
     purchased,
-    canDownload: img.free || purchased,
     uploadedByName: img.uploadedByName,
     createdAt: img.createdAt,
     isFavorite: user ? (user.favorites || []).includes(img.id) : false,
@@ -500,8 +488,6 @@ function publicImage(img, user){
     isBestseller: computeBestsellerId() === img.id
   };
   if(admin || isOwner){
-    out.code = img.code;
-    out.graceCodes = img.graceCodes;
     out.canManage = true;
     out.canSetPrice = admin || isOwner;
     out.canDelete = admin || isOwner;
@@ -581,7 +567,7 @@ function stripeGet(path){
 function computeTotals(imageIds, user){
   const items = imageIds
     .map(id => db.images.find(i => i.id === id))
-    .filter(img => img && !img.free && !db.purchases.some(p => p.userId === user.id && p.imageId === img.id))
+    .filter(img => img && !img.sold)
     .map(img => ({ id: img.id, price: img.price }));
 
   const promos = db.promos;
@@ -757,35 +743,42 @@ async function handleApi(req, res, pathname, method, parsed){
 
   // ---- Bilder / Videos ----
   if(pathname === '/api/images' && method === 'GET'){
-    purgeExpiredGrace();
     return sendJson(res, 200, { images: db.images.map(img => publicImage(img, user)) });
   }
 
   if(pathname === '/api/images' && method === 'POST'){
     if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
     const body = await readJsonBody(req);
-    const dataUrl = body.dataUrl || '';
-    const match = dataUrl.match(/^data:(.+?);base64,(.+)$/);
-    if(!match) return sendJson(res, 400, { error: 'Ungültige Datei.' });
-    const mime = match[1];
-    const base64 = match[2];
-    const isVideo = mime.startsWith('video/');
-    const isImage = mime.startsWith('image/');
-    if(!isVideo && !isImage) return sendJson(res, 400, { error: 'Nur Bild- oder Videodateien erlaubt.' });
+    const dataUrls = Array.isArray(body.photos) ? body.photos : [];
+    if(dataUrls.length === 0) return sendJson(res, 400, { error: 'Bitte mindestens ein Foto hochladen.' });
+    if(dataUrls.length > 8) return sendJson(res, 400, { error: 'Maximal 8 Fotos pro Produkt.' });
 
-    const ext = (mime.split('/')[1] || 'bin').replace('quicktime','mov').split('+')[0];
-    const filename = genId() + '.' + ext;
-    fs.writeFileSync(path.join(UPLOADS_DIR, filename), Buffer.from(base64, 'base64'));
+    const photos = [];
+    for(const dataUrl of dataUrls){
+      const match = (dataUrl || '').match(/^data:(.+?);base64,(.+)$/);
+      if(!match) return sendJson(res, 400, { error: 'Ungültige Datei.' });
+      const mime = match[1];
+      const base64 = match[2];
+      const isVideo = mime.startsWith('video/');
+      const isImage = mime.startsWith('image/');
+      if(!isVideo && !isImage) return sendJson(res, 400, { error: 'Nur Bild- oder Videodateien erlaubt.' });
+      const ext = (mime.split('/')[1] || 'bin').replace('quicktime','mov').split('+')[0];
+      const filename = genId() + '.' + ext;
+      fs.writeFileSync(path.join(UPLOADS_DIR, filename), Buffer.from(base64, 'base64'));
+      photos.push({ filename, mime, type: isVideo ? 'video' : 'image' });
+    }
 
     const rawName = (body.name || '').trim();
-    const cleanName = rawName ? rawName.replace(/\.[^/.]+$/, '').slice(0, 80) : ('Bild ' + (db.images.length + 1));
+    const cleanName = rawName ? rawName.slice(0, 80) : ('Produkt ' + (db.images.length + 1));
+    const price = Number(body.price);
 
     const img = {
-      id: genId(), filename, mime, type: isVideo ? 'video' : 'image',
+      id: genId(), photos,
       name: cleanName,
-      price: 4.99, free: false,
+      description: (body.description || '').trim().slice(0, 1000),
+      price: (isFinite(price) && price >= 0) ? price : 4.99,
+      sold: false,
       uploadedBy: user.id, uploadedByName: user.name,
-      code: genCode(), graceCodes: [],
       createdAt: new Date().toISOString()
     };
     db.images.push(img);
@@ -804,7 +797,7 @@ async function handleApi(req, res, pathname, method, parsed){
     if(method === 'DELETE'){
       db.images = db.images.filter(i => i.id !== img.id);
       db.purchases = db.purchases.filter(p => p.imageId !== img.id);
-      try { fs.unlinkSync(path.join(UPLOADS_DIR, img.filename)); } catch(e){}
+      (img.photos || []).forEach(p => { try { fs.unlinkSync(path.join(UPLOADS_DIR, p.filename)); } catch(e){} });
       saveDB(db);
       return sendJson(res, 200, { ok: true });
     }
@@ -813,49 +806,20 @@ async function handleApi(req, res, pathname, method, parsed){
       if(typeof body.name === 'string' && body.name.trim()){
         img.name = body.name.trim().slice(0, 80); // Name darf Admin ODER der besitzende Verkäufer ändern
       }
+      if(typeof body.description === 'string'){
+        img.description = body.description.trim().slice(0, 1000);
+      }
       if(Array.isArray(body.tags)){
         img.tags = body.tags.map(t => String(t).trim().toLowerCase().slice(0, 20)).filter(Boolean).slice(0, 8);
       }
-      if(typeof body.free === 'boolean' || typeof body.price === 'number'){
+      if(typeof body.price === 'number' || typeof body.sold === 'boolean'){
         if(!(isAdmin(user) || img.uploadedBy === user.id)) return sendJson(res, 403, { error: 'Keine Berechtigung, Preise zu ändern.' });
-        if(typeof body.free === 'boolean') img.free = body.free;
         if(typeof body.price === 'number' && body.price >= 0) img.price = body.price;
+        if(typeof body.sold === 'boolean') img.sold = body.sold;
       }
       saveDB(db);
       return sendJson(res, 200, { image: publicImage(img, user) });
     }
-  }
-
-  const sentMatch = pathname.match(/^\/api\/images\/([a-f0-9]+)\/mark-sent$/);
-  if(sentMatch && method === 'POST'){
-    const img = db.images.find(i => i.id === sentMatch[1]);
-    if(!img) return sendJson(res, 404, { error: 'Nicht gefunden.' });
-    if(!user || !(isAdmin(user) || img.uploadedBy === user.id)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
-    img.graceCodes.push({ code: img.code, expires: Date.now() + GRACE_PERIOD_MS });
-    img.code = genCode();
-    saveDB(db);
-    return sendJson(res, 200, { image: publicImage(img, user) });
-  }
-
-  if(pathname === '/api/redeem' && method === 'POST'){
-    purgeExpiredGrace();
-    const body = await readJsonBody(req);
-    const code = (body.code || '').trim();
-    if(!/^\d{7}$/.test(code)) return sendJson(res, 400, { error: 'Bitte einen 7-stelligen Code eingeben.' });
-
-    let img = db.images.find(i => i.code === code);
-    if(!img){
-      img = db.images.find(i => i.graceCodes.some(g => g.code === code));
-      if(img) img.graceCodes = img.graceCodes.filter(g => g.code !== code);
-    }
-    if(!img) return sendJson(res, 404, { error: 'Dieser Code ist ungültig oder abgelaufen.' });
-    saveDB(db);
-
-    if(user && !db.purchases.some(p => p.userId === user.id && p.imageId === img.id)){
-      db.purchases.push({ userId: user.id, imageId: img.id, purchasedAt: new Date().toISOString(), pricePaid: 0, source: 'code' });
-      saveDB(db);
-    }
-    return sendJson(res, 200, { url: '/uploads/' + img.filename, image: publicImage(img, user) });
   }
 
   // ---- Gewinnspiel ----
@@ -897,16 +861,15 @@ async function handleApi(req, res, pathname, method, parsed){
     const winner = db.raffleEntries[winnerIdx];
     const losers = db.raffleEntries.filter((_, i) => i !== winnerIdx);
 
-    // Automatisch wie "Gesendet" klicken: aktueller Code bleibt 24h gültig, neuer Code wird erzeugt
-    const wonCode = img.code;
-    img.graceCodes.push({ code: wonCode, expires: Date.now() + GRACE_PERIOD_MS });
-    img.code = genCode();
+    // Gewonnenes Produkt reservieren — der Admin meldet sich beim Gewinner, um es zu übergeben.
+    img.sold = true;
+    img.wonByEmail = winner.email;
     db.raffleEntries = []; // Lostopf für die nächste Runde zurücksetzen
     saveDB(db);
 
     const proto = req.headers['x-forwarded-proto'] || 'http';
     const siteUrl = `${proto}://${req.headers.host}/`;
-    const emailSent = await sendRaffleWinnerEmail(winner.email, wonCode, siteUrl, winner.language);
+    const emailSent = await sendRaffleWinnerEmail(winner.email, img.name, siteUrl, winner.language);
 
     let loserEmailsSent = 0;
     for(const loser of losers){
@@ -915,7 +878,7 @@ async function handleApi(req, res, pathname, method, parsed){
       if(ok) loserEmailsSent++;
     }
 
-    return sendJson(res, 200, { winner: winner.email, code: wonCode, emailSent, loserCount: losers.length, loserEmailsSent });
+    return sendJson(res, 200, { winner: winner.email, product: img.name, emailSent, loserCount: losers.length, loserEmailsSent });
   }
   const raffleMatch = pathname.match(/^\/api\/raffle\/entries\/([a-f0-9]+)$/);
   if(raffleMatch && method === 'DELETE'){
@@ -1104,8 +1067,8 @@ async function handleApi(req, res, pathname, method, parsed){
     const body = await readJsonBody(req);
     const img = db.images.find(i => i.id === body.imageId);
     if(!img) return sendJson(res, 404, { error: 'Bild nicht gefunden.' });
-    const purchased = img.free || db.purchases.some(p => p.userId === user.id && p.imageId === img.id);
-    if(!purchased) return sendJson(res, 403, { error: 'Du kannst nur Bilder bewerten, die du besitzt.' });
+    const purchased = db.purchases.some(p => p.userId === user.id && p.imageId === img.id);
+    if(!purchased) return sendJson(res, 403, { error: 'Du kannst nur Produkte bewerten, die du gekauft hast.' });
     const rating = Math.max(1, Math.min(5, Math.round(Number(body.rating) || 0)));
     if(!rating) return sendJson(res, 400, { error: 'Bitte eine Bewertung von 1-5 Sternen angeben.' });
     const comment = (body.comment || '').trim().slice(0, 300);
@@ -1288,12 +1251,14 @@ async function handleApi(req, res, pathname, method, parsed){
     if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
     const body = await readJsonBody(req);
     const totals = computeTotals(body.itemIds || [], user);
-    if(totals.itemIds.length === 0) return sendJson(res, 400, { error: 'Warenkorb ist leer oder alle Bilder sind bereits gekauft.' });
+    if(totals.itemIds.length === 0) return sendJson(res, 400, { error: 'Warenkorb ist leer oder die Produkte sind bereits verkauft.' });
     if(totals.total <= 0){
       // Gesamtbetrag ist 0 (z.B. komplett durch Aktionen abgedeckt) — direkt ohne Stripe abschließen
       if(!db.purchases) db.purchases = [];
       totals.itemIds.forEach(id => {
         if(!db.purchases.some(p => p.userId === user.id && p.imageId === id)) db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid: 0, source: 'checkout-free' });
+        const boughtImg = db.images.find(i => i.id === id);
+        if(boughtImg) boughtImg.sold = true;
       });
       if(totals.usesFirstFree) db.firstFreeUsed[user.id] = true;
       saveDB(db);
@@ -1311,7 +1276,7 @@ async function handleApi(req, res, pathname, method, parsed){
           price_data: {
             currency: 'eur',
             unit_amount: Math.round(totals.total * 100),
-            product_data: { name: `Lumora — ${totals.itemIds.length} Bild${totals.itemIds.length === 1 ? '' : 'er'}` }
+            product_data: { name: `Lumora Marktplatz — ${totals.itemIds.length} Produkt${totals.itemIds.length === 1 ? '' : 'e'}` }
           }
         }]
       });
@@ -1345,6 +1310,8 @@ async function handleApi(req, res, pathname, method, parsed){
           const pricePaid = entry ? Math.round(entry.price * ratio * 100) / 100 : 0;
           db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid, source: 'stripe' });
         }
+        const boughtImg = db.images.find(i => i.id === id);
+        if(boughtImg) boughtImg.sold = true;
       });
       if(pending.usesFirstFree) db.firstFreeUsed[user.id] = true;
       delete db.pendingCheckouts[sessionId];
