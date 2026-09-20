@@ -576,7 +576,7 @@ function publicImage(img, user){
     description: img.description || '',
     photos: (img.photos || []).map(p => ({ url: USE_SUPABASE ? supabasePublicUrl(UPLOADS_BUCKET, p.filename) : ('/uploads/' + p.filename), type: p.type })),
     price: img.price,
-    quantity: typeof img.quantity === 'number' ? img.quantity : 1,
+    quantity: img.quantity === null ? null : (typeof img.quantity === 'number' ? img.quantity : 1),
     sold: !!img.sold,
     purchased,
     uploadedByName: img.uploadedByName,
@@ -603,6 +603,7 @@ function publicImage(img, user){
 }
 
 function decrementStock(img){
+  if(img.quantity === null) return; // unbegrenzt verfügbar — Lagerbestand wird nicht verringert
   const current = typeof img.quantity === 'number' ? img.quantity : 1;
   img.quantity = Math.max(0, current - 1);
   if(img.quantity <= 0) img.sold = true;
@@ -890,6 +891,7 @@ async function handleApi(req, res, pathname, method, parsed){
     const rawName = (body.name || '').trim();
     const cleanName = rawName ? rawName.slice(0, 80) : ('Produkt ' + (db.images.length + 1));
     const price = Number(body.price);
+    const isUnlimited = body.unlimited === true;
     const quantity = Math.floor(Number(body.quantity));
 
     const img = {
@@ -897,7 +899,7 @@ async function handleApi(req, res, pathname, method, parsed){
       name: cleanName,
       description: (body.description || '').trim().slice(0, 1000),
       price: (isFinite(price) && price >= 0) ? price : 4.99,
-      quantity: (isFinite(quantity) && quantity >= 1) ? quantity : 1,
+      quantity: isUnlimited ? null : ((isFinite(quantity) && quantity >= 1) ? quantity : 1),
       sold: false,
       uploadedBy: user.id, uploadedByName: user.name,
       createdAt: new Date().toISOString()
@@ -938,10 +940,13 @@ async function handleApi(req, res, pathname, method, parsed){
       if(Array.isArray(body.tags)){
         img.tags = body.tags.map(t => String(t).trim().toLowerCase().slice(0, 20)).filter(Boolean).slice(0, 8);
       }
-      if(typeof body.price === 'number' || typeof body.quantity === 'number' || typeof body.sold === 'boolean'){
+      if(typeof body.price === 'number' || typeof body.quantity === 'number' || typeof body.sold === 'boolean' || typeof body.unlimited === 'boolean'){
         if(!(isAdmin(user) || img.uploadedBy === user.id)) return sendJson(res, 403, { error: 'Keine Berechtigung, Preise zu ändern.' });
         if(typeof body.price === 'number' && body.price >= 0) img.price = body.price;
-        if(typeof body.quantity === 'number' && body.quantity >= 0){
+        if(body.unlimited === true){
+          img.quantity = null;
+          img.sold = false;
+        } else if(typeof body.quantity === 'number' && body.quantity >= 0){
           img.quantity = Math.floor(body.quantity);
           img.sold = img.quantity <= 0;
         }

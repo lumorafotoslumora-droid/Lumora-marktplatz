@@ -118,7 +118,7 @@ Es gibt **keine öffentliche Registrierung** — der `/api/register`-Endpunkt ex
 
 1. Ein Konto stellt unter "Verwaltung" ein Produkt ein (Titel, Beschreibung, 1–8 Fotos, Preis, Menge).
 2. Andere Konten sehen es in der Galerie, legen es in den Warenkorb und bezahlen über Stripe.
-3. Bei jedem Kauf sinkt die Menge (Lagerbestand) des Produkts um 1. Erst wenn die Menge 0 erreicht, gilt das Produkt als **ausverkauft** (`sold`) und verschwindet aus dem aktiven Angebot der anderen. Solange Menge übrig ist, können auch mehrere verschiedene Käufer dasselbe Produkt kaufen.
+3. Bei jedem Kauf sinkt die Menge (Lagerbestand) des Produkts um 1. Erst wenn die Menge 0 erreicht, gilt das Produkt als **ausverkauft** (`sold`) und verschwindet aus dem aktiven Angebot der anderen. Solange Menge übrig ist, können auch mehrere verschiedene Käufer dasselbe Produkt kaufen. Alternativ kann beim Einstellen auch **"Unbegrenzt verfügbar"** angehakt werden (z.B. für Dienstleistungen oder digitale Produkte) — dann sinkt die Menge nie und das Produkt wird nie automatisch ausverkauft.
 4. Übergabe/Versand klären Käufer und Verkäufer direkt (z.B. über die im Konto hinterlegte E-Mail) — die Website bildet das nicht automatisch ab.
 
 ## Sprachen

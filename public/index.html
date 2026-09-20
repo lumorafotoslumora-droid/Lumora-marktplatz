@@ -369,14 +369,14 @@
       <div class="trust-strip" id="trustStrip" style="display:none;"></div>
     </div>
     <div class="gallery-toolbar">
-      <input type="text" id="gallerySearchInput" placeholder="🔍 Produkte suchen..." oninput="onGallerySearchChange(this.value)">
-      <input type="number" id="galleryMinPrice" placeholder="Min €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
-      <input type="number" id="galleryMaxPrice" placeholder="Max €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
+      <input type="text" id="gallerySearchInput" data-i18n-placeholder="search_placeholder" placeholder="🔍 Produkte suchen..." oninput="onGallerySearchChange(this.value)">
+      <input type="number" id="galleryMinPrice" data-i18n-placeholder="filter_min_price" placeholder="Min €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
+      <input type="number" id="galleryMaxPrice" data-i18n-placeholder="filter_max_price" placeholder="Max €" min="0" style="width:80px;" oninput="onGalleryPriceRangeChange()">
       <select id="gallerySortSelect" onchange="onGallerySortChange(this.value)">
-        <option value="newest">Neueste zuerst</option>
-        <option value="price_asc">Preis aufsteigend</option>
-        <option value="price_desc">Preis absteigend</option>
-        <option value="name">Nach Name</option>
+        <option value="newest" data-i18n="sort_newest">Neueste zuerst</option>
+        <option value="price_asc" data-i18n="sort_price_asc">Preis aufsteigend</option>
+        <option value="price_desc" data-i18n="sort_price_desc">Preis absteigend</option>
+        <option value="name" data-i18n="sort_name">Nach Name</option>
       </select>
     </div>
     <div class="tag-chips" id="tagChips"></div>
@@ -389,7 +389,7 @@
         <h3 data-i18n="raffle_title">Gewinnspiel</h3>
         <p data-i18n="raffle_sub">Trag deine E-Mail ein und nimm an der Verlosung eines Gratisprodukts teil.</p>
         <div class="extra-row">
-          <input type="email" id="raffleInput" placeholder="deine@email.com">
+          <input type="email" id="raffleInput" data-i18n-placeholder="email_placeholder" placeholder="deine@email.com">
           <button class="btn solid" onclick="enterRaffle()" data-i18n="raffle_btn">Teilnehmen</button>
         </div>
         <div class="redeem-msg" id="raffleMsg"></div>
@@ -400,7 +400,7 @@
         <h3 data-i18n="newsletter_title">Newsletter</h3>
         <p data-i18n="newsletter_sub">Trag dich ein und verpasse keine neuen Produkte und Aktionen mehr.</p>
         <div class="extra-row">
-          <input type="email" id="newsletterInput" placeholder="deine@email.com">
+          <input type="email" id="newsletterInput" data-i18n-placeholder="email_placeholder" placeholder="deine@email.com">
           <button class="btn solid" onclick="subscribeNewsletter()" data-i18n="newsletter_btn">Abonnieren</button>
         </div>
         <div class="redeem-msg" id="newsletterSubMsg"></div>
@@ -408,38 +408,38 @@
     </div>
 
     <div class="spotlight-section" id="spotlightSection" style="display:none;">
-      <p class="eyebrow">✨ Produkt des Monats</p>
+      <p class="eyebrow" data-i18n="spotlight_eyebrow">✨ Produkt des Monats</p>
       <div class="spotlight-card" id="spotlightCard"></div>
     </div>
 
     <div class="steps-section">
-      <p class="eyebrow">So funktioniert's</p>
-      <h2 class="section-title">In drei Schritten zu deinem Produkt</h2>
+      <p class="eyebrow" data-i18n="steps_eyebrow">So funktioniert's</p>
+      <h2 class="section-title" data-i18n="steps_title">In drei Schritten zu deinem Produkt</h2>
       <div class="steps-grid">
-        <div class="step-item"><div class="step-num">1</div><h3>Konto erstellen</h3><p>Ein Familienmitglied mit Admin-Zugang richtet dir ein Konto ein.</p></div>
-        <div class="step-item"><div class="step-num">2</div><h3>Produkt aussuchen</h3><p>Durchstöbere die Galerie und filtere nach Preis oder Tags.</p></div>
-        <div class="step-item"><div class="step-num">3</div><h3>Sicher bezahlen</h3><p>Zahlung über Stripe — der Verkäufer wird informiert und übergibt dir das Produkt.</p></div>
+        <div class="step-item"><div class="step-num">1</div><h3 data-i18n="step1_title">Konto erstellen</h3><p data-i18n="step1_desc">Ein Familienmitglied mit Admin-Zugang richtet dir ein Konto ein.</p></div>
+        <div class="step-item"><div class="step-num">2</div><h3 data-i18n="step2_title">Produkt aussuchen</h3><p data-i18n="step2_desc">Durchstöbere die Galerie und filtere nach Preis oder Tags.</p></div>
+        <div class="step-item"><div class="step-num">3</div><h3 data-i18n="step3_title">Sicher bezahlen</h3><p data-i18n="step3_desc">Zahlung über Stripe — der Verkäufer wird informiert und übergibt dir das Produkt.</p></div>
       </div>
     </div>
 
     <div class="features-section">
-      <p class="eyebrow">Warum Lumora?</p>
+      <p class="eyebrow" data-i18n="why_eyebrow">Warum Lumora?</p>
       <div class="features-grid">
-        <div class="feature-item"><div class="feature-icon">🔒</div><h3>Sichere Zahlung</h3><p>Abwicklung über Stripe — deine Zahlungsdaten laufen nie über unseren Server.</p></div>
-        <div class="feature-item"><div class="feature-icon">👪</div><h3>Nur für uns</h3><p>Keine öffentliche Registrierung — Konten gibt's nur für die Familie.</p></div>
-        <div class="feature-item"><div class="feature-icon">⭐</div><h3>Echte Bewertungen</h3><p>Nur von Käufern, die das Produkt wirklich erhalten haben.</p></div>
-        <div class="feature-item"><div class="feature-icon">🎁</div><h3>Regelmäßige Gewinnspiele</h3><p>Immer wieder die Chance auf ein Gratisprodukt.</p></div>
+        <div class="feature-item"><div class="feature-icon">🔒</div><h3 data-i18n="feat1_title">Sichere Zahlung</h3><p data-i18n="feat1_desc">Abwicklung über Stripe — deine Zahlungsdaten laufen nie über unseren Server.</p></div>
+        <div class="feature-item"><div class="feature-icon">👪</div><h3 data-i18n="feat2_title">Nur für uns</h3><p data-i18n="feat2_desc">Keine öffentliche Registrierung — Konten gibt's nur für die Familie.</p></div>
+        <div class="feature-item"><div class="feature-icon">⭐</div><h3 data-i18n="feat3_title">Echte Bewertungen</h3><p data-i18n="feat3_desc">Nur von Käufern, die das Produkt wirklich erhalten haben.</p></div>
+        <div class="feature-item"><div class="feature-icon">🎁</div><h3 data-i18n="feat4_title">Regelmäßige Gewinnspiele</h3><p data-i18n="feat4_desc">Immer wieder die Chance auf ein Gratisprodukt.</p></div>
       </div>
     </div>
 
     <div class="testimonials-section" id="testimonialsSection" style="display:none;">
-      <p class="eyebrow">Kundenstimmen</p>
+      <p class="eyebrow" data-i18n="testimonials_eyebrow">Kundenstimmen</p>
       <div class="testimonials-grid" id="testimonialsGrid"></div>
     </div>
 
     <div class="faq-section">
-      <p class="eyebrow">FAQ</p>
-      <h2 class="section-title">Häufige Fragen</h2>
+      <p class="eyebrow" data-i18n="faq_eyebrow">FAQ</p>
+      <h2 class="section-title" data-i18n="faq_title">Häufige Fragen</h2>
       <div id="faqAccordion"></div>
     </div>
   </section>
@@ -499,19 +499,19 @@
       </div>
       <div id="purchasesSection">
         <p class="eyebrow" data-i18n="my_purchases">Meine Bestellungen</p>
-        <button class="btn muted" style="margin-bottom:14px; font-size:11.5px; padding:6px 12px;" onclick="exportMyPurchasesCsv()">📥 Als Liste exportieren</button>
+        <button class="btn muted" style="margin-bottom:14px; font-size:11.5px; padding:6px 12px;" onclick="exportMyPurchasesCsv()" data-i18n="export_purchases_btn">📥 Als Liste exportieren</button>
         <div class="grid" id="purchasesGrid"></div>
         <div class="empty" id="purchasesEmpty" style="display:none;" data-i18n="no_purchases">Noch nichts gekauft.</div>
       </div>
       <div id="favoritesSection" style="margin-top:36px;">
-        <p class="eyebrow">❤️ Meine Favoriten</p>
+        <p class="eyebrow" data-i18n="favorites_eyebrow">❤️ Meine Favoriten</p>
         <div class="grid" id="favoritesGrid"></div>
-        <div class="empty" id="favoritesEmpty" style="display:none;">Noch keine Favoriten — klick auf das Herz bei einem Produkt in der Galerie.</div>
+        <div class="empty" id="favoritesEmpty" style="display:none;" data-i18n="favorites_empty">Noch keine Favoriten — klick auf das Herz bei einem Produkt in der Galerie.</div>
       </div>
       <div id="recentSection" style="margin-top:36px;">
-        <p class="eyebrow">🕓 Zuletzt angesehen</p>
+        <p class="eyebrow" data-i18n="recent_eyebrow">🕓 Zuletzt angesehen</p>
         <div class="grid" id="recentGrid"></div>
-        <div class="empty" id="recentEmpty" style="display:none;">Noch nichts angesehen.</div>
+        <div class="empty" id="recentEmpty" style="display:none;" data-i18n="recent_empty">Noch nichts angesehen.</div>
       </div>
     </div>
   </section>
@@ -531,11 +531,11 @@
   </section>
 
   <section class="view" id="view-admin">
-    <div class="hero" style="margin-bottom:24px;"><p class="eyebrow">Verwaltung</p><h2 style="font-size:28px;">Produkte verwalten</h2></div>
+    <div class="hero" style="margin-bottom:24px;"><p class="eyebrow" data-i18n="admin_eyebrow">Verwaltung</p><h2 style="font-size:28px;" data-i18n="admin_products_title">Produkte verwalten</h2></div>
 
     <div class="admin-tabs">
-      <button class="active" data-atab="content" onclick="switchAdminTab('content')">🖼️ Produkte</button>
-      <button data-atab="sales" onclick="switchAdminTab('sales')">📊 Verkäufe</button>
+      <button class="active" data-atab="content" onclick="switchAdminTab('content')" data-i18n="atab_products">🖼️ Produkte</button>
+      <button data-atab="sales" onclick="switchAdminTab('sales')" data-i18n="atab_sales">📊 Verkäufe</button>
       <button id="atab-dashboard" data-atab="dashboard" onclick="switchAdminTab('dashboard')">📈 Übersicht</button>
       <button id="atab-flags" data-atab="flags" onclick="switchAdminTab('flags')">🚩 Meldungen</button>
       <button id="atab-promo" data-atab="promo" onclick="switchAdminTab('promo')">💸 Aktionen</button>
@@ -549,46 +549,50 @@
 
     <div class="admin-subview active" id="admintab-content">
       <div class="panel-card show" id="newProductPanel" style="max-width:520px; margin-bottom:24px;">
-        <h3>➕ Neues Produkt einstellen</h3>
-        <div class="field"><label>Titel</label><input type="text" id="newProdName" placeholder="z.B. Vintage Lederjacke"></div>
-        <div class="field"><label>Beschreibung</label><textarea id="newProdDescription" rows="3" placeholder="Zustand, Größe, Material, Details..." style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:11px 13px; font-size:14px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif;"></textarea></div>
-        <div class="field"><label>Preis (€)</label><input type="number" id="newProdPrice" min="0" step="0.5" value="9.99"></div>
-        <div class="field"><label>Menge (wie viele hast du?)</label><input type="number" id="newProdQuantity" min="1" step="1" value="1"></div>
+        <h3 data-i18n="newproduct_title">➕ Neues Produkt einstellen</h3>
+        <div class="field"><label data-i18n="label_title">Titel</label><input type="text" id="newProdName" data-i18n-placeholder="newprod_name_placeholder" placeholder="z.B. Vintage Lederjacke"></div>
+        <div class="field"><label data-i18n="label_description">Beschreibung</label><textarea id="newProdDescription" rows="3" data-i18n-placeholder="newprod_desc_placeholder" placeholder="Zustand, Größe, Material, Details..." style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:11px 13px; font-size:14px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif;"></textarea></div>
+        <div class="field"><label data-i18n="label_price_eur">Preis (€)</label><input type="number" id="newProdPrice" min="0" step="0.5" value="9.99"></div>
         <div class="field">
-          <label>Fotos (mind. 1, max. 8)</label>
-          <div id="dropzone" onclick="document.getElementById('fileInput').click()">＋ Fotos oder Videos auswählen oder hierher ziehen</div>
+          <label data-i18n="label_quantity">Menge (wie viele hast du?)</label>
+          <input type="number" id="newProdQuantity" min="1" step="1" value="1">
+          <label style="display:flex; align-items:center; gap:6px; margin-top:6px; font-size:12.5px; font-weight:400;"><input type="checkbox" id="newProdUnlimited" onchange="document.getElementById('newProdQuantity').disabled = this.checked;" style="width:auto;"> <span data-i18n="label_unlimited">Unbegrenzt verfügbar</span></label>
+        </div>
+        <div class="field">
+          <label data-i18n="label_photos">Fotos (mind. 1, max. 8)</label>
+          <div id="dropzone" onclick="document.getElementById('fileInput').click()" data-i18n="dropzone_text">＋ Fotos oder Videos auswählen oder hierher ziehen</div>
           <input type="file" id="fileInput" accept="image/*,video/*" multiple>
           <div id="newProdPhotoPreview" style="display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;"></div>
         </div>
-        <button class="btn solid" style="width:100%; margin-top:8px;" onclick="submitNewProduct()">Produkt einstellen</button>
+        <button class="btn solid" style="width:100%; margin-top:8px;" onclick="submitNewProduct()" data-i18n="submit_product_btn">Produkt einstellen</button>
         <div class="redeem-msg" id="newProductMsg" style="margin-top:10px;"></div>
       </div>
       <div class="grid" id="adminGrid"></div>
-      <div class="empty" id="adminEmpty" style="display:none;">Noch keine Produkte eingestellt.</div>
+      <div class="empty" id="adminEmpty" style="display:none;" data-i18n="admin_empty_products">Noch keine Produkte eingestellt.</div>
     </div>
 
     <div class="admin-subview" id="admintab-sales">
       <div class="panel-card show" id="salesPanel" style="max-width:100%;">
-        <h3 id="salesTitle">📊 Verkäufe</h3>
+        <h3 id="salesTitle" data-i18n="atab_sales">📊 Verkäufe</h3>
         <div class="stat-row" style="margin:14px 0 20px;">
-          <div class="stat-tile"><div class="num" id="salesCount">0</div><div class="label">Verkäufe</div></div>
-          <div class="stat-tile"><div class="num" id="salesRevenue">0,00 €</div><div class="label">Umsatz gesamt</div></div>
+          <div class="stat-tile"><div class="num" id="salesCount">0</div><div class="label" data-i18n="stat_sales_count">Verkäufe</div></div>
+          <div class="stat-tile"><div class="num" id="salesRevenue">0,00 €</div><div class="label" data-i18n="stat_sales_revenue">Umsatz gesamt</div></div>
         </div>
-        <button class="btn muted" style="margin-bottom:16px;" onclick="exportSalesCsv()">📥 Als CSV exportieren</button>
+        <button class="btn muted" style="margin-bottom:16px;" onclick="exportSalesCsv()" data-i18n="export_csv_btn">📥 Als CSV exportieren</button>
         <div style="overflow-x:auto;">
           <table style="width:100%; border-collapse:collapse; font-size:13px;">
             <thead>
               <tr style="text-align:left; border-bottom:1px solid var(--line); color:var(--muted); font-family:'Space Mono',monospace; font-size:11px; text-transform:uppercase;">
-                <th style="padding:8px 10px;">Käufer</th>
-                <th style="padding:8px 10px;">Produkt</th>
-                <th style="padding:8px 10px;" id="salesUploaderCol">Hochgeladen von</th>
-                <th style="padding:8px 10px;">Preis</th>
-                <th style="padding:8px 10px;">Datum</th>
+                <th style="padding:8px 10px;" data-i18n="sales_col_buyer">Käufer</th>
+                <th style="padding:8px 10px;" data-i18n="sales_col_product">Produkt</th>
+                <th style="padding:8px 10px;" id="salesUploaderCol" data-i18n="sales_col_uploader">Hochgeladen von</th>
+                <th style="padding:8px 10px;" data-i18n="sales_col_price">Preis</th>
+                <th style="padding:8px 10px;" data-i18n="sales_col_date">Datum</th>
               </tr>
             </thead>
             <tbody id="salesTableBody"></tbody>
           </table>
-          <div class="empty" id="salesEmpty" style="display:none; margin-top:14px;">Noch keine Verkäufe.</div>
+          <div class="empty" id="salesEmpty" style="display:none; margin-top:14px;" data-i18n="sales_empty">Noch keine Verkäufe.</div>
         </div>
       </div>
     </div>
@@ -789,7 +793,34 @@
       role_admin:"Admin", role_customer:"Kunde",
       stat_purchased:"Gekaufte Produkte", stat_member_since:"Mitglied seit", greeting_hello:"Hallo, {name} 👋",
       err_invalid_email:"Diese E-Mail-Adresse sieht ungültig aus.", redeem_success:"Code gültig! Dein Bild wird heruntergeladen.", raffle_already:"Du nimmst bereits teil — viel Glück!", raffle_success:"Danke! Du nimmst jetzt an der Verlosung teil.", newsletter_already:"Du bist schon angemeldet!", newsletter_success:"Danke für dein Abo!",
-      chat_fallback:"Das weiß ich leider nicht genau. Schreib uns gerne über <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — wir melden uns!"
+      chat_fallback:"Das weiß ich leider nicht genau. Schreib uns gerne über <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — wir melden uns!",
+      search_placeholder:"🔍 Produkte suchen...", filter_min_price:"Min €", filter_max_price:"Max €",
+      sort_newest:"Neueste zuerst", sort_price_asc:"Preis aufsteigend", sort_price_desc:"Preis absteigend", sort_name:"Nach Name",
+      email_placeholder:"deine@email.com",
+      spotlight_eyebrow:"✨ Produkt des Monats",
+      steps_eyebrow:"So funktioniert's", steps_title:"In drei Schritten zu deinem Produkt",
+      step1_title:"Konto erstellen", step1_desc:"Ein Familienmitglied mit Admin-Zugang richtet dir ein Konto ein.",
+      step2_title:"Produkt aussuchen", step2_desc:"Durchstöbere die Galerie und filtere nach Preis oder Tags.",
+      step3_title:"Sicher bezahlen", step3_desc:"Zahlung über Stripe — der Verkäufer wird informiert und übergibt dir das Produkt.",
+      why_eyebrow:"Warum Lumora?",
+      feat1_title:"Sichere Zahlung", feat1_desc:"Abwicklung über Stripe — deine Zahlungsdaten laufen nie über unseren Server.",
+      feat2_title:"Nur für uns", feat2_desc:"Keine öffentliche Registrierung — Konten gibt's nur für die Familie.",
+      feat3_title:"Echte Bewertungen", feat3_desc:"Nur von Käufern, die das Produkt wirklich erhalten haben.",
+      feat4_title:"Regelmäßige Gewinnspiele", feat4_desc:"Immer wieder die Chance auf ein Gratisprodukt.",
+      testimonials_eyebrow:"Kundenstimmen",
+      faq_eyebrow:"FAQ", faq_title:"Häufige Fragen",
+      favorites_eyebrow:"❤️ Meine Favoriten", favorites_empty:"Noch keine Favoriten — klick auf das Herz bei einem Produkt in der Galerie.",
+      recent_eyebrow:"🕓 Zuletzt angesehen", recent_empty:"Noch nichts angesehen.",
+      export_purchases_btn:"📥 Als Liste exportieren",
+      admin_eyebrow:"Verwaltung", admin_products_title:"Produkte verwalten", atab_products:"🖼️ Produkte", atab_sales:"📊 Verkäufe",
+      newproduct_title:"➕ Neues Produkt einstellen", label_title:"Titel", newprod_name_placeholder:"z.B. Vintage Lederjacke",
+      label_description:"Beschreibung", newprod_desc_placeholder:"Zustand, Größe, Material, Details...",
+      label_price_eur:"Preis (€)", label_quantity:"Menge (wie viele hast du?)", label_unlimited:"Unbegrenzt verfügbar",
+      label_photos:"Fotos (mind. 1, max. 8)", dropzone_text:"＋ Fotos oder Videos auswählen oder hierher ziehen", submit_product_btn:"Produkt einstellen",
+      admin_empty_products:"Noch keine Produkte eingestellt.",
+      stat_sales_count:"Verkäufe", stat_sales_revenue:"Umsatz gesamt", export_csv_btn:"📥 Als CSV exportieren",
+      sales_col_buyer:"Käufer", sales_col_product:"Produkt", sales_col_uploader:"Hochgeladen von", sales_col_price:"Preis", sales_col_date:"Datum",
+      sales_empty:"Noch keine Verkäufe."
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1253,7 +1284,34 @@
       role_admin:"Admin", role_customer:"Kunde",
       stat_purchased:"Købte produkter", stat_member_since:"Medlem siden", greeting_hello:"Hej, {name} 👋",
       err_invalid_email:"Denne e-mailadresse ser ugyldig ud.", redeem_success:"Kode gyldig! Dit billede downloades.", raffle_already:"Du deltager allerede — held og lykke!", raffle_success:"Tak! Du deltager nu i konkurrencen.", newsletter_already:"Du er allerede tilmeldt!", newsletter_success:"Tak for din tilmelding!",
-      chat_fallback:"Det ved jeg desværre ikke helt præcist. Skriv endelig til os via <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — vi svarer dig!"
+      chat_fallback:"Det ved jeg desværre ikke helt præcist. Skriv endelig til os via <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — vi svarer dig!",
+      search_placeholder:"🔍 Søg produkter...", filter_min_price:"Min €", filter_max_price:"Maks €",
+      sort_newest:"Nyeste først", sort_price_asc:"Pris stigende", sort_price_desc:"Pris faldende", sort_name:"Efter navn",
+      email_placeholder:"din@email.com",
+      spotlight_eyebrow:"✨ Månedens produkt",
+      steps_eyebrow:"Sådan fungerer det", steps_title:"I tre trin til dit produkt",
+      step1_title:"Opret konto", step1_desc:"Et familiemedlem med admin-adgang opretter en konto til dig.",
+      step2_title:"Vælg produkt", step2_desc:"Gennemse galleriet, og filtrer efter pris eller tags.",
+      step3_title:"Betal sikkert", step3_desc:"Betaling via Stripe — sælgeren informeres og afleverer produktet til dig.",
+      why_eyebrow:"Hvorfor Lumora?",
+      feat1_title:"Sikker betaling", feat1_desc:"Behandles via Stripe — dine betalingsoplysninger går aldrig gennem vores server.",
+      feat2_title:"Kun for os", feat2_desc:"Ingen offentlig registrering — konti er kun til familien.",
+      feat3_title:"Ægte anmeldelser", feat3_desc:"Kun fra købere, der reelt har modtaget produktet.",
+      feat4_title:"Regelmæssige konkurrencer", feat4_desc:"Chancen for et gratis produkt igen og igen.",
+      testimonials_eyebrow:"Kundeudtalelser",
+      faq_eyebrow:"FAQ", faq_title:"Ofte stillede spørgsmål",
+      favorites_eyebrow:"❤️ Mine favoritter", favorites_empty:"Endnu ingen favoritter — klik på hjertet ved et produkt i galleriet.",
+      recent_eyebrow:"🕓 Senest set", recent_empty:"Endnu intet set.",
+      export_purchases_btn:"📥 Eksportér som liste",
+      admin_eyebrow:"Administration", admin_products_title:"Administrer produkter", atab_products:"🖼️ Produkter", atab_sales:"📊 Salg",
+      newproduct_title:"➕ Opret nyt produkt", label_title:"Titel", newprod_name_placeholder:"f.eks. vintage læderjakke",
+      label_description:"Beskrivelse", newprod_desc_placeholder:"Stand, størrelse, materiale, detaljer...",
+      label_price_eur:"Pris (€)", label_quantity:"Mængde (hvor mange har du?)", label_unlimited:"Ubegrænset tilgængelig",
+      label_photos:"Fotos (min. 1, maks. 8)", dropzone_text:"＋ Vælg fotos eller videoer, eller træk dem herhen", submit_product_btn:"Opret produkt",
+      admin_empty_products:"Endnu ingen produkter oprettet.",
+      stat_sales_count:"Salg", stat_sales_revenue:"Omsætning i alt", export_csv_btn:"📥 Eksportér som CSV",
+      sales_col_buyer:"Køber", sales_col_product:"Produkt", sales_col_uploader:"Uploadet af", sales_col_price:"Pris", sales_col_date:"Dato",
+      sales_empty:"Endnu ingen salg."
     }
   };
 
@@ -1271,6 +1329,7 @@
     const dict = I18N[lang];
     document.querySelectorAll('[data-i18n]').forEach(el => { if(dict[el.getAttribute('data-i18n')] !== undefined) el.textContent = dict[el.getAttribute('data-i18n')]; });
     document.querySelectorAll('[data-i18n-html]').forEach(el => { if(dict[el.getAttribute('data-i18n-html')] !== undefined) el.innerHTML = dict[el.getAttribute('data-i18n-html')]; });
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => { if(dict[el.getAttribute('data-i18n-placeholder')] !== undefined) el.placeholder = dict[el.getAttribute('data-i18n-placeholder')]; });
     const langSelect = document.getElementById('langSelect');
     if(langSelect) langSelect.value = lang;
     renderShopGrid();
@@ -1541,10 +1600,13 @@
     const managed = images.filter(i => i.canManage);
     document.getElementById('adminEmpty').style.display = managed.length === 0 ? 'block' : 'none';
     grid.innerHTML = managed.map(img => {
+      const quantityControl = img.quantity === null
+        ? `♾️ Unbegrenzt <a onclick="event.stopPropagation(); setQuantity('${img.id}', 1)" style="cursor:pointer; text-decoration:underline;">(begrenzen)</a>`
+        : `<input type="number" min="0" step="1" value="${img.quantity}" onchange="setQuantity('${img.id}', this.value)" title="Menge" style="width:60px;"> Stk. <a onclick="event.stopPropagation(); setUnlimited('${img.id}')" style="cursor:pointer; font-size:11px; text-decoration:underline;">(unbegrenzt)</a>`;
       const adminControls = img.canSetPrice ? `
         <div class="admin-controls">
           <input type="number" min="0" step="0.5" value="${img.price}" onchange="setPrice('${img.id}', this.value)"> €
-          <input type="number" min="0" step="1" value="${img.quantity}" onchange="setQuantity('${img.id}', this.value)" title="Menge"> Stk.
+          ${quantityControl}
         </div>` : '';
       const photoStrip = img.photos.length > 1
         ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
@@ -1558,7 +1620,7 @@
             <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Ausverkauft':fmt(img.price)}</div>
           </div>
           ${photoStrip}
-          <div class="uploader-tag">Noch ${img.quantity} auf Lager</div>
+          <div class="uploader-tag">${img.quantity === null ? 'Unbegrenzt verfügbar' : 'Noch ' + img.quantity + ' auf Lager'}</div>
           <div style="padding:10px 14px 0;">
             <input type="text" value="${(img.name||'').replace(/"/g,'&quot;')}" placeholder="Produkttitel..." onclick="event.stopPropagation();" onchange="setImageName('${img.id}', this.value)" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif; margin-bottom:6px;">
             <textarea placeholder="Beschreibung..." onclick="event.stopPropagation();" onchange="setImageDescription('${img.id}', this.value)" rows="2" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif;">${(img.description||'').replace(/</g,'&lt;')}</textarea>
@@ -1596,6 +1658,10 @@
     const num = parseInt(val, 10);
     if(isNaN(num) || num < 0){ alert('Bitte eine gültige Menge von 0 oder mehr eingeben.'); await loadImages(); return; }
     await api('/api/images/' + id, { method:'PATCH', body:{ quantity: num } });
+    await loadImages();
+  }
+  async function setUnlimited(id){
+    await api('/api/images/' + id, { method:'PATCH', body:{ unlimited: true } });
     await loadImages();
   }
   async function deleteImage(id){
@@ -2470,17 +2536,20 @@
     const name = document.getElementById('newProdName').value.trim();
     const description = document.getElementById('newProdDescription').value.trim();
     const price = parseFloat(document.getElementById('newProdPrice').value);
+    const unlimited = document.getElementById('newProdUnlimited').checked;
     const quantity = parseInt(document.getElementById('newProdQuantity').value, 10);
     if(!name){ msgEl.textContent = 'Bitte einen Titel eingeben.'; msgEl.className = 'redeem-msg err'; return; }
     if(pendingPhotoFiles.length === 0){ msgEl.textContent = 'Bitte mindestens ein Foto hinzufügen.'; msgEl.className = 'redeem-msg err'; return; }
     try {
       const photos = await Promise.all(pendingPhotoFiles.map(fileToDataUrl));
-      await api('/api/images', { method:'POST', body:{ name, description, price: isNaN(price) ? undefined : price, quantity: isNaN(quantity) ? undefined : quantity, photos } });
+      await api('/api/images', { method:'POST', body:{ name, description, price: isNaN(price) ? undefined : price, unlimited, quantity: unlimited ? undefined : (isNaN(quantity) ? undefined : quantity), photos } });
       pendingPhotoFiles = []; renderPhotoPreview();
       document.getElementById('newProdName').value = '';
       document.getElementById('newProdDescription').value = '';
       document.getElementById('newProdPrice').value = '9.99';
       document.getElementById('newProdQuantity').value = '1';
+      document.getElementById('newProdQuantity').disabled = false;
+      document.getElementById('newProdUnlimited').checked = false;
       msgEl.textContent = 'Produkt eingestellt!'; msgEl.className = 'redeem-msg ok';
       await loadImages();
     } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
