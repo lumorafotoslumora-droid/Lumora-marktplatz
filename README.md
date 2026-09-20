@@ -116,7 +116,11 @@ Es gibt **keine öffentliche Registrierung** — der `/api/register`-Endpunkt ex
 
 ## Wie ein Verkauf abläuft
 
-1. Ein Konto stellt unter "Verwaltung" ein Produkt ein (Titel, Beschreibung, 1–8 Fotos, Preis).
+1. Ein Konto stellt unter "Verwaltung" ein Produkt ein (Titel, Beschreibung, 1–8 Fotos, Preis, Menge).
 2. Andere Konten sehen es in der Galerie, legen es in den Warenkorb und bezahlen über Stripe.
-3. Nach erfolgreicher Zahlung gilt das Produkt als **verkauft** (`sold`) und verschwindet aus dem aktiven Angebot der anderen — es ist ja wie bei einem einzelnen physischen Artikel nur einmal vorhanden.
+3. Bei jedem Kauf sinkt die Menge (Lagerbestand) des Produkts um 1. Erst wenn die Menge 0 erreicht, gilt das Produkt als **ausverkauft** (`sold`) und verschwindet aus dem aktiven Angebot der anderen. Solange Menge übrig ist, können auch mehrere verschiedene Käufer dasselbe Produkt kaufen.
 4. Übergabe/Versand klären Käufer und Verkäufer direkt (z.B. über die im Konto hinterlegte E-Mail) — die Website bildet das nicht automatisch ab.
+
+## Sprachen
+
+Die Seite (inkl. Chatbot und automatischer E-Mails) ist in 17 Sprachen verfügbar: Deutsch, Englisch, Spanisch, Französisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Slowenisch, Türkisch, Russisch, Arabisch, Chinesisch, Japanisch, Koreanisch, Hindi und Dänisch. Die Auswahl (oben rechts im Dropdown) wird pro Konto gespeichert und auch für E-Mails an dieses Konto verwendet.

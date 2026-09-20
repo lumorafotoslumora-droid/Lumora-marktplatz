@@ -340,6 +340,7 @@
         <option value="ja">🇯🇵 日本語</option>
         <option value="ko">🇰🇷 한국어</option>
         <option value="hi">🇮🇳 हिन्दी</option>
+        <option value="da">🇩🇰 Dansk</option>
       </select>
       <div class="role-pill admin-tag" id="rolePillAdmin"></div>
       <div class="role-pill customer-tag" id="rolePillCustomer"></div>
@@ -552,6 +553,7 @@
         <div class="field"><label>Titel</label><input type="text" id="newProdName" placeholder="z.B. Vintage Lederjacke"></div>
         <div class="field"><label>Beschreibung</label><textarea id="newProdDescription" rows="3" placeholder="Zustand, Größe, Material, Details..." style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:11px 13px; font-size:14px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif;"></textarea></div>
         <div class="field"><label>Preis (€)</label><input type="number" id="newProdPrice" min="0" step="0.5" value="9.99"></div>
+        <div class="field"><label>Menge (wie viele hast du?)</label><input type="number" id="newProdQuantity" min="1" step="1" value="1"></div>
         <div class="field">
           <label>Fotos (mind. 1, max. 8)</label>
           <div id="dropzone" onclick="document.getElementById('fileInput').click()">＋ Fotos oder Videos auswählen oder hierher ziehen</div>
@@ -1223,6 +1225,35 @@
       stat_purchased:"खरीदी गई तस्वीरें", stat_member_since:"सदस्य बने", greeting_hello:"नमस्ते, {name} 👋",
       err_invalid_email:"यह ईमेल पता अमान्य लगता है।", redeem_success:"कोड मान्य है! आपकी तस्वीर डाउनलोड हो रही है।", raffle_already:"आप पहले से भाग ले रहे हैं — शुभकामनाएं!", raffle_success:"धन्यवाद! अब आप गिवअवे में भाग ले रहे हैं।", newsletter_already:"आप पहले से सदस्यता ले चुके हैं!", newsletter_success:"सदस्यता लेने के लिए धन्यवाद!",
       chat_fallback:"इसके बारे में मुझे पूरा यकीन नहीं है। <a onclick='toggleChat(); switchView(&quot;support&quot;);'>सहायता</a> के जरिए हमें संदेश भेजें — हम जवाब देंगे!"
+    },
+    da: {
+      nav_gallery:"Produkter", nav_cart:"Kurv", nav_account:"Min konto", nav_support:"Support",
+      brand_tagline:"Markedsplads", logout_btn:"Log ud",
+      hero_badge:"✦ Kører på en rigtig server",
+      hero_title_html:'Markedsplads, hvor <span class="accent-word">alle</span> sælger.',
+      hero_sub:"Produkter fra rigtige sælgere — gennemse, opdag og køb sikkert.",
+      hero_cta1:"Gennemse produkter", hero_cta2:"Til min konto", hero_note:"Gratis at se · Konti kun efter invitation · Sikker betaling",
+      shop_empty:"Endnu ingen produkter.",
+      redeem_title:"Indløs kode", redeem_sub:"Har du fået en 7-cifret kode fra os? Indtast den, og download dit billede med det samme.", redeem_btn:"Indløs",
+      raffle_title:"Konkurrence", raffle_sub:"Indtast din e-mail og deltag i lodtrækningen om et gratis produkt.", raffle_btn:"Deltag",
+      newsletter_title:"Nyhedsbrev", newsletter_sub:"Tilmeld dig, og gå ikke glip af nye produkter og tilbud.", newsletter_btn:"Tilmeld",
+      cart_eyebrow:"Kasse", cart_title:"Kurv", cart_empty:"Din kurv er tom.", cart_subtotal:"Subtotal", cart_bundle:"Tilbudsrabat", cart_total:"I alt", cart_checkout_btn:"Gå til kassen",
+      account_eyebrow:"Konto", account_title:"Min konto",
+      login_title:"Velkommen tilbage", login_sub:"Log ind med din eksisterende konto", login_label_id:"Navn eller e-mail", label_password:"Adgangskode", login_btn:"Log ind",
+      register_title:"Ingen egen konto?", register_sub:"Konti oprettes udelukkende af admin — kontakt os for at få adgang.", label_name:"Navn", label_birthday:"Fødselsdag", label_email:"E-mail", register_btn:"Opret konto",
+      pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
+      change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
+      my_purchases:"Mine bestillinger", no_purchases:"Endnu intet købt.",
+      support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Skriv til os direkte her på siden, eller send en e-mail.",
+      support_form_title:"Send besked", support_form_sub:"Vi svarer dig på e-mail, hvis du angiver en.",
+      label_name_optional:"Navn (valgfrit)", label_email_optional:"E-mail (valgfrit, til svar)", label_message:"Besked", support_send_btn:"Send besked", support_or_email:"Eller skriv direkte til os:",
+      footer_tagline:"Markedsplads for familien — sælg og køb.", footer_product:"Produkt", footer_company:"Virksomhed", footer_about:"Om os", footer_ownserver:"Kører på egen server",
+      chat_greeting:"Hej! 👋 Spørg mig om alt vedrørende Lumora — f.eks. hvordan man køber eller sælger et produkt, eller tilmelder sig nyhedsbrevet.",
+      cart_add:"+ Læg i kurv", cart_in_cart:"✓ I kurven", download_btn:"Download", free_tag:"GRATIS", remove_btn:"Fjern",
+      role_admin:"Admin", role_customer:"Kunde",
+      stat_purchased:"Købte produkter", stat_member_since:"Medlem siden", greeting_hello:"Hej, {name} 👋",
+      err_invalid_email:"Denne e-mailadresse ser ugyldig ud.", redeem_success:"Kode gyldig! Dit billede downloades.", raffle_already:"Du deltager allerede — held og lykke!", raffle_success:"Tak! Du deltager nu i konkurrencen.", newsletter_already:"Du er allerede tilmeldt!", newsletter_success:"Tak for din tilmelding!",
+      chat_fallback:"Det ved jeg desværre ikke helt præcist. Skriv endelig til os via <a onclick='toggleChat(); switchView(&quot;support&quot;);'>Support</a> — vi svarer dig!"
     }
   };
 
@@ -1465,7 +1496,7 @@
     grid.innerHTML = list.map(img => {
       const inCart = cart.has(img.id);
       const actionHtml = img.sold
-        ? `<button class="dl-btn wide" disabled>Verkauft</button>`
+        ? `<button class="dl-btn wide" disabled>Ausverkauft</button>`
         : img.purchased
           ? `<button class="dl-btn wide" disabled>✓ Gekauft</button>`
           : `<button class="cart-btn wide ${inCart?'in-cart':''}" onclick="event.stopPropagation(); toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`;
@@ -1473,17 +1504,19 @@
         img.isBestseller ? '<span class="badge-pill bestseller">🔥 Bestseller</span>' : '',
         (img.isNew && !img.isBestseller) ? '<span class="badge-pill new">✨ Neu</span>' : ''
       ].join('');
+      const stockNote = (!img.sold && img.quantity > 1) ? `<div style="padding:4px 14px 0; font-size:11px; color:var(--muted);">Nur noch ${img.quantity} verfügbar</div>` : '';
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
-            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Verkauft':fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Ausverkauft':fmt(img.price)}</div>
             ${badges ? `<div class="badge-row">${badges}</div>` : ''}
             <div class="fav-heart ${img.isFavorite?'active':''}" onclick="event.stopPropagation(); toggleFavorite('${img.id}')">${img.isFavorite?'❤️':'🤍'}</div>
           </div>
           <div class="card-title" style="padding:12px 14px 0;">${img.name || ''}</div>
           <div style="padding:4px 14px 0; font-size:11px; color:var(--muted);">von ${img.uploadedByName || ''}</div>
           ${img.avgRating !== null ? `<div style="padding:4px 14px 0;">${starsHtml(img.avgRating, img.reviewCount)}</div>` : ''}
+          ${stockNote}
           <div class="frame-foot">${actionHtml}</div>
         </div>`;
     }).join('');
@@ -1510,7 +1543,8 @@
     grid.innerHTML = managed.map(img => {
       const adminControls = img.canSetPrice ? `
         <div class="admin-controls">
-          <input type="number" min="0" step="0.5" value="${img.price}" ${img.sold?'disabled':''} onchange="setPrice('${img.id}', this.value)"> €
+          <input type="number" min="0" step="0.5" value="${img.price}" onchange="setPrice('${img.id}', this.value)"> €
+          <input type="number" min="0" step="1" value="${img.quantity}" onchange="setQuantity('${img.id}', this.value)" title="Menge"> Stk.
         </div>` : '';
       const photoStrip = img.photos.length > 1
         ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
@@ -1521,9 +1555,10 @@
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
             ${img.canDelete ? `<div class="del" onclick="event.stopPropagation(); deleteImage('${img.id}')">✕</div>` : ''}
-            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Verkauft':fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Ausverkauft':fmt(img.price)}</div>
           </div>
           ${photoStrip}
+          <div class="uploader-tag">Noch ${img.quantity} auf Lager</div>
           <div style="padding:10px 14px 0;">
             <input type="text" value="${(img.name||'').replace(/"/g,'&quot;')}" placeholder="Produkttitel..." onclick="event.stopPropagation();" onchange="setImageName('${img.id}', this.value)" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif; margin-bottom:6px;">
             <textarea placeholder="Beschreibung..." onclick="event.stopPropagation();" onchange="setImageDescription('${img.id}', this.value)" rows="2" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:7px 9px; border-radius:var(--radius-sm); font-size:12.5px; font-family:'Inter',sans-serif;">${(img.description||'').replace(/</g,'&lt;')}</textarea>
@@ -1555,6 +1590,12 @@
     const num = parseFloat(val);
     if(isNaN(num) || num < 0){ alert('Bitte einen gültigen Preis von 0 oder mehr eingeben.'); await loadImages(); return; }
     await api('/api/images/' + id, { method:'PATCH', body:{ price: num } });
+    await loadImages();
+  }
+  async function setQuantity(id, val){
+    const num = parseInt(val, 10);
+    if(isNaN(num) || num < 0){ alert('Bitte eine gültige Menge von 0 oder mehr eingeben.'); await loadImages(); return; }
+    await api('/api/images/' + id, { method:'PATCH', body:{ quantity: num } });
     await loadImages();
   }
   async function deleteImage(id){
@@ -2056,7 +2097,7 @@
       ['Wie bekomme ich das Produkt, wenn ich bezahlt habe?', 'Der Verkäufer sieht nach deinem Kauf deinen Namen bei seinem Produkt und übergibt es dir persönlich — es gibt keinen Versand.'],
       ['Kann ich Produkte bewerten?', 'Ja — sobald du ein Produkt gekauft hast, kannst du es in der Großansicht mit Sternen bewerten und eine Rezension schreiben.'],
       ['Gibt es Rabatte?', 'Manchmal laufen Aktionen wie "2 für 1" oder Prozent-Rabatte — die siehst du automatisch im Warenkorb, wenn sie aktiv sind.'],
-      ['Gibt es die Seite in meiner Sprache?', 'Ja, oben rechts kannst du aus 16 Sprachen wählen — die Auswahl wird gespeichert und gilt auch für unsere E-Mails an dich.'],
+      ['Gibt es die Seite in meiner Sprache?', 'Ja, oben rechts kannst du aus 17 Sprachen wählen — die Auswahl wird gespeichert und gilt auch für unsere E-Mails an dich.'],
     ],
     en: [
       ['How do I create an account?', 'Free: Go to "My Account" → "Create account" and enter name, birthday, email and password.'],
@@ -2064,7 +2105,7 @@
       ['What is an image code?', 'A 7-digit code you might win, e.g. through our giveaway — just enter it in the "Redeem code" field to get your image directly.'],
       ['Can I rate images?', 'Yes — once you own an image (purchased or free), you can rate it with stars and write a review in the full-size view.'],
       ['Are there discounts?', 'Sometimes we run deals like "2 for 1" or percent discounts — automatically shown in your cart when active.'],
-      ['Is the site available in my language?', 'Yes, choose from 16 languages at the top right — your choice is saved and also used for our emails to you.'],
+      ['Is the site available in my language?', 'Yes, choose from 17 languages at the top right — your choice is saved and also used for our emails to you.'],
     ],
     es: [
       ['¿Cómo creo una cuenta?', 'Gratis: Ve a "Mi cuenta" → "Crear cuenta" e ingresa nombre, cumpleaños, correo y contraseña.'],
@@ -2072,7 +2113,7 @@
       ['¿Qué es un código de imagen?', 'Un código de 7 dígitos que puedes ganar, por ejemplo en nuestro sorteo — solo ingrésalo en "Canjear código" para obtener tu imagen directamente.'],
       ['¿Puedo calificar imágenes?', 'Sí — una vez que tengas una imagen (comprada o gratis), puedes calificarla con estrellas y dejar una reseña en la vista ampliada.'],
       ['¿Hay descuentos?', 'A veces hay ofertas como "2 por 1" o descuentos porcentuales — se muestran automáticamente en tu carrito cuando están activos.'],
-      ['¿Está la página en mi idioma?', 'Sí, elige entre 16 idiomas arriba a la derecha — tu elección se guarda y también se usa para nuestros correos.'],
+      ['¿Está la página en mi idioma?', 'Sí, elige entre 17 idiomas arriba a la derecha — tu elección se guarda y también se usa para nuestros correos.'],
     ],
     fr: [
       ['Comment créer un compte ?', 'Gratuit : Va dans "Mon compte" → "Créer un compte" et entre nom, date de naissance, e-mail et mot de passe.'],
@@ -2080,7 +2121,7 @@
       ['Qu\'est-ce qu\'un code image ?', 'Un code à 7 chiffres que tu peux gagner, par exemple lors de notre tirage — entre-le simplement dans "Utiliser un code" pour obtenir ton image directement.'],
       ['Puis-je noter les images ?', 'Oui — dès que tu possèdes une image (achetée ou gratuite), tu peux la noter avec des étoiles et laisser un avis dans la vue agrandie.'],
       ['Y a-t-il des réductions ?', 'Il y a parfois des promos comme "2 pour 1" ou des réductions en pourcentage — visibles automatiquement dans ton panier.'],
-      ['Le site est-il dans ma langue ?', 'Oui, choisis parmi 16 langues en haut à droite — ton choix est sauvegardé et utilisé aussi pour nos e-mails.'],
+      ['Le site est-il dans ma langue ?', 'Oui, choisis parmi 17 langues en haut à droite — ton choix est sauvegardé et utilisé aussi pour nos e-mails.'],
     ],
     it: [
       ['Come creo un account?', 'Gratis: Vai su "Il mio account" → "Crea account" e inserisci nome, data di nascita, email e password.'],
@@ -2088,7 +2129,15 @@
       ['Cos\'è un codice immagine?', 'Un codice a 7 cifre che puoi vincere, ad esempio nella nostra estrazione — inseriscilo in "Riscatta codice" per ottenere subito la tua immagine.'],
       ['Posso valutare le immagini?', 'Sì — una volta che possiedi un\'immagine (acquistata o gratuita), puoi valutarla con le stelle e lasciare una recensione nella vista ingrandita.'],
       ['Ci sono sconti?', 'A volte ci sono offerte come "2 per 1" o sconti percentuali — visibili automaticamente nel carrello quando attivi.'],
-      ['Il sito è nella mia lingua?', 'Sì, scegli tra 16 lingue in alto a destra — la scelta viene salvata e usata anche per le nostre email.'],
+      ['Il sito è nella mia lingua?', 'Sì, scegli tra 17 lingue in alto a destra — la scelta viene salvata e usata anche per le nostre email.'],
+    ],
+    da: [
+      ['Hvordan får jeg en konto?', 'Der er ingen selvregistrering — kun admin kan oprette konti. Kontakt bare admin, så opretter de en til dig.'],
+      ['Hvordan betaler jeg?', 'Læg et produkt i kurven, gå til kassen og betal sikkert med kort via Stripe. Dine betalingsoplysninger går aldrig gennem vores server.'],
+      ['Hvordan får jeg produktet, når jeg har betalt?', 'Sælgeren ser dit navn på sit produkt efter dit køb og afleverer det personligt til dig — der er ingen forsendelse.'],
+      ['Kan jeg bedømme produkter?', 'Ja — så snart du har købt et produkt, kan du bedømme det med stjerner og skrive en anmeldelse i storvisningen.'],
+      ['Er der rabatter?', 'Nogle gange er der tilbud som "2 for 1" eller procentrabatter — de vises automatisk i din kurv, når de er aktive.'],
+      ['Findes siden på mit sprog?', 'Ja, øverst til højre kan du vælge mellem 17 sprog — dit valg gemmes og bruges også til vores e-mails til dig.'],
     ],
   };
 
@@ -2310,11 +2359,11 @@
     const descEl = document.getElementById('lightboxDescription');
     if(descEl) descEl.textContent = img.description || '';
     const priceEl = document.getElementById('lightboxPrice');
-    priceEl.textContent = img.sold ? 'Verkauft' : img.purchased ? 'Gekauft' : fmt(img.price);
+    priceEl.textContent = img.sold ? 'Ausverkauft' : img.purchased ? 'Gekauft' : fmt(img.price);
     priceEl.className = 'lb-price' + ((img.sold||img.purchased)?' free':'');
     const inCart = cart.has(img.id);
     document.getElementById('lightboxAction').innerHTML = (img.sold
-      ? `<button class="dl-btn" disabled>Verkauft</button>`
+      ? `<button class="dl-btn" disabled>Ausverkauft</button>`
       : img.purchased
         ? `<button class="dl-btn" disabled>✓ Gekauft</button>`
         : `<button class="cart-btn ${inCart?'in-cart':''}" onclick="toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`)
@@ -2421,15 +2470,17 @@
     const name = document.getElementById('newProdName').value.trim();
     const description = document.getElementById('newProdDescription').value.trim();
     const price = parseFloat(document.getElementById('newProdPrice').value);
+    const quantity = parseInt(document.getElementById('newProdQuantity').value, 10);
     if(!name){ msgEl.textContent = 'Bitte einen Titel eingeben.'; msgEl.className = 'redeem-msg err'; return; }
     if(pendingPhotoFiles.length === 0){ msgEl.textContent = 'Bitte mindestens ein Foto hinzufügen.'; msgEl.className = 'redeem-msg err'; return; }
     try {
       const photos = await Promise.all(pendingPhotoFiles.map(fileToDataUrl));
-      await api('/api/images', { method:'POST', body:{ name, description, price: isNaN(price) ? undefined : price, photos } });
+      await api('/api/images', { method:'POST', body:{ name, description, price: isNaN(price) ? undefined : price, quantity: isNaN(quantity) ? undefined : quantity, photos } });
       pendingPhotoFiles = []; renderPhotoPreview();
       document.getElementById('newProdName').value = '';
       document.getElementById('newProdDescription').value = '';
       document.getElementById('newProdPrice').value = '9.99';
+      document.getElementById('newProdQuantity').value = '1';
       msgEl.textContent = 'Produkt eingestellt!'; msgEl.className = 'redeem-msg ok';
       await loadImages();
     } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
@@ -2841,6 +2892,29 @@
       { keywords: ['डार्क मोड','लाइट मोड','थीम'], answer: 'ऊपर चाँद/सूरज बटन से आप हल्के और गहरे डिज़ाइन के बीच बदल सकते हैं।' },
       { keywords: ['शेयर करें','लिंक कॉपी करें'], answer: 'बड़े दृश्य में एक शेयर करें बटन है जो तस्वीर का सीधा लिंक कॉपी करता है।' },
       { keywords: ['रिपोर्ट करें','तस्वीर में समस्या'], answer: 'बड़े दृश्य में एक रिपोर्ट करें बटन है अगर तस्वीर में कुछ गलत है।' },
+    ],
+    da: [
+      { keywords: ['konto','opret','registrer','account'], answer: 'Der er ingen selvregistrering — kun admin kan oprette en konto til dig. Kontakt bare admin.' },
+      { keywords: ['logge på','log ind','login'], answer: 'Under "Min konto" kan du logge ind med din e-mail (eller dit navn) og adgangskode.' },
+      { keywords: ['køb','betal','kasse'], answer: 'Klik på "Læg i kurv" ved et produkt, gå så til "Kurv" og betal sikkert med kort.' },
+      { keywords: ['modtag','aflevering','afhent','levering','forsendelse'], answer: 'Der er ingen forsendelse — sælgeren ser dit navn efter dit køb og afleverer produktet personligt til dig.' },
+      { keywords: ['adgangskode','password'], answer: 'Under "Min konto" er der et afsnit "Skift adgangskode".' },
+      { keywords: ['sælg','oprette','tilbyde','annonce'], answer: 'Under "Administration" kan du oprette et nyt produkt øverst — titel, beskrivelse, pris og fotos.' },
+      { keywords: ['rabat','tilbud','procent'], answer: 'Nogle gange er der tilbud som "2 for 1" eller procentrabatter — de vises automatisk i kurven.' },
+      { keywords: ['nyhedsbrev','tilmeld'], answer: 'I galleriet kan du tilmelde dig nyhedsbrevet med din e-mail.' },
+      { keywords: ['konkurrence','vind','lodtrækning'], answer: 'Hvis den er aktiv, finder du en boks i galleriet, hvor du kan deltage.' },
+      { keywords: ['support','kontakt','hjælp','problem'], answer: 'Via fanen "Support" øverst kan du sende os en besked direkte.' },
+      { keywords: ['medarbejder','job','arbejde','sælge'], answer: 'Der er ingen medarbejdere — men alle kan sælge hos os, så snart admin har oprettet en konto til dem.' },
+      { keywords: ['købt','hvor finder','mine produkter','bestilling'], answer: 'Under "Min konto" i afsnittet "Mine bestillinger".' },
+      { keywords: ['video'], answer: 'Ja, ud over fotos kan du også uploade videoer til dit produkt.' },
+      { keywords: ['databeskyttelse','sikker','privat'], answer: 'Dine login-oplysninger gemmes sikkert og krypteret.' },
+      { keywords: ['favorit','hjerte','gem'], answer: 'Med hjerte-ikonet på et produkt kan du tilføje det til dine favoritter — synligt under "Min konto".' },
+      { keywords: ['bedøm','stjerner','anmeldelse'], answer: 'Efter et køb kan du bedømme et produkt med stjerner og skrive en kort anmeldelse.' },
+      { keywords: ['søg','sorter','filter'], answer: 'Øverst i galleriet kan du søge produkter efter navn og sortere efter pris eller dato.' },
+      { keywords: ['sprog','language','skift sprog'], answer: 'Øverst til højre kan du til enhver tid skifte sidens sprog via dropdown-menuen — det gemmes automatisk.' },
+      { keywords: ['lys','mørk','design','tema'], answer: 'Med måne-/sol-knappen øverst kan du skifte mellem lyst og mørkt design.' },
+      { keywords: ['del','kopier link','videresend'], answer: 'I storvisningen af et produkt finder du knappen \'Del\' — den kopierer et direkte link dertil.' },
+      { keywords: ['anmeld','klage','problem med billede'], answer: 'I storvisningen af et produkt er der knappen \'Anmeld\', hvis noget ikke stemmer.' },
     ],
   };
 

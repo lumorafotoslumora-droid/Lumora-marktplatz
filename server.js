@@ -13,7 +13,7 @@ const UPLOADS_DIR = path.join(ROOT, 'uploads');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const ADMIN_NAME = 'Matic';
-const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','ru','ar','zh','ja','ko','hi'];
+const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','ru','ar','zh','ja','ko','hi','da'];
 
 // Verzeichnisse sicherstellen (wichtig, falls der Ordner z.B. von GitHub leer war
 // und deshalb beim Hochladen des Projekts gar nicht mit übertragen wurde — Git
@@ -311,7 +311,13 @@ const EMAIL_I18N = {
     loser_subject:'इस बार नहीं — लेकिन शायद अगली बार! 🍀', loser_title:'अफ़सोस! 😔', loser_body:'इस बार आप Lumora गिवअवे में नहीं जीते।', loser_body2:'शायद अगली बार!', loser_button:'फिर से भाग लें',
     promo_subject:'🎁 Lumora गिवअवे में भाग लें!', promo_title:'🎁 Lumora गिवअवे!', promo_body:'अभी साइन अप करें और थोड़ी किस्मत से मुफ्त तस्वीर जीतें!', promo_button:'अभी भाग लें',
     daily_new:'🆕 गैलरी में {count} नई तस्वीरें हैं!', daily_new1:'🆕 गैलरी में 1 नई तस्वीर है!', daily_generic:'फिर से Lumora देखें — हमेशा देखने लायक। 📸', daily_button:'गैलरी में जाएं',
-    signoff:'सादर,<br>Lumora टीम' }
+    signoff:'सादर,<br>Lumora टीम' },
+  da: { verify_subject:'Bekræft din e-mailadresse hos Lumora', verify_title:'Velkommen til Lumora! 📸', verify_body:'Bekræft venligst din e-mailadresse for at aktivere din konto helt.', verify_button:'Bekræft e-mail', verify_footer:'Hvis knappen ikke virker, så kopiér dette link til din browser:',
+    winner_subject:'🎉 Du har vundet! Din gratis billedkode (gyldig 24 timer)', winner_title:'Tillykke!', winner_body:'Du har vundet et gratis billede i vores Lumora-konkurrence!', winner_code_label:'Din kode:', winner_button:'Indløs nu', winner_warning:'⏰ Denne kode er kun gyldig i 24 timer!', winner_hint:'Indtast den bare i feltet "Indløs billedkode" på vores forside.',
+    loser_subject:'Ikke denne gang — men måske næste gang! 🍀', loser_title:'Ærgerligt! 😔', loser_body:'Du vandt desværre ikke denne gang i Lumora-konkurrencen.', loser_body2:'Måske næste gang!', loser_button:'Deltag igen',
+    promo_subject:'🎁 Deltag i Lumora-konkurrencen!', promo_title:'🎁 Konkurrence hos Lumora!', promo_body:'Tilmeld dig nu og vind et gratis billede med lidt held!', promo_button:'Deltag nu',
+    daily_new:'🆕 Der er {count} nye billeder i galleriet!', daily_new1:'🆕 Der er 1 nyt billede i galleriet!', daily_generic:'Kig forbi Lumora igen — det er altid et kig værd. 📸', daily_button:'Til galleriet',
+    signoff:'Venlig hilsen,<br>dit Lumora-team' }
 };
 function et(lang, key){
   const dict = EMAIL_I18N[lang] || EMAIL_I18N.de;
@@ -570,6 +576,7 @@ function publicImage(img, user){
     description: img.description || '',
     photos: (img.photos || []).map(p => ({ url: USE_SUPABASE ? supabasePublicUrl(UPLOADS_BUCKET, p.filename) : ('/uploads/' + p.filename), type: p.type })),
     price: img.price,
+    quantity: typeof img.quantity === 'number' ? img.quantity : 1,
     sold: !!img.sold,
     purchased,
     uploadedByName: img.uploadedByName,
@@ -593,6 +600,12 @@ function publicImage(img, user){
     }
   }
   return out;
+}
+
+function decrementStock(img){
+  const current = typeof img.quantity === 'number' ? img.quantity : 1;
+  img.quantity = Math.max(0, current - 1);
+  if(img.quantity <= 0) img.sold = true;
 }
 
 // ---------- Warenkorb / Rabatt-Berechnung (serverseitig, damit niemand manipulieren kann) ----------
@@ -877,12 +890,14 @@ async function handleApi(req, res, pathname, method, parsed){
     const rawName = (body.name || '').trim();
     const cleanName = rawName ? rawName.slice(0, 80) : ('Produkt ' + (db.images.length + 1));
     const price = Number(body.price);
+    const quantity = Math.floor(Number(body.quantity));
 
     const img = {
       id: genId(), photos,
       name: cleanName,
       description: (body.description || '').trim().slice(0, 1000),
       price: (isFinite(price) && price >= 0) ? price : 4.99,
+      quantity: (isFinite(quantity) && quantity >= 1) ? quantity : 1,
       sold: false,
       uploadedBy: user.id, uploadedByName: user.name,
       createdAt: new Date().toISOString()
@@ -923,9 +938,13 @@ async function handleApi(req, res, pathname, method, parsed){
       if(Array.isArray(body.tags)){
         img.tags = body.tags.map(t => String(t).trim().toLowerCase().slice(0, 20)).filter(Boolean).slice(0, 8);
       }
-      if(typeof body.price === 'number' || typeof body.sold === 'boolean'){
+      if(typeof body.price === 'number' || typeof body.quantity === 'number' || typeof body.sold === 'boolean'){
         if(!(isAdmin(user) || img.uploadedBy === user.id)) return sendJson(res, 403, { error: 'Keine Berechtigung, Preise zu ändern.' });
         if(typeof body.price === 'number' && body.price >= 0) img.price = body.price;
+        if(typeof body.quantity === 'number' && body.quantity >= 0){
+          img.quantity = Math.floor(body.quantity);
+          img.sold = img.quantity <= 0;
+        }
         if(typeof body.sold === 'boolean') img.sold = body.sold;
       }
       saveDB(db);
@@ -973,7 +992,7 @@ async function handleApi(req, res, pathname, method, parsed){
     const losers = db.raffleEntries.filter((_, i) => i !== winnerIdx);
 
     // Gewonnenes Produkt reservieren — der Admin meldet sich beim Gewinner, um es zu übergeben.
-    img.sold = true;
+    decrementStock(img);
     img.wonByEmail = winner.email;
     db.raffleEntries = []; // Lostopf für die nächste Runde zurücksetzen
     saveDB(db);
@@ -1367,9 +1386,10 @@ async function handleApi(req, res, pathname, method, parsed){
       // Gesamtbetrag ist 0 (z.B. komplett durch Aktionen abgedeckt) — direkt ohne Stripe abschließen
       if(!db.purchases) db.purchases = [];
       totals.itemIds.forEach(id => {
-        if(!db.purchases.some(p => p.userId === user.id && p.imageId === id)) db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid: 0, source: 'checkout-free' });
+        const alreadyPurchased = db.purchases.some(p => p.userId === user.id && p.imageId === id);
+        if(!alreadyPurchased) db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid: 0, source: 'checkout-free' });
         const boughtImg = db.images.find(i => i.id === id);
-        if(boughtImg) boughtImg.sold = true;
+        if(boughtImg && !alreadyPurchased) decrementStock(boughtImg);
       });
       if(totals.usesFirstFree) db.firstFreeUsed[user.id] = true;
       saveDB(db);
@@ -1422,7 +1442,7 @@ async function handleApi(req, res, pathname, method, parsed){
           db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid, source: 'stripe' });
         }
         const boughtImg = db.images.find(i => i.id === id);
-        if(boughtImg) boughtImg.sold = true;
+        if(boughtImg) decrementStock(boughtImg);
       });
       if(pending.usesFirstFree) db.firstFreeUsed[user.id] = true;
       delete db.pendingCheckouts[sessionId];
