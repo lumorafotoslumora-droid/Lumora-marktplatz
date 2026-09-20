@@ -61,11 +61,40 @@ Empfehlung: **Render.com** (kostenlose Stufe reicht zum Testen).
 4. Umgebungsvariablen setzen:
    - **`STRIPE_SECRET_KEY`** — siehe Stripe-Anleitung oben (ohne diese Variable funktioniert keine echte Zahlung)
    - **`SITE_URL`** — die echte Adresse (z.B. `https://dein-name.onrender.com`), damit Links in automatischen E-Mails korrekt sind
+   - **`BREVO_API_KEY`** und optional **`SENDER_EMAIL`** — für den E-Mail-Versand (Gewinnspiel, Newsletter, Support), siehe unten
+   - **`SUPABASE_URL`** und **`SUPABASE_SERVICE_KEY`** — für dauerhaften Speicher, siehe unten (ohne diese Variablen gehen bei jedem Neu-Deploy alle Konten/Produkte verloren!)
 5. **Create Web Service** klicken
 
-### Wichtiger Hinweis zu kostenlosem Hosting
+---
 
-Bei kostenlosen Hosting-Stufen werden hochgeladene Dateien und die Datenbank-Datei bei einem Neustart des Servers gelöscht, da der Speicherplatz nicht dauerhaft ist. Für Dauerbetrieb: bezahlter Plan mit **Persistent Disk**, oder externe Speicherlösung (z.B. Cloudflare R2, AWS S3).
+## E-Mail-Versand mit Brevo einrichten
+
+Für Gewinnspiel-, Newsletter- und Support-Mails nutzt die Seite [Brevo](https://brevo.com) (ehemals Sendinblue) — kostenlos bis 300 Mails/Tag.
+
+1. Kostenlosen Account auf [app.brevo.com](https://app.brevo.com) erstellen
+2. Profil-Symbol → **"SMTP & API"** → Tab **"API Keys"** → **"Generate a new API key"**
+3. Den angezeigten Schlüssel (beginnt mit `xkeysib-...`) sofort kopieren — er wird nur einmal angezeigt
+4. Als Umgebungsvariable **`BREVO_API_KEY`** setzen (lokal per `export`, auf Render unter "Environment")
+5. Optional: **`SENDER_EMAIL`** auf eine bei Brevo unter "Senders" verifizierte Absender-Adresse setzen (sonst wird ein Standardwert genutzt)
+
+---
+
+## Dauerhafter Speicher mit Supabase (wichtig für kostenloses Hosting!)
+
+Bei kostenlosen Hosting-Stufen wie Render Free gehen hochgeladene Dateien und die Datenbank bei jedem Neu-Deploy verloren, da der Speicherplatz nicht dauerhaft ist. Die Seite kann stattdessen [Supabase](https://supabase.com) nutzen (kostenlos bis 500MB Datenbank + 1GB Dateispeicher) — dann bleiben Konten und Produkte auch über Deploys hinweg erhalten.
+
+1. Kostenlosen Account auf [supabase.com](https://supabase.com) erstellen, neues Projekt anlegen
+2. Im Projekt unter **"Storage"** zwei Buckets anlegen:
+   - **`db`** — **privat** (Public bucket NICHT aktivieren)
+   - **`uploads`** — **öffentlich** (Public bucket aktivieren)
+3. Unter **"API Keys"** (bzw. Project Settings → API) kopieren:
+   - **Project URL**
+   - **service_role key** (geheim! niemals öffentlich teilen — hat vollen Datenbankzugriff)
+4. Als Umgebungsvariablen setzen:
+   - **`SUPABASE_URL`** = die Project URL
+   - **`SUPABASE_SERVICE_KEY`** = der service_role key
+
+Ohne diese beiden Variablen läuft der Server automatisch im lokalen Datei-Modus weiter (z.B. praktisch für Tests auf dem eigenen Computer) — auf Render bedeutet das aber Datenverlust bei jedem Deploy.
 
 ---
 

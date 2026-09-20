@@ -21,69 +21,164 @@ const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','
 fs.mkdirSync(UPLOADS_DIR, { recursive: true });
 fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
 
-// ---------- Persistenz (einfache JSON-Datei als Datenbank) ----------
-function loadDB(){
-  if(!fs.existsSync(DATA_FILE)){
-    const initial = {
-      users: [],
-      images: [],
-      purchases: [],
-      promos: { firstFree:false, twoForOne:false, percent:false, percentValue:20 },
-      firstFreeUsed: {},
-      raffleEntries: [],
-      raffleSettings: { enabled: true },
-      supportMessages: [],
-      newsletterSubscribers: [],
-      dailyEmail: { lastSentAt: null, pendingNote: '', intervalHours: 24 },
-      raffleEmail: { lastPromoSentAt: null, intervalHours: 3 },
-      pendingCheckouts: {} // sessionId -> {userId, itemIds, usesFirstFree, createdAt}
+// ---------- Dauerhafter Speicher über Supabase Storage (überlebt Redeploys) ----------
+// Ohne gesetzte Umgebungsvariablen fällt der Server auf lokale Dateien zurück
+// (praktisch für lokale Tests, aber auf Render z.B. NICHT dauerhaft).
+const SUPABASE_URL = (process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const USE_SUPABASE = !!(SUPABASE_URL && SUPABASE_SERVICE_KEY);
+const DB_BUCKET = 'db';
+const UPLOADS_BUCKET = 'uploads';
+
+function supabaseStorageRequest(method, bucket, filePath, body, contentType){
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: new URL(SUPABASE_URL).hostname,
+      path: `/storage/v1/object/${bucket}/${filePath}`,
+      method,
+      headers: {
+        'Authorization': 'Bearer ' + SUPABASE_SERVICE_KEY,
+        'apikey': SUPABASE_SERVICE_KEY
+      }
     };
+    if(contentType) options.headers['Content-Type'] = contentType;
+    if(method === 'POST') options.headers['x-upsert'] = 'true';
+    if(body) options.headers['Content-Length'] = Buffer.byteLength(body);
+    const req = https.request(options, (res) => {
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => {
+        const buf = Buffer.concat(chunks);
+        if(res.statusCode >= 200 && res.statusCode < 300) resolve(buf);
+        else reject(new Error(`Supabase Storage Fehler (${res.statusCode}): ${buf.toString('utf8').slice(0,200)}`));
+      });
+    });
+    req.on('error', reject);
+    if(body) req.write(body);
+    req.end();
+  });
+}
+
+function supabaseDelete(bucket, filePaths){
+  return new Promise((resolve, reject) => {
+    const body = JSON.stringify({ prefixes: filePaths });
+    const options = {
+      hostname: new URL(SUPABASE_URL).hostname,
+      path: `/storage/v1/object/${bucket}`,
+      method: 'DELETE',
+      headers: {
+        'Authorization': 'Bearer ' + SUPABASE_SERVICE_KEY,
+        'apikey': SUPABASE_SERVICE_KEY,
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body)
+      }
+    };
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        if(res.statusCode >= 200 && res.statusCode < 300) resolve();
+        else reject(new Error(`Supabase Storage Löschen fehlgeschlagen (${res.statusCode}): ${data.slice(0,200)}`));
+      });
+    });
+    req.on('error', reject);
+    req.write(body);
+    req.end();
+  });
+}
+
+function supabasePublicUrl(bucket, filePath){
+  return `${SUPABASE_URL}/storage/v1/object/public/${bucket}/${filePath}`;
+}
+
+function emptyDB(){
+  return {
+    users: [],
+    images: [],
+    purchases: [],
+    promos: { firstFree:false, twoForOne:false, percent:false, percentValue:20 },
+    firstFreeUsed: {},
+    raffleEntries: [],
+    raffleSettings: { enabled: true },
+    supportMessages: [],
+    newsletterSubscribers: [],
+    dailyEmail: { lastSentAt: null, pendingNote: '', intervalHours: 24 },
+    raffleEmail: { lastPromoSentAt: null, intervalHours: 3 },
+    pendingCheckouts: {} // sessionId -> {userId, itemIds, usesFirstFree, createdAt}
+  };
+}
+
+// ---------- Persistenz (Supabase Storage, sonst lokale JSON-Datei als Fallback) ----------
+async function loadDB(){
+  if(USE_SUPABASE){
+    try {
+      const buf = await supabaseStorageRequest('GET', DB_BUCKET, 'db.json');
+      return JSON.parse(buf.toString('utf8'));
+    } catch(e){
+      console.warn('Keine bestehende Datenbank in Supabase gefunden, lege neue an:', e.message);
+      const initial = emptyDB();
+      await saveDB(initial);
+      return initial;
+    }
+  }
+  if(!fs.existsSync(DATA_FILE)){
+    const initial = emptyDB();
     fs.mkdirSync(path.dirname(DATA_FILE), { recursive: true });
     fs.writeFileSync(DATA_FILE, JSON.stringify(initial, null, 2));
   }
   return JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
 }
-function saveDB(db){
-  fs.writeFileSync(DATA_FILE, JSON.stringify(db, null, 2));
+async function saveDB(dbObj){
+  const json = JSON.stringify(dbObj, null, 2);
+  if(USE_SUPABASE){
+    try { await supabaseStorageRequest('POST', DB_BUCKET, 'db.json', json, 'application/json'); }
+    catch(e){ console.error('Speichern in Supabase fehlgeschlagen:', e.message); }
+    return;
+  }
+  fs.writeFileSync(DATA_FILE, json);
 }
 
-let db = loadDB();
-if(!Array.isArray(db.raffleEntries)) db.raffleEntries = [];
-if(!db.raffleSettings) db.raffleSettings = { enabled: true };
-if(!Array.isArray(db.supportMessages)) db.supportMessages = [];
-if(!Array.isArray(db.newsletterSubscribers)) db.newsletterSubscribers = [];
-if(!db.dailyEmail) db.dailyEmail = { lastSentAt: null, pendingNote: '', intervalHours: 24 };
-if(typeof db.dailyEmail.lastSentAt === 'undefined'){
-  // Migration von der alten kalendertag-basierten Version
-  db.dailyEmail.lastSentAt = db.dailyEmail.lastSentDate ? new Date(db.dailyEmail.lastSentDate).getTime() : null;
-  delete db.dailyEmail.lastSentDate;
-}
-if(typeof db.dailyEmail.intervalHours !== 'number') db.dailyEmail.intervalHours = 24;
-if(!db.raffleEmail) db.raffleEmail = { lastPromoSentAt: null, intervalHours: 3 };
-if(typeof db.raffleEmail.intervalHours !== 'number') db.raffleEmail.intervalHours = 3;
-if(!db.pendingCheckouts) db.pendingCheckouts = {};
-if(!Array.isArray(db.reviews)) db.reviews = []; // {id, userId, userName, imageId, rating, comment, createdAt}
-db.users.forEach(u => { if(!Array.isArray(u.favorites)) u.favorites = []; });
-db.images.forEach(img => { if(typeof img.views !== 'number') img.views = 0; if(!Array.isArray(img.tags)) img.tags = []; });
-if(!Array.isArray(db.flags)) db.flags = []; // {id, imageId, imageName, userId, userName, reason, createdAt}
 function isAdmin(user){
   return !!(user && user.role === 'admin');
 }
-db.users.forEach(u => { if(typeof u.banned !== 'boolean') u.banned = false; if(!u.language) u.language = 'de'; });
-db.images.forEach((img, i) => { if(!img.name) img.name = 'Bild ' + (i + 1); });
 
 // Admin-Konto beim ersten Start anlegen
-function ensureAdmin(){
+async function ensureAdmin(){
   if(!db.users.find(u => u.role === 'admin')){
     const { salt, hash } = hashPassword('VIP');
     db.users.push({
       id: genId(), name: ADMIN_NAME, email: null, role: 'admin',
       salt, hash, birthday: null, createdAt: new Date().toISOString()
     });
-    saveDB(db);
+    await saveDB(db);
   }
 }
-ensureAdmin();
+
+let db;
+async function initDB(){
+  db = await loadDB();
+  if(!Array.isArray(db.raffleEntries)) db.raffleEntries = [];
+  if(!db.raffleSettings) db.raffleSettings = { enabled: true };
+  if(!Array.isArray(db.supportMessages)) db.supportMessages = [];
+  if(!Array.isArray(db.newsletterSubscribers)) db.newsletterSubscribers = [];
+  if(!db.dailyEmail) db.dailyEmail = { lastSentAt: null, pendingNote: '', intervalHours: 24 };
+  if(typeof db.dailyEmail.lastSentAt === 'undefined'){
+    // Migration von der alten kalendertag-basierten Version
+    db.dailyEmail.lastSentAt = db.dailyEmail.lastSentDate ? new Date(db.dailyEmail.lastSentDate).getTime() : null;
+    delete db.dailyEmail.lastSentDate;
+  }
+  if(typeof db.dailyEmail.intervalHours !== 'number') db.dailyEmail.intervalHours = 24;
+  if(!db.raffleEmail) db.raffleEmail = { lastPromoSentAt: null, intervalHours: 3 };
+  if(typeof db.raffleEmail.intervalHours !== 'number') db.raffleEmail.intervalHours = 3;
+  if(!db.pendingCheckouts) db.pendingCheckouts = {};
+  if(!Array.isArray(db.reviews)) db.reviews = [];
+  db.users.forEach(u => { if(!Array.isArray(u.favorites)) u.favorites = []; });
+  db.images.forEach(img => { if(typeof img.views !== 'number') img.views = 0; if(!Array.isArray(img.tags)) img.tags = []; });
+  if(!Array.isArray(db.flags)) db.flags = [];
+  db.users.forEach(u => { if(typeof u.banned !== 'boolean') u.banned = false; if(!u.language) u.language = 'de'; });
+  db.images.forEach((img, i) => { if(!img.name) img.name = 'Bild ' + (i + 1); });
+  await ensureAdmin();
+}
 
 function sendEmail(toEmail, subject, htmlContent){
   return new Promise((resolve) => {
@@ -473,7 +568,7 @@ function publicImage(img, user){
     id: img.id,
     name: img.name || 'Unbenanntes Produkt',
     description: img.description || '',
-    photos: (img.photos || []).map(p => ({ url: '/uploads/' + p.filename, type: p.type })),
+    photos: (img.photos || []).map(p => ({ url: USE_SUPABASE ? supabasePublicUrl(UPLOADS_BUCKET, p.filename) : ('/uploads/' + p.filename), type: p.type })),
     price: img.price,
     sold: !!img.sold,
     purchased,
@@ -769,7 +864,13 @@ async function handleApi(req, res, pathname, method, parsed){
       if(!isVideo && !isImage) return sendJson(res, 400, { error: 'Nur Bild- oder Videodateien erlaubt.' });
       const ext = (mime.split('/')[1] || 'bin').replace('quicktime','mov').split('+')[0];
       const filename = genId() + '.' + ext;
-      fs.writeFileSync(path.join(UPLOADS_DIR, filename), Buffer.from(base64, 'base64'));
+      const buffer = Buffer.from(base64, 'base64');
+      if(USE_SUPABASE){
+        try { await supabaseStorageRequest('POST', UPLOADS_BUCKET, filename, buffer, mime); }
+        catch(e){ return sendJson(res, 500, { error: 'Foto-Upload fehlgeschlagen: ' + e.message }); }
+      } else {
+        fs.writeFileSync(path.join(UPLOADS_DIR, filename), buffer);
+      }
       photos.push({ filename, mime, type: isVideo ? 'video' : 'image' });
     }
 
@@ -802,7 +903,12 @@ async function handleApi(req, res, pathname, method, parsed){
     if(method === 'DELETE'){
       db.images = db.images.filter(i => i.id !== img.id);
       db.purchases = db.purchases.filter(p => p.imageId !== img.id);
-      (img.photos || []).forEach(p => { try { fs.unlinkSync(path.join(UPLOADS_DIR, p.filename)); } catch(e){} });
+      if(USE_SUPABASE){
+        const filenames = (img.photos || []).map(p => p.filename);
+        if(filenames.length) await supabaseDelete(UPLOADS_BUCKET, filenames).catch(e => console.error('Supabase-Löschen fehlgeschlagen:', e.message));
+      } else {
+        (img.photos || []).forEach(p => { try { fs.unlinkSync(path.join(UPLOADS_DIR, p.filename)); } catch(e){} });
+      }
       saveDB(db);
       return sendJson(res, 200, { ok: true });
     }
@@ -1337,10 +1443,6 @@ async function handleApi(req, res, pathname, method, parsed){
   return sendJson(res, 404, { error: 'Endpunkt nicht gefunden.' });
 }
 
-server.listen(PORT, () => {
-  console.log(`Lumora-Server läuft auf http://localhost:${PORT}`);
-});
-
 // ---------- Tägliche automatische E-Mail ----------
 // Prüft stündlich, ob heute schon eine automatische Mail verschickt wurde.
 // Funktioniert nur zuverlässig, solange der Server durchgehend läuft
@@ -1349,12 +1451,21 @@ function scheduledDailyCheck(){
   const siteUrl = process.env.SITE_URL || `http://localhost:${PORT}`;
   runDailySend(siteUrl, false).catch(e => console.error('Fehler bei automatischer Tages-Mail:', e.message));
 }
-setTimeout(scheduledDailyCheck, 60 * 1000); // kurz nach dem Start einmal prüfen
-setInterval(scheduledDailyCheck, 60 * 60 * 1000); // danach stündlich prüfen
 
 function scheduledRafflePromoCheck(){
   const siteUrl = process.env.SITE_URL || `http://localhost:${PORT}`;
   runRafflePromoSend(siteUrl, false).catch(e => console.error('Fehler bei Gewinnspiel-Werbung:', e.message));
 }
-setTimeout(scheduledRafflePromoCheck, 90 * 1000); // kurz nach dem Start einmal prüfen
-setInterval(scheduledRafflePromoCheck, 60 * 60 * 1000); // stündlich prüfen, sendet aber wirklich nur alle 3h
+
+initDB().then(() => {
+  server.listen(PORT, () => {
+    console.log(`Lumora-Server läuft auf http://localhost:${PORT}` + (USE_SUPABASE ? ' (Speicher: Supabase)' : ' (Speicher: lokale Datei)'));
+  });
+  setTimeout(scheduledDailyCheck, 60 * 1000); // kurz nach dem Start einmal prüfen
+  setInterval(scheduledDailyCheck, 60 * 60 * 1000); // danach stündlich prüfen
+  setTimeout(scheduledRafflePromoCheck, 90 * 1000); // kurz nach dem Start einmal prüfen
+  setInterval(scheduledRafflePromoCheck, 60 * 60 * 1000); // stündlich prüfen, sendet aber wirklich nur alle 3h
+}).catch(err => {
+  console.error('Fataler Fehler beim Laden der Datenbank:', err.message);
+  process.exit(1);
+});
