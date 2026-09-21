@@ -552,7 +552,7 @@ function sendJson(res, status, obj){
 }
 
 function publicUser(u){
-  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de' };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de', stripeConnected: !!u.stripeOnboarded };
 }
 
 function computeBestsellerId(){
@@ -676,6 +676,13 @@ function stripeGet(path){
     reqStripe.on('error', reject);
     reqStripe.end();
   });
+}
+
+// Gibt die Stripe-Connected-Account-ID des Verkäufers zurück, wenn er sein eigenes
+// Stripe-Konto verknüpft und fertig eingerichtet hat — sonst null (= Geld geht an den Admin/Platform-Account).
+function sellerDestination(sellerId){
+  const seller = db.users.find(u => u.id === sellerId);
+  return (seller && seller.stripeOnboarded && seller.stripeAccountId) ? seller.stripeAccountId : null;
 }
 
 function computeTotals(imageIds, user){
@@ -1318,6 +1325,52 @@ async function handleApi(req, res, pathname, method, parsed){
     return sendJson(res, 200, { ok: true, language: lang });
   }
 
+  // ---- Eigenes Stripe-Konto verknüpfen (damit Verkäufer ihr Geld direkt bekommen, statt über den Admin) ----
+  if(pathname === '/api/stripe-connect/onboard' && method === 'POST'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    const proto = req.headers['x-forwarded-proto'] || 'http';
+    const siteUrl = process.env.SITE_URL || `${proto}://${req.headers.host}`;
+    try {
+      if(!user.stripeAccountId){
+        const account = await stripeRequest('/v1/accounts', {
+          type: 'express',
+          capabilities: { card_payments: { requested: true }, transfers: { requested: true } }
+        });
+        user.stripeAccountId = account.id;
+        user.stripeOnboarded = false;
+        saveDB(db);
+      }
+      const link = await stripeRequest('/v1/account_links', {
+        account: user.stripeAccountId,
+        refresh_url: `${siteUrl}/?stripeConnect=refresh`,
+        return_url: `${siteUrl}/?stripeConnect=return`,
+        type: 'account_onboarding'
+      });
+      return sendJson(res, 200, { url: link.url });
+    } catch(e){
+      return sendJson(res, 500, { error: e.message });
+    }
+  }
+  if(pathname === '/api/stripe-connect/status' && method === 'GET'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    if(!user.stripeAccountId) return sendJson(res, 200, { connected: false });
+    try {
+      const account = await stripeGet(`/v1/accounts/${user.stripeAccountId}`);
+      user.stripeOnboarded = !!(account.charges_enabled && account.payouts_enabled);
+      saveDB(db);
+      return sendJson(res, 200, { connected: user.stripeOnboarded });
+    } catch(e){
+      return sendJson(res, 500, { error: e.message });
+    }
+  }
+  if(pathname === '/api/stripe-connect/disconnect' && method === 'POST'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    user.stripeAccountId = null;
+    user.stripeOnboarded = false;
+    saveDB(db);
+    return sendJson(res, 200, { ok: true });
+  }
+
   // ---- Konten (nur Admin kann Konten für andere Leute erstellen — keine öffentliche Registrierung) ----
   if(pathname === '/api/accounts' && method === 'GET'){
     if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
@@ -1400,10 +1453,23 @@ async function handleApi(req, res, pathname, method, parsed){
       saveDB(db);
       return sendJson(res, 200, { freeCheckout: true });
     }
+
+    // Geld geht direkt an den Verkäufer, wenn er sein eigenes Stripe-Konto verknüpft hat —
+    // sonst wie gehabt an den Admin. Ein Warenkorb darf dabei nur EINEN Zahlungsempfänger haben,
+    // da eine einzelne Stripe-Zahlung nicht auf mehrere Konten gleichzeitig aufgeteilt werden kann.
+    const destinations = new Set(totals.itemIds.map(id => {
+      const im = db.images.find(x => x.id === id);
+      return (im && sellerDestination(im.uploadedBy)) || 'platform';
+    }));
+    if(destinations.size > 1){
+      return sendJson(res, 400, { error: 'Dein Warenkorb enthält Produkte von mehreren Verkäufern mit unterschiedlichen Zahlungsempfängern. Bitte kaufe sie in getrennten Bestellungen — z.B. erst die Produkte von einem Verkäufer bezahlen, danach die vom anderen.' });
+    }
+    const destination = [...destinations][0];
+
     const proto = req.headers['x-forwarded-proto'] || 'http';
     const siteUrl = process.env.SITE_URL || `${proto}://${req.headers.host}`;
     try {
-      const session = await stripeRequest('/v1/checkout/sessions', {
+      const sessionParams = {
         mode: 'payment',
         success_url: `${siteUrl}/?checkout=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${siteUrl}/?checkout=cancel`,
@@ -1415,7 +1481,11 @@ async function handleApi(req, res, pathname, method, parsed){
             product_data: { name: `Lumora Marktplatz — ${totals.itemIds.length} Produkt${totals.itemIds.length === 1 ? '' : 'e'}` }
           }
         }]
-      });
+      };
+      if(destination !== 'platform'){
+        sessionParams.payment_intent_data = { transfer_data: { destination } };
+      }
+      const session = await stripeRequest('/v1/checkout/sessions', sessionParams);
       db.pendingCheckouts[session.id] = {
         userId: user.id, itemIds: totals.itemIds, usesFirstFree: totals.usesFirstFree,
         itemPrices: totals.itemIds.map(id => { const im = db.images.find(x => x.id === id); return { id, price: im ? im.price : 0 }; }),

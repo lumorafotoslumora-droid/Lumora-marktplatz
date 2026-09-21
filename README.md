@@ -49,6 +49,17 @@ Stripe zieht pro erfolgreicher Zahlung eine kleine Gebühr ab (in den meisten L�
 
 ---
 
+## Direkte Auszahlung an einzelne Verkäufer (optional)
+
+Standardmäßig geht das Geld aus jedem Verkauf auf **dein** Stripe-Konto (das mit `STRIPE_SECRET_KEY`) — unabhängig davon, wer das Produkt eingestellt hat. Wer will, kann aber unter "Mein Konto" → "Auszahlung" sein **eigenes** Stripe-Konto verknüpfen. Ab dann geht das Geld aus seinen Verkäufen automatisch direkt an ihn, nicht mehr an dich.
+
+- Dafür wird [Stripe Connect](https://stripe.com/connect) genutzt (Express-Konten). Damit `POST /v1/accounts` funktioniert, muss Connect einmalig in **deinem** Stripe-Dashboard aktiviert sein: **Settings → Connect** → "Get started" (kostenlos, dauert wenige Minuten, ggf. ein paar Angaben zur Plattform).
+- Jede Person, die ihr eigenes Konto verknüpfen will, durchläuft dabei einmalig Stripes eigene Verifizierung (Ausweis, Bankverbindung) — das übernimmt Stripe komplett, nicht die Website.
+- **Ein Warenkorb darf nur Produkte mit demselben Zahlungsempfänger enthalten** — z.B. nur Produkte von einem verknüpften Verkäufer, oder nur Produkte ohne eigenes Stripe-Konto (die dann an dich gehen). Sind beide gemischt, zeigt die Seite eine klare Fehlermeldung und bittet um zwei getrennte Bestellungen — eine einzelne Kartenzahlung kann technisch nicht automatisch auf zwei verschiedene Konten gleichzeitig aufgeteilt werden.
+- Wer sein Konto nicht verknüpft, für den ändert sich nichts — die Zahlung geht wie bisher an dich.
+
+---
+
 ## Online veröffentlichen (kostenlos)
 
 Empfehlung: **Render.com** (kostenlose Stufe reicht zum Testen).
@@ -105,6 +116,7 @@ Ohne diese beiden Variablen läuft der Server automatisch im lokalen Datei-Modus
 | Produkte einstellen & verkaufen | ✅ | ✅ (nur eigene) |
 | Preis eigener Produkte ändern | ✅ | ✅ (nur eigene) |
 | Eigene Verkäufe einsehen | ✅ (alle) | ✅ (nur eigene) |
+| Eigenes Stripe-Konto für direkte Auszahlung verknüpfen | ✅ | ✅ |
 | Konten erstellen/löschen | ✅ | ❌ |
 | Aktionen (Rabatte) verwalten | ✅ | ❌ |
 | Gewinnspiel ein/aus schalten, Gewinner auslosen | ✅ | ❌ |

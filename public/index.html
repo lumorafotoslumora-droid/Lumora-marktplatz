@@ -497,6 +497,14 @@
         <div class="err-text" id="changePwMsg"></div>
         <button class="btn solid" style="width:100%;" onclick="changePassword()" data-i18n="change_pw_btn">Passwort speichern</button>
       </div>
+      <div class="auth-card" style="max-width:420px; margin-bottom:36px;" id="payoutCard">
+        <h3 data-i18n="payout_title">Auszahlung</h3>
+        <p class="sub" data-i18n="payout_sub">Verknüpfe dein eigenes Stripe-Konto, damit du das Geld für deine Verkäufe direkt bekommst — statt über den Admin.</p>
+        <div id="payoutStatus" style="margin:6px 0 14px; font-size:13px;"></div>
+        <button class="btn solid" style="width:100%;" onclick="connectStripe()" id="payoutConnectBtn" data-i18n="payout_connect_btn">Mit Stripe verknüpfen</button>
+        <button class="btn muted" style="width:100%; margin-top:8px; display:none;" onclick="disconnectStripe()" id="payoutDisconnectBtn" data-i18n="payout_disconnect_btn">Verknüpfung aufheben</button>
+        <div class="redeem-msg" id="payoutMsg" style="margin-top:10px;"></div>
+      </div>
       <div id="purchasesSection">
         <p class="eyebrow" data-i18n="my_purchases">Meine Bestellungen</p>
         <button class="btn muted" style="margin-bottom:14px; font-size:11.5px; padding:6px 12px;" onclick="exportMyPurchasesCsv()" data-i18n="export_purchases_btn">📥 Als Liste exportieren</button>
@@ -820,7 +828,11 @@
       admin_empty_products:"Noch keine Produkte eingestellt.",
       stat_sales_count:"Verkäufe", stat_sales_revenue:"Umsatz gesamt", export_csv_btn:"📥 Als CSV exportieren",
       sales_col_buyer:"Käufer", sales_col_product:"Produkt", sales_col_uploader:"Hochgeladen von", sales_col_price:"Preis", sales_col_date:"Datum",
-      sales_empty:"Noch keine Verkäufe."
+      sales_empty:"Noch keine Verkäufe.",
+      payout_title:"Auszahlung", payout_sub:"Verknüpfe dein eigenes Stripe-Konto, damit du das Geld für deine Verkäufe direkt bekommst — statt über den Admin.",
+      payout_connect_btn:"Mit Stripe verknüpfen", payout_disconnect_btn:"Verknüpfung aufheben",
+      payout_connected:"Dein Stripe-Konto ist verknüpft — du bekommst dein Geld direkt.", payout_not_connected:"Noch nicht verknüpft — Geld aus deinen Verkäufen geht aktuell an den Admin.",
+      payout_disconnected:"Verknüpfung aufgehoben."
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1311,7 +1323,11 @@
       admin_empty_products:"Endnu ingen produkter oprettet.",
       stat_sales_count:"Salg", stat_sales_revenue:"Omsætning i alt", export_csv_btn:"📥 Eksportér som CSV",
       sales_col_buyer:"Køber", sales_col_product:"Produkt", sales_col_uploader:"Uploadet af", sales_col_price:"Pris", sales_col_date:"Dato",
-      sales_empty:"Endnu ingen salg."
+      sales_empty:"Endnu ingen salg.",
+      payout_title:"Udbetaling", payout_sub:"Forbind din egen Stripe-konto, så du får pengene for dine salg direkte — i stedet for via admin.",
+      payout_connect_btn:"Forbind med Stripe", payout_disconnect_btn:"Fjern forbindelse",
+      payout_connected:"Din Stripe-konto er forbundet — du får dine penge direkte.", payout_not_connected:"Endnu ikke forbundet — penge fra dine salg går i øjeblikket til admin.",
+      payout_disconnected:"Forbindelse fjernet."
     }
   };
 
@@ -2335,6 +2351,7 @@
     document.getElementById('profileAvatar').textContent = currentUserData.name.charAt(0).toUpperCase();
     document.getElementById('profileName').textContent = currentUserData.name;
     document.getElementById('profileRole').textContent = role()==='admin'?t('role_admin'):t('role_customer');
+    renderPayoutStatus();
 
     const detailsEl = document.getElementById('profileDetails'), statRow = document.getElementById('statRow');
     if(role() === 'customer'){
@@ -2366,6 +2383,53 @@
       statRow.innerHTML = '';
       document.getElementById('purchasesSection').style.display = 'none';
       document.getElementById('favoritesSection').style.display = 'none';
+    }
+  }
+
+  function renderPayoutStatus(){
+    const statusEl = document.getElementById('payoutStatus');
+    const connectBtn = document.getElementById('payoutConnectBtn');
+    const disconnectBtn = document.getElementById('payoutDisconnectBtn');
+    if(currentUserData.stripeConnected){
+      statusEl.innerHTML = `<span style="color:var(--green);">✓ ${t('payout_connected')}</span>`;
+      connectBtn.style.display = 'none';
+      disconnectBtn.style.display = 'block';
+    } else {
+      statusEl.innerHTML = `<span style="color:var(--muted);">${t('payout_not_connected')}</span>`;
+      connectBtn.style.display = 'block';
+      disconnectBtn.style.display = 'none';
+    }
+  }
+
+  async function connectStripe(){
+    const msgEl = document.getElementById('payoutMsg');
+    msgEl.textContent = ''; msgEl.className = 'redeem-msg';
+    try {
+      const r = await api('/api/stripe-connect/onboard', { method:'POST' });
+      window.location.href = r.url;
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
+  }
+
+  async function disconnectStripe(){
+    const msgEl = document.getElementById('payoutMsg');
+    try {
+      await api('/api/stripe-connect/disconnect', { method:'POST' });
+      await loadMe();
+      renderPayoutStatus();
+      msgEl.textContent = t('payout_disconnected'); msgEl.className = 'redeem-msg ok';
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
+  }
+
+  async function checkStripeConnectReturn(){
+    const params = new URLSearchParams(window.location.search);
+    const stripeConnect = params.get('stripeConnect');
+    if(!stripeConnect) return;
+    params.delete('stripeConnect');
+    const newSearch = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+    if(stripeConnect === 'return' && currentUserData){
+      try { await api('/api/stripe-connect/status'); await loadMe(); } catch(e){}
+      if(document.getElementById('view-account') && document.getElementById('view-account').classList.contains('active')) renderAccountView();
     }
   }
 
@@ -3042,6 +3106,7 @@
     loadTestimonials();
     renderFaqAccordion();
     await checkCheckoutReturn();
+    await checkStripeConnectReturn();
     const hashMatch = window.location.hash.match(/#img=([a-f0-9]+)/);
     if(hashMatch && images.some(img => img.id === hashMatch[1])){ openLightbox(hashMatch[1]); }
   })();
