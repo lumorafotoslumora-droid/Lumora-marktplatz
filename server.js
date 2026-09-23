@@ -552,7 +552,13 @@ function sendJson(res, status, obj){
 }
 
 function publicUser(u){
-  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de', stripeConnected: !!u.stripeOnboarded };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de', stripeConnected: !!u.stripeOnboarded, sellingExempt: !!u.sellingExempt };
+}
+
+// Darf dieses Konto Produkte verkaufen? Admin immer; sonst nur mit eigenem
+// verknüpftem Stripe-Konto oder wenn der Admin es ausdrücklich freigeschaltet hat.
+function canSell(user){
+  return isAdmin(user) || !!user.stripeOnboarded || !!user.sellingExempt;
 }
 
 function computeBestsellerId(){
@@ -869,6 +875,7 @@ async function handleApi(req, res, pathname, method, parsed){
 
   if(pathname === '/api/images' && method === 'POST'){
     if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    if(!canSell(user)) return sendJson(res, 403, { error: 'Du musst zuerst dein eigenes Stripe-Konto verknüpfen (unter "Mein Konto" → "Auszahlung"), bevor du Produkte verkaufen kannst — oder der Admin muss dich dafür freischalten.' });
     const body = await readJsonBody(req);
     const dataUrls = Array.isArray(body.photos) ? body.photos : [];
     if(dataUrls.length === 0) return sendJson(res, 400, { error: 'Bitte mindestens ein Foto hochladen.' });
@@ -1409,6 +1416,15 @@ async function handleApi(req, res, pathname, method, parsed){
     for(const [token, uid] of sessions){ if(uid === target.id) sessions.delete(token); }
     saveDB(db);
     return sendJson(res, 200, { ok: true });
+  }
+  if(accMatch && method === 'PATCH'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    const target = db.users.find(u => u.id === accMatch[1]);
+    if(!target) return sendJson(res, 404, { error: 'Konto nicht gefunden.' });
+    const body = await readJsonBody(req);
+    if(typeof body.sellingExempt === 'boolean') target.sellingExempt = body.sellingExempt;
+    saveDB(db);
+    return sendJson(res, 200, { account: publicUser(target) });
   }
 
   // ---- Aktionen ----

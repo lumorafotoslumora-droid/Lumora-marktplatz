@@ -556,6 +556,7 @@
     </div>
 
     <div class="admin-subview active" id="admintab-content">
+      <div class="notice" id="cantSellNotice" style="display:none; max-width:520px; margin-bottom:24px;" data-i18n="cant_sell_notice">Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu "Mein Konto" → "Auszahlung" — oder bitte den Admin, dich dafür freizuschalten.</div>
       <div class="panel-card show" id="newProductPanel" style="max-width:520px; margin-bottom:24px;">
         <h3 data-i18n="newproduct_title">➕ Neues Produkt einstellen</h3>
         <div class="field"><label data-i18n="label_title">Titel</label><input type="text" id="newProdName" data-i18n-placeholder="newprod_name_placeholder" placeholder="z.B. Vintage Lederjacke"></div>
@@ -832,7 +833,8 @@
       payout_title:"Auszahlung", payout_sub:"Verknüpfe dein eigenes Stripe-Konto, damit du das Geld für deine Verkäufe direkt bekommst — statt über den Admin.",
       payout_connect_btn:"Mit Stripe verknüpfen", payout_disconnect_btn:"Verknüpfung aufheben",
       payout_connected:"Dein Stripe-Konto ist verknüpft — du bekommst dein Geld direkt.", payout_not_connected:"Noch nicht verknüpft — Geld aus deinen Verkäufen geht aktuell an den Admin.",
-      payout_disconnected:"Verknüpfung aufgehoben."
+      payout_disconnected:"Verknüpfung aufgehoben.",
+      cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten."
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1327,7 +1329,8 @@
       payout_title:"Udbetaling", payout_sub:"Forbind din egen Stripe-konto, så du får pengene for dine salg direkte — i stedet for via admin.",
       payout_connect_btn:"Forbind med Stripe", payout_disconnect_btn:"Fjern forbindelse",
       payout_connected:"Din Stripe-konto er forbundet — du får dine penge direkte.", payout_not_connected:"Endnu ikke forbundet — penge fra dine salg går i øjeblikket til admin.",
-      payout_disconnected:"Forbindelse fjernet."
+      payout_disconnected:"Forbindelse fjernet.",
+      cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang."
     }
   };
 
@@ -1967,6 +1970,9 @@
     if(isAdmin){ document.getElementById('rolePillAdmin').classList.add('show'); document.getElementById('rolePillAdmin').innerHTML = `<b style="color:var(--ink)">${currentUserData.name}</b><span class="badge">Admin</span>`; }
     if(isCustomer){ document.getElementById('rolePillCustomer').classList.add('show'); document.getElementById('rolePillCustomer').innerHTML = `<b style="color:var(--ink)">${currentUserData.name}</b><span class="badge">Kunde</span>`; }
     if(!isAdmin && document.getElementById('view-admin').classList.contains('active')) switchView('gallery');
+    const canSellClient = isAdmin || (loggedIn && currentUserData && (currentUserData.stripeConnected || currentUserData.sellingExempt));
+    document.getElementById('newProductPanel').style.display = canSellClient ? '' : 'none';
+    document.getElementById('cantSellNotice').style.display = (loggedIn && !canSellClient) ? 'block' : 'none';
     if(isAdmin) applyAdminTabVisibility();
     else {
       ['promo','accounts','ban','raffle','support','newsletter','update','dashboard','flags'].forEach(tk => {
@@ -2069,8 +2075,16 @@
       const r = await api('/api/accounts');
       const list = document.getElementById('accountsList');
       if(r.accounts.length === 0){ list.innerHTML = '<div class="team-empty">Noch keine Konten angelegt.</div>'; return; }
-      list.innerHTML = r.accounts.map(a => `<div class="team-row"><span>${a.name}${a.email ? ' <span style="color:var(--muted); font-size:11px;">(' + a.email + ')</span>' : ''}</span><button class="btn danger" style="padding:4px 10px; font-size:10.5px;" onclick="removeAccount('${a.id}')">Entfernen</button></div>`).join('');
+      list.innerHTML = r.accounts.map(a => `<div class="team-row" style="flex-wrap:wrap; gap:8px;">
+        <span>${a.name}${a.email ? ' <span style="color:var(--muted); font-size:11px;">(' + a.email + ')</span>' : ''} ${a.stripeConnected ? '<span style="color:var(--green); font-size:11px;">✓ Stripe verknüpft</span>' : ''}</span>
+        <label style="display:flex; align-items:center; gap:4px; font-size:11px; font-weight:400;"><input type="checkbox" ${a.sellingExempt?'checked':''} onchange="setSellingExempt('${a.id}', this.checked)" style="width:auto;"> Verkaufen ohne Stripe erlauben</label>
+        <button class="btn danger" style="padding:4px 10px; font-size:10.5px;" onclick="removeAccount('${a.id}')">Entfernen</button>
+      </div>`).join('');
     } catch(e){}
+  }
+  async function setSellingExempt(id, val){
+    await api('/api/accounts/' + id, { method:'PATCH', body:{ sellingExempt: val } });
+    loadAccountsList();
   }
   async function createAccount(){
     const nameEl = document.getElementById('newAccName'), emailEl = document.getElementById('newAccEmail'), passEl = document.getElementById('newAccPass');

@@ -56,7 +56,7 @@ Standardmäßig geht das Geld aus jedem Verkauf auf **dein** Stripe-Konto (das m
 - Dafür wird [Stripe Connect](https://stripe.com/connect) genutzt (Express-Konten). Damit `POST /v1/accounts` funktioniert, muss Connect einmalig in **deinem** Stripe-Dashboard aktiviert sein: **Settings → Connect** → "Get started" (kostenlos, dauert wenige Minuten, ggf. ein paar Angaben zur Plattform).
 - Jede Person, die ihr eigenes Konto verknüpfen will, durchläuft dabei einmalig Stripes eigene Verifizierung (Ausweis, Bankverbindung) — das übernimmt Stripe komplett, nicht die Website.
 - **Ein Warenkorb darf nur Produkte mit demselben Zahlungsempfänger enthalten** — z.B. nur Produkte von einem verknüpften Verkäufer, oder nur Produkte ohne eigenes Stripe-Konto (die dann an dich gehen). Sind beide gemischt, zeigt die Seite eine klare Fehlermeldung und bittet um zwei getrennte Bestellungen — eine einzelne Kartenzahlung kann technisch nicht automatisch auf zwei verschiedene Konten gleichzeitig aufgeteilt werden.
-- Wer sein Konto nicht verknüpft, für den ändert sich nichts — die Zahlung geht wie bisher an dich.
+- **Ohne verknüpftes Stripe-Konto kann ein Konto nicht verkaufen** (nur noch kaufen) — das Produkt-Einstellen-Formular ist dann ausgeblendet und zeigt stattdessen einen Hinweis. Als Admin kannst du das für einzelne Konten aber jederzeit unter "Verwaltung" → "Konten" mit der Checkbox **"Verkaufen ohne Stripe erlauben"** aufheben — dann darf dieses Konto trotzdem verkaufen, das Geld geht dabei ganz normal an dich (wie vor Einführung dieser Funktion). Der Admin selbst kann immer verkaufen, unabhängig von alldem.
 
 ---
 
@@ -113,7 +113,7 @@ Ohne diese beiden Variablen läuft der Server automatisch im lokalen Datei-Modus
 
 | Funktion | Admin | Konto (Verkäufer/Käufer) |
 |---|---|---|
-| Produkte einstellen & verkaufen | ✅ | ✅ (nur eigene) |
+| Produkte einstellen & verkaufen | ✅ (immer) | ✅ (nur eigene, braucht eigenes Stripe-Konto oder Freischaltung durch Admin) |
 | Preis eigener Produkte ändern | ✅ | ✅ (nur eigene) |
 | Eigene Verkäufe einsehen | ✅ (alle) | ✅ (nur eigene) |
 | Eigenes Stripe-Konto für direkte Auszahlung verknüpfen | ✅ | ✅ |
