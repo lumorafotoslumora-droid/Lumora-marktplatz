@@ -14,6 +14,8 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const ADMIN_NAME = 'Matic';
 const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','ru','ar','zh','ja','ko','hi','da'];
+// Provision, die der Admin bei Verkäufen über ein verknüpftes Stripe-Konto eines Verkäufers automatisch erhält.
+const PLATFORM_FEE_PERCENT = 5;
 
 // Verzeichnisse sicherstellen (wichtig, falls der Ordner z.B. von GitHub leer war
 // und deshalb beim Hochladen des Projekts gar nicht mit übertragen wurde — Git
@@ -1499,7 +1501,10 @@ async function handleApi(req, res, pathname, method, parsed){
         }]
       };
       if(destination !== 'platform'){
-        sessionParams.payment_intent_data = { transfer_data: { destination } };
+        sessionParams.payment_intent_data = {
+          transfer_data: { destination },
+          application_fee_amount: Math.round(totals.total * 100 * (PLATFORM_FEE_PERCENT / 100))
+        };
       }
       const session = await stripeRequest('/v1/checkout/sessions', sessionParams);
       db.pendingCheckouts[session.id] = {
