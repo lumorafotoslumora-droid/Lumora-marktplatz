@@ -464,14 +464,59 @@
     <div class="hero" style="margin-bottom:28px;"><p class="eyebrow" data-i18n="account_eyebrow">Konto</p><h2 id="accountHeading" style="font-size:28px;" data-i18n="account_title">Mein Konto</h2></div>
 
     <div id="loggedOutArea" class="account-grid">
-      <div class="auth-card">
+      <div class="auth-card" id="loginPanel">
         <h3 data-i18n="login_title">Willkommen zurück</h3>
         <p class="sub" data-i18n="login_sub">Melde dich mit deinem bestehenden Zugang an</p>
         <div class="field"><label data-i18n="login_label_id">Name oder E-Mail</label><input type="text" id="loginId"></div>
         <div class="field"><label data-i18n="label_password">Passwort</label><input type="password" id="loginPass"></div>
         <div class="err-text" id="loginErr"></div>
         <button class="btn solid" style="width:100%;" onclick="attemptLogin()" data-i18n="login_btn">Anmelden</button>
+        <div style="margin-top:12px; font-size:12.5px; display:flex; gap:14px; flex-wrap:wrap;">
+          <a href="#" onclick="showAuthPanel('forgotPw'); return false;" data-i18n="forgot_pw_link">Passwort vergessen?</a>
+          <a href="#" onclick="showAuthPanel('loginCode'); return false;" data-i18n="login_code_link">Mit E-Mail-Code anmelden</a>
+        </div>
       </div>
+
+      <div class="auth-card" id="forgotPwPanel" style="display:none;">
+        <h3 data-i18n="forgot_pw_title">Passwort vergessen</h3>
+        <p class="sub" data-i18n="forgot_pw_sub">Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Code zum Zurücksetzen.</p>
+        <div id="forgotPwStep1">
+          <div class="field"><label data-i18n="login_label_id">Name oder E-Mail</label><input type="text" id="forgotPwId"></div>
+          <div class="err-text" id="forgotPwErr1"></div>
+          <button class="btn solid" style="width:100%;" onclick="requestForgotPasswordCode()" data-i18n="forgot_pw_request_btn">Code anfordern</button>
+        </div>
+        <div id="forgotPwStep2" style="display:none;">
+          <p class="sub" style="color:var(--green);" data-i18n="forgot_pw_code_sent">Code wurde gesendet! Prüfe dein Postfach.</p>
+          <div class="field"><label data-i18n="label_code">Code</label><input type="text" id="forgotPwCode" maxlength="6" inputmode="numeric"></div>
+          <div class="field"><label data-i18n="label_new_password">Neues Passwort</label><input type="password" id="forgotPwNewPass" oninput="updateForgotPwChecklist()"></div>
+          <div class="pw-checklist">
+            <div class="pw-item" id="fpwLenCheck"><span class="dot"></span><span data-i18n="pw_len">Mindestens 8 Zeichen</span></div>
+            <div class="pw-item" id="fpwUpperCheck"><span class="dot"></span><span data-i18n="pw_upper">Ein Großbuchstabe</span></div>
+            <div class="pw-item" id="fpwNumberCheck"><span class="dot"></span><span data-i18n="pw_number">Eine Zahl</span></div>
+          </div>
+          <div class="err-text" id="forgotPwErr2"></div>
+          <button class="btn solid" style="width:100%;" onclick="confirmResetPassword()" data-i18n="reset_pw_btn">Neues Passwort setzen</button>
+        </div>
+        <div style="margin-top:12px; font-size:12.5px;"><a href="#" onclick="showAuthPanel('login'); return false;" data-i18n="back_to_login_link">← Zurück zur Anmeldung</a></div>
+      </div>
+
+      <div class="auth-card" id="loginCodePanel" style="display:none;">
+        <h3 data-i18n="login_code_title">Anmeldung per E-Mail-Code</h3>
+        <p class="sub" data-i18n="login_code_sub">Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Anmelde-Code, ganz ohne Passwort.</p>
+        <div id="loginCodeStep1">
+          <div class="field"><label data-i18n="login_label_id">Name oder E-Mail</label><input type="text" id="loginCodeId"></div>
+          <div class="err-text" id="loginCodeErr1"></div>
+          <button class="btn solid" style="width:100%;" onclick="requestLoginCode()" data-i18n="login_code_request_btn">Code anfordern</button>
+        </div>
+        <div id="loginCodeStep2" style="display:none;">
+          <p class="sub" style="color:var(--green);" data-i18n="login_code_sent">Code wurde gesendet! Prüfe dein Postfach.</p>
+          <div class="field"><label data-i18n="label_code">Code</label><input type="text" id="loginCodeCode" maxlength="6" inputmode="numeric"></div>
+          <div class="err-text" id="loginCodeErr2"></div>
+          <button class="btn solid" style="width:100%;" onclick="confirmLoginCode()" data-i18n="login_code_confirm_btn">Anmelden</button>
+        </div>
+        <div style="margin-top:12px; font-size:12.5px;"><a href="#" onclick="showAuthPanel('login'); return false;" data-i18n="back_to_login_link">← Zurück zur Anmeldung</a></div>
+      </div>
+
       <div class="auth-card">
         <h3 data-i18n="register_title">Kein eigenes Konto?</h3>
         <p class="sub" data-i18n="register_sub">Konten werden ausschließlich vom Admin erstellt — melde dich bei uns, um Zugang zu bekommen.</p>
@@ -817,6 +862,9 @@
       cart_eyebrow:"Kasse", cart_title:"Warenkorb", cart_empty:"Dein Warenkorb ist leer.", cart_subtotal:"Zwischensumme", cart_bundle:"Aktionsrabatt", cart_total:"Gesamt", cart_checkout_btn:"Zur Kasse",
       account_eyebrow:"Konto", account_title:"Mein Konto",
       login_title:"Willkommen zurück", login_sub:"Melde dich mit deinem bestehenden Zugang an", login_label_id:"Name oder E-Mail", label_password:"Passwort", login_btn:"Anmelden",
+      forgot_pw_link:"Passwort vergessen?", login_code_link:"Mit E-Mail-Code anmelden", back_to_login_link:"← Zurück zur Anmeldung", label_code:"Code",
+      forgot_pw_title:"Passwort vergessen", forgot_pw_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Code zum Zurücksetzen.", forgot_pw_request_btn:"Code anfordern", forgot_pw_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", reset_pw_btn:"Neues Passwort setzen",
+      login_code_title:"Anmeldung per E-Mail-Code", login_code_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Anmelde-Code, ganz ohne Passwort.", login_code_request_btn:"Code anfordern", login_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", login_code_confirm_btn:"Anmelden", reset_pw_success:"Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.",
       register_title:"Kein eigenes Konto?", register_sub:"Konten werden ausschließlich vom Admin erstellt — melde dich bei uns, um Zugang zu bekommen.", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", register_btn:"Konto erstellen",
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
@@ -1314,6 +1362,9 @@
       cart_eyebrow:"Kasse", cart_title:"Kurv", cart_empty:"Din kurv er tom.", cart_subtotal:"Subtotal", cart_bundle:"Tilbudsrabat", cart_total:"I alt", cart_checkout_btn:"Gå til kassen",
       account_eyebrow:"Konto", account_title:"Min konto",
       login_title:"Velkommen tilbage", login_sub:"Log ind med din eksisterende konto", login_label_id:"Navn eller e-mail", label_password:"Adgangskode", login_btn:"Log ind",
+      forgot_pw_link:"Glemt adgangskode?", login_code_link:"Log ind med e-mail-kode", back_to_login_link:"← Tilbage til login", label_code:"Kode",
+      forgot_pw_title:"Glemt adgangskode", forgot_pw_sub:"Indtast dit navn eller din e-mail — vi sender dig en kode til nulstilling.", forgot_pw_request_btn:"Anmod om kode", forgot_pw_code_sent:"Koden er sendt! Tjek din indbakke.", reset_pw_btn:"Gem ny adgangskode",
+      login_code_title:"Log ind med e-mail-kode", login_code_sub:"Indtast dit navn eller din e-mail — vi sender dig en login-kode, helt uden adgangskode.", login_code_request_btn:"Anmod om kode", login_code_sent:"Koden er sendt! Tjek din indbakke.", login_code_confirm_btn:"Log ind", reset_pw_success:"Adgangskode ændret! Du kan nu logge ind.",
       register_title:"Ingen egen konto?", register_sub:"Konti oprettes udelukkende af admin — kontakt os for at få adgang.", label_name:"Navn", label_birthday:"Fødselsdag", label_email:"E-mail", register_btn:"Opret konto",
       pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
       change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
@@ -1968,6 +2019,71 @@
     document.getElementById('cpwLenCheck').classList.toggle('valid', c.len);
     document.getElementById('cpwUpperCheck').classList.toggle('valid', c.upper);
     document.getElementById('cpwNumberCheck').classList.toggle('valid', c.number);
+  }
+
+  function showAuthPanel(name){
+    ['loginPanel','forgotPwPanel','loginCodePanel'].forEach(id => {
+      document.getElementById(id).style.display = (id === name + 'Panel') ? '' : 'none';
+    });
+    document.getElementById('forgotPwStep1').style.display = '';
+    document.getElementById('forgotPwStep2').style.display = 'none';
+    document.getElementById('loginCodeStep1').style.display = '';
+    document.getElementById('loginCodeStep2').style.display = 'none';
+  }
+
+  function updateForgotPwChecklist(){
+    const c = pwChecks(document.getElementById('forgotPwNewPass').value);
+    document.getElementById('fpwLenCheck').classList.toggle('valid', c.len);
+    document.getElementById('fpwUpperCheck').classList.toggle('valid', c.upper);
+    document.getElementById('fpwNumberCheck').classList.toggle('valid', c.number);
+  }
+
+  async function requestForgotPasswordCode(){
+    const errEl = document.getElementById('forgotPwErr1'); errEl.classList.remove('show');
+    try {
+      await api('/api/forgot-password', { method:'POST', body:{ id: document.getElementById('forgotPwId').value.trim() } });
+      document.getElementById('forgotPwStep1').style.display = 'none';
+      document.getElementById('forgotPwStep2').style.display = '';
+    } catch(e){ errEl.textContent = e.message; errEl.classList.add('show'); }
+  }
+
+  async function confirmResetPassword(){
+    const errEl = document.getElementById('forgotPwErr2'); errEl.classList.remove('show');
+    try {
+      await api('/api/reset-password', { method:'POST', body:{
+        id: document.getElementById('forgotPwId').value.trim(),
+        code: document.getElementById('forgotPwCode').value.trim(),
+        newPassword: document.getElementById('forgotPwNewPass').value
+      }});
+      document.getElementById('forgotPwId').value=''; document.getElementById('forgotPwCode').value=''; document.getElementById('forgotPwNewPass').value='';
+      showAuthPanel('login');
+      const loginErrEl = document.getElementById('loginErr');
+      loginErrEl.style.color = 'var(--green)'; loginErrEl.textContent = t('reset_pw_success') || 'Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.'; loginErrEl.classList.add('show');
+    } catch(e){ errEl.textContent = e.message; errEl.classList.add('show'); }
+  }
+
+  async function requestLoginCode(){
+    const errEl = document.getElementById('loginCodeErr1'); errEl.classList.remove('show');
+    try {
+      await api('/api/login-code/request', { method:'POST', body:{ id: document.getElementById('loginCodeId').value.trim() } });
+      document.getElementById('loginCodeStep1').style.display = 'none';
+      document.getElementById('loginCodeStep2').style.display = '';
+    } catch(e){ errEl.textContent = e.message; errEl.classList.add('show'); }
+  }
+
+  async function confirmLoginCode(){
+    const errEl = document.getElementById('loginCodeErr2'); errEl.classList.remove('show');
+    try {
+      const r = await api('/api/login-code/confirm', { method:'POST', body:{
+        id: document.getElementById('loginCodeId').value.trim(),
+        code: document.getElementById('loginCodeCode').value.trim()
+      }});
+      currentUserData = r.user;
+      if(currentUserData && currentUserData.language && currentUserData.language !== currentLang) applyLanguage(currentUserData.language);
+      document.getElementById('loginCodeId').value=''; document.getElementById('loginCodeCode').value='';
+      showAuthPanel('login');
+      applyRoleState(); await loadImages(); renderAccountView();
+    } catch(e){ errEl.textContent = e.message; errEl.classList.add('show'); }
   }
 
   async function attemptLogin(){

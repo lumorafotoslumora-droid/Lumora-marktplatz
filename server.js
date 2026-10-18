@@ -224,6 +224,7 @@ const EMAIL_I18N = {
     loser_subject:'Diesmal leider nicht gewonnen — aber nächstes Mal! 🍀', loser_title:'Schade! 😔', loser_body:'Dieses Mal hast du beim Lumora-Gewinnspiel leider nicht gewonnen.', loser_body2:'Vielleicht klappt\'s beim nächsten Mal!', loser_button:'Nochmal mitmachen',
     promo_subject:'🎁 Mach mit beim Lumora-Gewinnspiel!', promo_title:'🎁 Gewinnspiel bei Lumora!', promo_body:'Trag dich jetzt ein und gewinne mit etwas Glück ein Gratis-Bild!', promo_button:'Jetzt mitmachen',
     daily_new:'🆕 Es gibt {count} neue Bilder in der Galerie!', daily_new1:'🆕 Es gibt 1 neues Bild in der Galerie!', daily_generic:'Schau doch mal wieder bei Lumora vorbei — es lohnt sich immer ein Blick in die Galerie. 📸', daily_button:'Zur Galerie',
+    code_subject_reset:'Dein Code zum Zurücksetzen deines Passworts', code_subject_login:'Dein Anmelde-Code für Lumora', code_title:'Dein Lumora-Code', code_body_reset:'Du hast ein neues Passwort angefordert. Gib diesen Code auf der Website ein, um ein neues Passwort zu vergeben:', code_body_login:'Gib diesen Code auf der Website ein, um dich ohne Passwort anzumelden:', code_label:'Dein Code:', code_warning:'⏰ Dieser Code ist nur 15 Minuten gültig. Falls du das nicht warst, kannst du diese E-Mail ignorieren.',
     signoff:'LG,<br>dein Lumora-Team' },
   en: { verify_subject:'Confirm your email address at Lumora', verify_title:'Welcome to Lumora! 📸', verify_body:'Please confirm your email address to fully activate your account.', verify_button:'Confirm email', verify_footer:'If the button doesn\'t work, copy this link into your browser:',
     winner_subject:'🎉 You won! Your free image code (valid 24h)', winner_title:'Congratulations!', winner_body:'You won a free image in our Lumora giveaway!', winner_code_label:'Your code:', winner_button:'Redeem now', winner_warning:'⏰ This code is only valid for 24 hours!', winner_hint:'Just enter it in the "Redeem image code" field on our homepage.',
@@ -320,6 +321,7 @@ const EMAIL_I18N = {
     loser_subject:'Ikke denne gang — men måske næste gang! 🍀', loser_title:'Ærgerligt! 😔', loser_body:'Du vandt desværre ikke denne gang i Lumora-konkurrencen.', loser_body2:'Måske næste gang!', loser_button:'Deltag igen',
     promo_subject:'🎁 Deltag i Lumora-konkurrencen!', promo_title:'🎁 Konkurrence hos Lumora!', promo_body:'Tilmeld dig nu og vind et gratis billede med lidt held!', promo_button:'Deltag nu',
     daily_new:'🆕 Der er {count} nye billeder i galleriet!', daily_new1:'🆕 Der er 1 nyt billede i galleriet!', daily_generic:'Kig forbi Lumora igen — det er altid et kig værd. 📸', daily_button:'Til galleriet',
+    code_subject_reset:'Din kode til nulstilling af adgangskode', code_subject_login:'Din login-kode til Lumora', code_title:'Din Lumora-kode', code_body_reset:'Du har anmodet om en ny adgangskode. Indtast denne kode på hjemmesiden for at vælge en ny adgangskode:', code_body_login:'Indtast denne kode på hjemmesiden for at logge ind uden adgangskode:', code_label:'Din kode:', code_warning:'⏰ Denne kode er kun gyldig i 15 minutter. Hvis det ikke var dig, kan du ignorere denne e-mail.',
     signoff:'Venlig hilsen,<br>dit Lumora-team' }
 };
 function et(lang, key){
@@ -338,6 +340,22 @@ function sendVerificationEmail(toEmail, verifyUrl, lang){
       <p style="margin-top:24px;">${et(lang,'signoff')}</p>
     </div>`;
   return sendEmail(toEmail, et(lang,'verify_subject'), html);
+}
+
+function sendLoginCodeEmail(toEmail, code, lang, purpose){
+  lang = lang || 'de';
+  const body = purpose === 'login' ? et(lang,'code_body_login') : et(lang,'code_body_reset');
+  const subject = purpose === 'login' ? et(lang,'code_subject_login') : et(lang,'code_subject_reset');
+  const html = `
+    <div style="font-family:sans-serif; max-width:480px; margin:0 auto;">
+      <h2>${et(lang,'code_title')}</h2>
+      <p>${body}</p>
+      <p style="font-size:13px; color:#888; margin-bottom:4px;">${et(lang,'code_label')}</p>
+      <p style="font-size:32px; font-weight:bold; letter-spacing:4px; background:#f4f4f8; color:#141220; padding:14px 20px; border-radius:8px; display:inline-block;">${code}</p>
+      <p style="color:#888; font-size:13px; margin-top:20px;">${et(lang,'code_warning')}</p>
+      <p style="margin-top:24px;">${et(lang,'signoff')}</p>
+    </div>`;
+  return sendEmail(toEmail, subject, html);
 }
 
 function sendRaffleWinnerEmail(toEmail, productName, siteUrl, lang){
@@ -485,6 +503,12 @@ function isValidBirthday(str){
 
 // ---------- Hilfsfunktionen ----------
 function genId(){ return crypto.randomBytes(9).toString('hex'); }
+function genCode(){ return String(crypto.randomInt(0, 1000000)).padStart(6, '0'); }
+function findUserByIdentifier(id){
+  id = (id || '').trim().toLowerCase();
+  if(!id) return null;
+  return db.users.find(u => u.name.toLowerCase() === id || (u.email && u.email.toLowerCase() === id));
+}
 
 function hashPassword(password){
   const salt = crypto.randomBytes(16).toString('hex');
@@ -827,10 +851,7 @@ async function handleApi(req, res, pathname, method, parsed){
     const body = await readJsonBody(req);
     const id = (body.id || '').trim();
     const password = body.password || '';
-    const found = db.users.find(u =>
-      u.name.toLowerCase() === id.toLowerCase() ||
-      (u.email && u.email.toLowerCase() === id.toLowerCase())
-    );
+    const found = findUserByIdentifier(id);
     if(!found || !verifyPassword(password, found.salt, found.hash))
       return sendJson(res, 401, { error: 'Zugangsdaten nicht korrekt.' });
     if(found.banned)
@@ -879,6 +900,69 @@ async function handleApi(req, res, pathname, method, parsed){
     user.salt = salt; user.hash = hash;
     saveDB(db);
     return sendJson(res, 200, { ok: true });
+  }
+
+  // ---- Passwort vergessen (Code per E-Mail) & Anmeldung per E-Mail-Code ----
+  if(pathname === '/api/forgot-password' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const found = findUserByIdentifier(body.id);
+    if(!found) return sendJson(res, 404, { error: 'Dazu konnten wir kein Konto finden.' });
+    if(!found.email) return sendJson(res, 400, { error: 'Für dieses Konto ist keine E-Mail-Adresse hinterlegt. Bitte wende dich an den Admin.' });
+    const code = genCode();
+    found.resetCode = code;
+    found.resetCodePurpose = 'reset';
+    found.resetCodeExpiresAt = Date.now() + 15 * 60 * 1000;
+    saveDB(db);
+    const sent = await sendLoginCodeEmail(found.email, code, found.language, 'reset');
+    if(!sent) return sendJson(res, 500, { error: 'E-Mail-Versand ist aktuell nicht eingerichtet oder fehlgeschlagen.' });
+    return sendJson(res, 200, { ok: true });
+  }
+
+  if(pathname === '/api/reset-password' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const found = findUserByIdentifier(body.id);
+    const code = (body.code || '').trim();
+    if(!found || !found.resetCode || found.resetCodePurpose !== 'reset' || code !== found.resetCode || Date.now() > (found.resetCodeExpiresAt || 0))
+      return sendJson(res, 400, { error: 'Code ungültig oder abgelaufen. Bitte fordere einen neuen Code an.' });
+    const np = body.newPassword || '';
+    if(!(np.length >= 8 && /[A-Z]/.test(np) && /[0-9]/.test(np)))
+      return sendJson(res, 400, { error: 'Neues Passwort erfüllt nicht alle Anforderungen.' });
+    const { salt, hash } = hashPassword(np);
+    found.salt = salt; found.hash = hash;
+    delete found.resetCode; delete found.resetCodePurpose; delete found.resetCodeExpiresAt;
+    saveDB(db);
+    return sendJson(res, 200, { ok: true });
+  }
+
+  if(pathname === '/api/login-code/request' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const found = findUserByIdentifier(body.id);
+    if(!found) return sendJson(res, 404, { error: 'Dazu konnten wir kein Konto finden.' });
+    if(!found.email) return sendJson(res, 400, { error: 'Für dieses Konto ist keine E-Mail-Adresse hinterlegt. Bitte melde dich mit Passwort an.' });
+    if(found.banned) return sendJson(res, 403, { error: 'Dieses Konto wurde gesperrt.' });
+    const code = genCode();
+    found.resetCode = code;
+    found.resetCodePurpose = 'login';
+    found.resetCodeExpiresAt = Date.now() + 15 * 60 * 1000;
+    saveDB(db);
+    const sent = await sendLoginCodeEmail(found.email, code, found.language, 'login');
+    if(!sent) return sendJson(res, 500, { error: 'E-Mail-Versand ist aktuell nicht eingerichtet oder fehlgeschlagen.' });
+    return sendJson(res, 200, { ok: true });
+  }
+
+  if(pathname === '/api/login-code/confirm' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const found = findUserByIdentifier(body.id);
+    const code = (body.code || '').trim();
+    if(!found || !found.resetCode || found.resetCodePurpose !== 'login' || code !== found.resetCode || Date.now() > (found.resetCodeExpiresAt || 0))
+      return sendJson(res, 400, { error: 'Code ungültig oder abgelaufen. Bitte fordere einen neuen Code an.' });
+    if(found.banned) return sendJson(res, 403, { error: 'Dieses Konto wurde gesperrt.' });
+    delete found.resetCode; delete found.resetCodePurpose; delete found.resetCodeExpiresAt;
+    saveDB(db);
+    const token = genId();
+    sessions.set(token, found.id);
+    setSessionCookie(res, token);
+    return sendJson(res, 200, { user: publicUser(found) });
   }
 
   // ---- Bilder / Videos ----

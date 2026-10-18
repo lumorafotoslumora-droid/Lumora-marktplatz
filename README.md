@@ -23,6 +23,8 @@ Das Gewinnspiel existiert weiterhin und lässt sich vom Admin jederzeit unter "V
 
 Admin-Zugang beim ersten Start: Name `Matic`, Passwort `VIP` (unter "Mein Konto" → "Passwort ändern" anpassbar).
 
+**Passwort vergessen / Anmeldung ohne Passwort:** Auf der Anmelde-Karte gibt es die Links "Passwort vergessen?" und "Mit E-Mail-Code anmelden". Beide schicken einen 6-stelligen Code an die beim Konto hinterlegte E-Mail-Adresse (gültig 15 Minuten) — damit kann man entweder ein neues Passwort vergeben oder sich direkt ganz ohne Passwort anmelden. Voraussetzung: Beim Konto ist eine E-Mail-Adresse hinterlegt und der E-Mail-Versand (Brevo, siehe unten) ist eingerichtet.
+
 Alle weiteren Konten (egal ob zum Verkaufen oder nur zum Einkaufen) legst du als Admin unter **Verwaltung → Konten** an.
 
 Ohne Stripe-Konfiguration (siehe unten) schlägt der Bezahlvorgang mit einer klaren Fehlermeldung fehl — bis auf Bestellungen, die durch eine 100%-Aktion (z.B. "Erstes Produkt gratis") komplett auf 0 € reduziert werden, die funktionieren immer auch ohne Stripe.
