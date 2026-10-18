@@ -278,17 +278,17 @@
   footer a{ color:var(--ink); text-decoration:none; font-size:13.5px; cursor:pointer; }
   footer a:hover{ color:var(--amber); }
   .foot-bottom{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-top:20px; border-top:1px solid var(--line); font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); }
-  .overlay{ position:fixed; inset:0; background:rgba(8,7,5,0.94); backdrop-filter: blur(6px); display:none; align-items:center; justify-content:center; z-index:80; padding: 30px; }
-  .overlay.show{ display:flex; }
-  .lightbox-close{ position:absolute; top:22px; right:28px; width:38px; height:38px; border-radius:50%; background: rgba(255,255,255,0.06); border:1px solid var(--line); color:var(--ink); font-size:16px; cursor:pointer; }
   .lightbox-nav{ position:absolute; top:50%; transform: translateY(-50%); width:44px; height:44px; border-radius:50%; background: rgba(255,255,255,0.06); border:1px solid var(--line); color:var(--ink); font-size:18px; cursor:pointer; }
-  .lightbox-nav.prev{ left:24px; } .lightbox-nav.next{ right:24px; }
-  .lightbox-body{ display:flex; flex-direction:column; align-items:center; max-width:min(920px, 90vw); max-height:90vh; }
-  .lightbox-body img, .lightbox-body video{ max-width:100%; max-height:70vh; border-radius: var(--radius); box-shadow: 0 30px 70px rgba(0,0,0,0.6); object-fit:contain; }
-  .lightbox-info{ margin-top:18px; display:flex; align-items:center; justify-content:space-between; gap:20px; background: var(--panel); border:1px solid var(--line); border-radius: var(--radius); padding:14px 20px; width:100%; }
-  .lightbox-info .lb-price{ font-family:'Space Mono',monospace; font-size:14px; }
-  .lightbox-info .lb-price.free{ color:var(--green); }
+  .lightbox-nav.prev{ left:12px; } .lightbox-nav.next{ right:12px; }
+  .lb-price{ font-family:'Space Mono',monospace; font-size:14px; }
+  .lb-price.free{ color:var(--green); }
   .lightbox-counter{ font-family:'Space Mono',monospace; font-size:11px; color:var(--muted); margin-top:12px; }
+  .product-layout{ display:grid; grid-template-columns: 1.15fr 0.85fr; gap:32px; align-items:start; }
+  @media (max-width:860px){ .product-layout{ grid-template-columns:1fr; } }
+  .product-main-media{ width:100%; aspect-ratio:1/1; background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; display:flex; align-items:center; justify-content:center; }
+  .product-main-media img, .product-main-media video{ width:100%; height:100%; object-fit:contain; display:block; }
+  #lightboxAction{ display:flex; flex-direction:column; gap:8px; }
+  #lightboxAction > button{ width:100%; text-align:center; }
 
   .chat-bubble{ position:fixed; bottom:24px; right:24px; width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,var(--amber),var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:24px; cursor:pointer; box-shadow:0 8px 24px rgba(143,151,255,0.35); z-index:90; border:none; }
   .chat-bubble:hover{ filter:brightness(1.08); }
@@ -819,6 +819,31 @@
       </div>
     </div>
   </section>
+
+  <section class="view" id="view-product">
+    <button class="btn muted" style="margin-bottom:20px; font-size:12.5px; padding:8px 14px;" onclick="closeLightbox()">← <span data-i18n="back_to_products">Zurück zu Produkten</span></button>
+    <div class="product-layout">
+      <div>
+        <div style="position:relative;">
+          <div id="lightboxMedia" class="product-main-media"></div>
+          <button class="lightbox-nav prev" onclick="lightboxStep(-1)">‹</button>
+          <button class="lightbox-nav next" onclick="lightboxStep(1)">›</button>
+        </div>
+        <div class="lightbox-thumbs" id="lightboxThumbs" style="display:flex; gap:6px; padding:10px 0; overflow-x:auto;"></div>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+      </div>
+      <div>
+        <div class="auth-card" style="padding:24px;">
+          <span id="lightboxImageName" style="font-family:'Fraunces',serif; font-size:21px; display:block; margin-bottom:8px;"></span>
+          <span class="lb-price" id="lightboxPrice" style="font-size:20px; display:block; margin-bottom:12px;"></span>
+          <div id="lightboxMeta" style="margin-bottom:16px;"></div>
+          <div id="lightboxAction"></div>
+        </div>
+        <p id="lightboxDescription" style="color:var(--muted); font-size:13.5px; margin:18px 0 0; white-space:pre-wrap;"></p>
+      </div>
+    </div>
+    <div class="lightbox-reviews" id="lightboxReviews" style="margin-top:28px; max-width:640px;"></div>
+  </section>
 </main>
 
 <footer>
@@ -831,27 +856,6 @@
 </footer>
 
 <div class="cart-bar" id="cartBar"><div class="breakdown" id="cartBreakdown"></div><button class="btn solid" onclick="switchView('cart')" data-i18n="cart_checkout_btn">Zur Kasse</button></div>
-
-<div class="lightbox" id="lightbox">
-  <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-  <button class="lightbox-nav prev" onclick="lightboxStep(-1)">‹</button>
-  <button class="lightbox-nav next" onclick="lightboxStep(1)">›</button>
-  <div class="lightbox-body">
-    <div style="position:relative;"><div id="lightboxMedia"></div></div>
-    <div class="lightbox-thumbs" id="lightboxThumbs" style="display:flex; gap:6px; padding:8px 0; overflow-x:auto;"></div>
-    <div class="lightbox-info">
-      <div style="display:flex; flex-direction:column; gap:2px;">
-        <span id="lightboxImageName" style="font-family:'Fraunces',serif; font-size:14px;"></span>
-        <span class="lb-price" id="lightboxPrice"></span>
-      </div>
-      <div id="lightboxAction"></div>
-    </div>
-    <div id="lightboxMeta" style="display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12px; color:var(--muted); margin:6px 0 0;"></div>
-    <p id="lightboxDescription" style="color:var(--muted); font-size:13px; margin:4px 0 0; white-space:pre-wrap;"></p>
-    <div class="lightbox-counter" id="lightboxCounter"></div>
-    <div class="lightbox-reviews" id="lightboxReviews"></div>
-  </div>
-</div>
 
 <script>
   // ---------- Mehrsprachigkeit ----------
@@ -921,7 +925,7 @@
       payout_disconnected:"Verknüpfung aufgehoben.",
       cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten.",
       nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben...",
-      lb_seller:"Verkäufer:in", lb_no_reviews:"Noch keine Bewertungen", lb_in_stock:"verfügbar", lb_unlimited_stock:"Unbegrenzt verfügbar", lb_last_one:"Nur noch 1 Stück!", lb_discount_badge:"Rabatt"
+      lb_seller:"Verkäufer:in", lb_no_reviews:"Noch keine Bewertungen", lb_in_stock:"verfügbar", lb_unlimited_stock:"Unbegrenzt verfügbar", lb_last_one:"Nur noch 1 Stück!", lb_discount_badge:"Rabatt", back_to_products:"Zurück zu Produkten"
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1423,7 +1427,7 @@
       payout_disconnected:"Forbindelse fjernet.",
       cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang.",
       nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked...",
-      lb_seller:"Sælger", lb_no_reviews:"Endnu ingen anmeldelser", lb_in_stock:"tilgængelige", lb_unlimited_stock:"Ubegrænset tilgængeligt", lb_last_one:"Kun 1 stk tilbage!", lb_discount_badge:"Rabat"
+      lb_seller:"Sælger", lb_no_reviews:"Endnu ingen anmeldelser", lb_in_stock:"tilgængelige", lb_unlimited_stock:"Ubegrænset tilgængeligt", lb_last_one:"Kun 1 stk tilbage!", lb_discount_badge:"Rabat", back_to_products:"Tilbage til produkter"
     }
   };
 
@@ -1762,7 +1766,7 @@
   function toggleCart(id){
     if(cart.has(id)) cart.delete(id); else cart.add(id);
     renderShopGrid(); renderCartBar();
-    if(document.getElementById('lightbox').classList.contains('show') && lightboxId === id) renderLightboxInfo();
+    if(document.getElementById('view-product').classList.contains('active') && lightboxId === id) renderLightboxInfo();
   }
 
   async function setPrice(id, val){
@@ -2653,18 +2657,18 @@
     grid.innerHTML = recentImgs.map(img => `<div class="frame"><div class="imgwrap" onclick="openLightbox('${img.id}')">${mediaTagHtml(img)}</div><div style="padding:8px 14px; font-size:12.5px; font-family:'Fraunces',serif;">${img.name||''}</div></div>`).join('');
   }
 
-  // ---------- Lightbox ----------
+  // ---------- Produktseite (ehemals Lightbox-Popup, jetzt eigene Seite) ----------
   function openLightbox(id){
     lightboxId = id;
     lightboxPhotoIndex = 0;
-    document.getElementById('lightbox').classList.add('show');
+    switchView('product');
     renderLightboxInfo();
     document.addEventListener('keydown', lbKey);
     trackRecentlyViewed(id);
     api('/api/images/' + id + '/view', { method:'POST' }).catch(()=>{});
     window.history.replaceState({}, '', '#img=' + id);
   }
-  function closeLightbox(){ document.getElementById('lightbox').classList.remove('show'); document.removeEventListener('keydown', lbKey); window.history.replaceState({}, '', window.location.pathname + window.location.search); }
+  function closeLightbox(){ document.removeEventListener('keydown', lbKey); window.history.replaceState({}, '', window.location.pathname + window.location.search); switchView('gallery'); }
 
   async function reportImage(id){
     const reason = prompt('Was stimmt mit diesem Produkt nicht? (kurze Beschreibung)');
