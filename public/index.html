@@ -543,6 +543,13 @@
         <div class="err-text" id="changePwMsg"></div>
         <button class="btn solid" style="width:100%;" onclick="changePassword()" data-i18n="change_pw_btn">Passwort speichern</button>
       </div>
+      <div class="auth-card" style="max-width:420px; margin-bottom:36px;">
+        <h3 data-i18n="email_title">E-Mail</h3>
+        <p class="sub" data-i18n="email_sub">Hinterlege oder ändere deine E-Mail-Adresse — z.B. um dich künftig per E-Mail-Code anzumelden oder dein Passwort zurückzusetzen.</p>
+        <div class="field"><label data-i18n="label_email">E-Mail</label><input type="email" id="changeEmailInput"></div>
+        <div class="err-text" id="changeEmailMsg"></div>
+        <button class="btn solid" style="width:100%;" onclick="changeEmail()" data-i18n="email_save_btn">E-Mail speichern</button>
+      </div>
       <div class="auth-card" style="max-width:420px; margin-bottom:36px;" id="payoutCard">
         <h3 data-i18n="payout_title">Auszahlung</h3>
         <p class="sub" data-i18n="payout_sub">Verknüpfe dein eigenes Stripe-Konto, damit du das Geld für deine Verkäufe direkt bekommst — statt über den Admin.</p>
@@ -868,6 +875,7 @@
       register_title:"Kein eigenes Konto?", register_sub:"Konten werden ausschließlich vom Admin erstellt — melde dich bei uns, um Zugang zu bekommen.", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", register_btn:"Konto erstellen",
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
+      email_title:"E-Mail", email_sub:"Hinterlege oder ändere deine E-Mail-Adresse — z.B. um dich künftig per E-Mail-Code anzumelden oder dein Passwort zurückzusetzen.", email_save_btn:"E-Mail speichern", email_saved_msg:"E-Mail gespeichert.",
       my_purchases:"Meine Bestellungen", no_purchases:"Noch nichts gekauft.",
       support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Schreib uns eine Nachricht direkt hier auf der Seite, oder per E-Mail.",
       support_form_title:"Nachricht senden", support_form_sub:"Wir antworten dir per E-Mail, falls du eine angibst.",
@@ -1368,6 +1376,7 @@
       register_title:"Ingen egen konto?", register_sub:"Konti oprettes udelukkende af admin — kontakt os for at få adgang.", label_name:"Navn", label_birthday:"Fødselsdag", label_email:"E-mail", register_btn:"Opret konto",
       pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
       change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
+      email_title:"E-mail", email_sub:"Angiv eller skift din e-mailadresse — f.eks. for at logge ind med e-mail-kode i fremtiden eller nulstille din adgangskode.", email_save_btn:"Gem e-mail", email_saved_msg:"E-mail gemt.",
       my_purchases:"Mine bestillinger", no_purchases:"Endnu intet købt.",
       support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Skriv til os direkte her på siden, eller send en e-mail.",
       support_form_title:"Send besked", support_form_sub:"Vi svarer dig på e-mail, hvis du angiver en.",
@@ -2116,6 +2125,15 @@
     } catch(e){ msgEl.style.color=''; msgEl.textContent = e.message; msgEl.classList.add('show'); }
   }
 
+  async function changeEmail(){
+    const msgEl = document.getElementById('changeEmailMsg'); msgEl.classList.remove('show');
+    try {
+      const r = await api('/api/change-email', { method:'POST', body:{ email: document.getElementById('changeEmailInput').value.trim() } });
+      currentUserData = r.user;
+      msgEl.style.color = 'var(--green)'; msgEl.textContent = t('email_saved_msg') || 'E-Mail gespeichert.'; msgEl.classList.add('show');
+    } catch(e){ msgEl.style.color=''; msgEl.textContent = e.message; msgEl.classList.add('show'); }
+  }
+
   function applyRoleState(){
     const r = role();
     const isAdmin = r === 'admin', isCustomer = r === 'customer';
@@ -2539,6 +2557,7 @@
     document.getElementById('profileAvatar').textContent = currentUserData.name.charAt(0).toUpperCase();
     document.getElementById('profileName').textContent = currentUserData.name;
     document.getElementById('profileRole').textContent = role()==='admin'?t('role_admin'):t('role_customer');
+    document.getElementById('changeEmailInput').value = currentUserData.email || '';
     renderPayoutStatus();
 
     const detailsEl = document.getElementById('profileDetails'), statRow = document.getElementById('statRow');

@@ -902,6 +902,20 @@ async function handleApi(req, res, pathname, method, parsed){
     return sendJson(res, 200, { ok: true });
   }
 
+  if(pathname === '/api/change-email' && method === 'POST'){
+    if(!user) return sendJson(res, 401, { error: 'Nicht angemeldet.' });
+    const body = await readJsonBody(req);
+    const email = (body.email || '').trim().toLowerCase();
+    if(!email) return sendJson(res, 400, { error: 'Bitte eine E-Mail-Adresse eingeben.' });
+    if(!isValidEmail(email)) return sendJson(res, 400, { error: 'Diese E-Mail-Adresse sieht ungültig aus.' });
+    if(db.users.some(u => u.id !== user.id && u.email && u.email.toLowerCase() === email))
+      return sendJson(res, 400, { error: 'Für diese E-Mail existiert bereits ein anderes Konto.' });
+    user.email = email;
+    user.emailVerified = true;
+    saveDB(db);
+    return sendJson(res, 200, { user: publicUser(user) });
+  }
+
   // ---- Passwort vergessen (Code per E-Mail) & Anmeldung per E-Mail-Code ----
   if(pathname === '/api/forgot-password' && method === 'POST'){
     const body = await readJsonBody(req);
