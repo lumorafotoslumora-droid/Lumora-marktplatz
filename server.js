@@ -179,13 +179,14 @@ async function initDB(){
   db.images.forEach((img, i) => { if(!img.name) img.name = 'Bild ' + (i + 1); });
   db.images.forEach(img => { if(typeof img.discountPercent !== 'number') img.discountPercent = 0; });
   if(typeof db.platformFeePercent !== 'number') db.platformFeePercent = 5;
+  if(!Array.isArray(db.messages)) db.messages = [];
   await ensureAdmin();
 }
 
 function sendEmail(toEmail, subject, htmlContent){
   return new Promise((resolve) => {
     const apiKey = process.env.BREVO_API_KEY;
-    const senderEmail = process.env.SENDER_EMAIL || 'lumora.fotos.lumora@gmail.com';
+    const senderEmail = process.env.SENDER_EMAIL || 'lumora.marktplatz@gmail.com';
     if(!apiKey){
       console.warn('BREVO_API_KEY ist nicht gesetzt — E-Mail wurde NICHT verschickt.');
       return resolve(false);
@@ -596,6 +597,7 @@ function publicImage(img, user){
     quantity: img.quantity === null ? null : (typeof img.quantity === 'number' ? img.quantity : 1),
     sold: !!img.sold,
     purchased,
+    uploadedBy: img.uploadedBy,
     uploadedByName: img.uploadedByName,
     createdAt: img.createdAt,
     isFavorite: user ? (user.favorites || []).includes(img.id) : false,
@@ -1580,6 +1582,66 @@ async function handleApi(req, res, pathname, method, parsed){
     const ids = db.purchases.filter(p => p.userId === user.id).map(p => p.imageId);
     const purchasedImages = db.images.filter(img => ids.includes(img.id)).map(img => publicImage(img, user));
     return sendJson(res, 200, { images: purchasedImages, count: purchasedImages.length });
+  }
+
+  // ---- Direktnachrichten zwischen Käufer und Verkäufer ----
+  if(pathname === '/api/messages' && method === 'POST'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    const body = await readJsonBody(req);
+    const toUserId = (body.toUserId || '').trim();
+    const text = (body.text || '').trim().slice(0, 2000);
+    if(!text) return sendJson(res, 400, { error: 'Bitte eine Nachricht eingeben.' });
+    if(toUserId === user.id) return sendJson(res, 400, { error: 'Du kannst dir nicht selbst schreiben.' });
+    const target = db.users.find(u => u.id === toUserId);
+    if(!target) return sendJson(res, 404, { error: 'Konto nicht gefunden.' });
+    const imageId = (typeof body.imageId === 'string' && db.images.some(i => i.id === body.imageId)) ? body.imageId : null;
+    const msg = { id: genId(), fromUserId: user.id, toUserId, text, imageId, createdAt: new Date().toISOString(), read: false };
+    db.messages.push(msg);
+    saveDB(db);
+    return sendJson(res, 200, { message: msg });
+  }
+  if(pathname === '/api/messages/conversations' && method === 'GET'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    const otherIds = new Set();
+    db.messages.forEach(m => {
+      if(m.fromUserId === user.id) otherIds.add(m.toUserId);
+      if(m.toUserId === user.id) otherIds.add(m.fromUserId);
+    });
+    const conversations = [...otherIds].map(otherId => {
+      const otherUser = db.users.find(u => u.id === otherId);
+      const thread = db.messages.filter(m => (m.fromUserId === user.id && m.toUserId === otherId) || (m.fromUserId === otherId && m.toUserId === user.id));
+      const last = thread.reduce((a, b) => new Date(b.createdAt) > new Date(a.createdAt) ? b : a, thread[0]);
+      const unreadCount = thread.filter(m => m.toUserId === user.id && m.fromUserId === otherId && !m.read).length;
+      return {
+        userId: otherId,
+        userName: otherUser ? otherUser.name : 'Gelöschtes Konto',
+        lastText: last.text,
+        lastAt: last.createdAt,
+        unreadCount
+      };
+    }).sort((a, b) => new Date(b.lastAt) - new Date(a.lastAt));
+    return sendJson(res, 200, { conversations });
+  }
+  if(pathname === '/api/messages/unread-count' && method === 'GET'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    const count = db.messages.filter(m => m.toUserId === user.id && !m.read).length;
+    return sendJson(res, 200, { count });
+  }
+  const msgThreadMatch = pathname.match(/^\/api\/messages\/with\/([a-f0-9]+)$/);
+  if(msgThreadMatch && method === 'GET'){
+    if(!user) return sendJson(res, 401, { error: 'Bitte anmelden.' });
+    const otherId = msgThreadMatch[1];
+    const otherUser = db.users.find(u => u.id === otherId);
+    const thread = db.messages
+      .filter(m => (m.fromUserId === user.id && m.toUserId === otherId) || (m.fromUserId === otherId && m.toUserId === user.id))
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    let changed = false;
+    thread.forEach(m => { if(m.toUserId === user.id && m.fromUserId === otherId && !m.read){ m.read = true; changed = true; } });
+    if(changed) saveDB(db);
+    return sendJson(res, 200, {
+      userName: otherUser ? otherUser.name : 'Gelöschtes Konto',
+      messages: thread.map(m => ({ id: m.id, fromUserId: m.fromUserId, text: m.text, imageId: m.imageId, createdAt: m.createdAt, mine: m.fromUserId === user.id }))
+    });
   }
 
   return sendJson(res, 404, { error: 'Endpunkt nicht gefunden.' });

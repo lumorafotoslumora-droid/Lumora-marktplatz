@@ -318,6 +318,7 @@
       <button class="active" data-view="gallery" data-i18n="nav_gallery" onclick="switchView('gallery')">Produkte</button>
       <button data-view="cart" onclick="switchView('cart')"><span data-i18n="nav_cart">Warenkorb</span><span class="cart-count" id="navCartCount" style="display:none;"></span></button>
       <button data-view="account" data-i18n="nav_account" onclick="switchView('account')">Mein Konto</button>
+      <button data-view="messages" id="navMessagesTab" class="hidden" onclick="switchView('messages')"><span data-i18n="nav_messages">Nachrichten</span><span class="cart-count" id="navMessagesCount" style="display:none;"></span></button>
       <button data-view="support" data-i18n="nav_support" onclick="switchView('support')">Support</button>
       <button data-view="admin" id="navAdminTab" class="hidden" onclick="switchView('admin')">Verwaltung</button>
     </nav>
@@ -534,7 +535,27 @@
       <div class="field"><label data-i18n="label_message">Nachricht</label><textarea id="supportMessage" rows="4" style="width:100%; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:11px 13px; font-size:14px; border-radius:var(--radius-sm); font-family:'Inter',sans-serif;"></textarea></div>
       <div class="err-text" id="supportErr"></div>
       <button class="btn solid" style="width:100%;" onclick="sendSupportMessage()" data-i18n="support_send_btn">Nachricht senden</button>
-      <p class="terms-note" style="margin-top:16px; text-align:left;"><span data-i18n="support_or_email">Oder schreib uns direkt:</span> <a href="mailto:lumora.fotos.lumora@gmail.com" style="color:var(--amber);">lumora.fotos.lumora@gmail.com</a></p>
+      <p class="terms-note" style="margin-top:16px; text-align:left;"><span data-i18n="support_or_email">Oder schreib uns direkt:</span> <a href="mailto:lumora.marktplatz@gmail.com" style="color:var(--amber);">lumora.marktplatz@gmail.com</a></p>
+    </div>
+  </section>
+
+  <section class="view" id="view-messages">
+    <div class="hero" style="margin-bottom:28px;"><p class="eyebrow" data-i18n="messages_eyebrow">Nachrichten</p><h2 style="font-size:28px;" data-i18n="messages_title">Nachrichten</h2></div>
+    <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-start;">
+      <div id="conversationListWrap" style="flex:1; min-width:240px; max-width:320px;">
+        <div class="team-list" id="conversationList"></div>
+        <div class="empty" id="conversationsEmpty" style="display:none;" data-i18n="messages_empty">Noch keine Nachrichten.</div>
+      </div>
+      <div id="messageThreadWrap" style="flex:2; min-width:280px; display:none;">
+        <div class="auth-card" style="max-width:none;">
+          <h3 id="threadUserName"></h3>
+          <div id="threadMessages" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; margin-bottom:14px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="messageInput" data-i18n-placeholder="messages_input_placeholder" placeholder="Nachricht schreiben..." style="flex:1; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:9px 12px; border-radius:var(--radius-sm); font-size:14px;" onkeydown="if(event.key==='Enter') sendDirectMessage()">
+            <button class="btn solid" onclick="sendDirectMessage()">➤</button>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -841,7 +862,8 @@
       payout_connect_btn:"Mit Stripe verknüpfen", payout_disconnect_btn:"Verknüpfung aufheben",
       payout_connected:"Dein Stripe-Konto ist verknüpft — du bekommst dein Geld direkt.", payout_not_connected:"Noch nicht verknüpft — Geld aus deinen Verkäufen geht aktuell an den Admin.",
       payout_disconnected:"Verknüpfung aufgehoben.",
-      cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten."
+      cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten.",
+      nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben..."
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1337,7 +1359,8 @@
       payout_connect_btn:"Forbind med Stripe", payout_disconnect_btn:"Fjern forbindelse",
       payout_connected:"Din Stripe-konto er forbundet — du får dine penge direkte.", payout_not_connected:"Endnu ikke forbundet — penge fra dine salg går i øjeblikket til admin.",
       payout_disconnected:"Forbindelse fjernet.",
-      cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang."
+      cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang.",
+      nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked..."
     }
   };
 
@@ -1425,6 +1448,7 @@
     if(name === 'cart') renderCartView();
     if(name === 'account') renderAccountView();
     if(name === 'admin') switchAdminTab('content');
+    if(name === 'messages') loadConversations();
     document.getElementById('headerMid').classList.remove('show');
   }
 
@@ -1982,7 +2006,9 @@
     const loggedIn = isAdmin || isCustomer;
     document.getElementById('dropzone').classList.toggle('show', loggedIn);
     document.getElementById('navAdminTab').classList.toggle('hidden', !loggedIn);
+    document.getElementById('navMessagesTab').classList.toggle('hidden', !loggedIn);
     document.getElementById('logoutBtn').style.display = loggedIn ? 'inline-block' : 'none';
+    if(loggedIn) loadUnreadMessagesCount(); else document.getElementById('navMessagesCount').style.display = 'none';
     ['Admin','Customer'].forEach(k => document.getElementById('rolePill'+k).classList.remove('show'));
     if(isAdmin){ document.getElementById('rolePillAdmin').classList.add('show'); document.getElementById('rolePillAdmin').innerHTML = `<b style="color:var(--ink)">${currentUserData.name}</b><span class="badge">Admin</span>`; }
     if(isCustomer){ document.getElementById('rolePillCustomer').classList.add('show'); document.getElementById('rolePillCustomer').innerHTML = `<b style="color:var(--ink)">${currentUserData.name}</b><span class="badge">Kunde</span>`; }
@@ -2511,6 +2537,67 @@
     } catch(e){ alert(e.message); }
   }
 
+  let currentThreadUserId = null;
+
+  function contactSeller(sellerId, productName){
+    closeLightbox();
+    switchView('messages');
+    openConversation(sellerId, null, productName);
+  }
+
+  async function loadConversations(){
+    try {
+      const r = await api('/api/messages/conversations');
+      const list = document.getElementById('conversationList');
+      const empty = document.getElementById('conversationsEmpty');
+      if(r.conversations.length === 0){ list.innerHTML = ''; empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+      list.innerHTML = r.conversations.map(c => `
+        <div class="team-row" style="cursor:pointer; ${c.unreadCount>0?'font-weight:600;':''}" onclick="openConversation('${c.userId}', '${(c.userName||'').replace(/'/g,"\\'")}')">
+          <span>${c.userName} ${c.unreadCount>0 ? `<span class="cart-count" style="display:inline-block;">${c.unreadCount}</span>` : ''}</span>
+          <span style="color:var(--muted); font-size:11px; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${(c.lastText||'').replace(/</g,'&lt;')}</span>
+        </div>`).join('');
+    } catch(e){}
+  }
+
+  async function openConversation(userId, userName, prefillText){
+    currentThreadUserId = userId;
+    document.getElementById('messageThreadWrap').style.display = 'block';
+    try {
+      const r = await api('/api/messages/with/' + userId);
+      document.getElementById('threadUserName').textContent = userName || r.userName;
+      const threadEl = document.getElementById('threadMessages');
+      threadEl.innerHTML = r.messages.map(m => `
+        <div style="align-self:${m.mine?'flex-end':'flex-start'}; background:${m.mine?'var(--amber)':'var(--bg)'}; color:${m.mine?'#1a1a1a':'var(--ink)'}; border:1px solid var(--line); padding:8px 12px; border-radius:12px; max-width:80%; font-size:13.5px;">${(m.text||'').replace(/</g,'&lt;')}</div>`
+      ).join('');
+      threadEl.scrollTop = threadEl.scrollHeight;
+    } catch(e){}
+    if(prefillText) document.getElementById('messageInput').value = 'Zu "' + prefillText + '": ';
+    loadConversations();
+    loadUnreadMessagesCount();
+  }
+
+  async function sendDirectMessage(){
+    const input = document.getElementById('messageInput');
+    const text = input.value.trim();
+    if(!text || !currentThreadUserId) return;
+    try {
+      await api('/api/messages', { method:'POST', body:{ toUserId: currentThreadUserId, text } });
+      input.value = '';
+      await openConversation(currentThreadUserId, document.getElementById('threadUserName').textContent);
+    } catch(e){ alert(e.message); }
+  }
+
+  async function loadUnreadMessagesCount(){
+    if(role() === 'guest') return;
+    try {
+      const r = await api('/api/messages/unread-count');
+      const badge = document.getElementById('navMessagesCount');
+      if(r.count > 0){ badge.textContent = r.count; badge.style.display = 'inline-block'; }
+      else { badge.style.display = 'none'; }
+    } catch(e){}
+  }
+
   function copyShareLink(id){
     const url = window.location.origin + window.location.pathname + '#img=' + id;
     navigator.clipboard.writeText(url).then(() => {
@@ -2544,6 +2631,7 @@
         ? `<button class="dl-btn" disabled>✓ Gekauft</button>`
         : `<button class="cart-btn ${inCart?'in-cart':''}" onclick="toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`)
       + ` <button class="btn muted" id="shareLinkBtn" style="padding:8px 12px; font-size:12px;" onclick="copyShareLink('${img.id}')">🔗 Teilen</button>`
+      + (role() !== 'guest' && img.uploadedBy !== currentUserData.id ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="contactSeller('${img.uploadedBy}', '${(img.name||'').replace(/'/g,"\\'")}')">✉️ Verkäufer kontaktieren</button>` : '')
       + (role() !== 'guest' ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="reportImage('${img.id}')">🚩 Melden</button>` : '');
     document.getElementById('lightboxCounter').textContent = (idx+1)+' / '+images.length;
     renderLightboxReviews(img);
