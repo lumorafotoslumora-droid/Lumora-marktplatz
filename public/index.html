@@ -839,6 +839,15 @@
           <div id="lightboxMeta" style="margin-bottom:16px;"></div>
           <div id="lightboxAction"></div>
         </div>
+        <div class="auth-card" id="productChatCard" style="padding:18px 20px; margin-top:14px; display:none;">
+          <h3 style="font-size:14.5px; margin:0 0 10px; font-family:'Fraunces',serif;">💬 <span id="productChatSellerName"></span></h3>
+          <div id="productChatMessages" style="display:flex; flex-direction:column; gap:6px; max-height:180px; overflow-y:auto; margin-bottom:10px;"></div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="productChatInput" data-i18n-placeholder="messages_input_placeholder" placeholder="Nachricht schreiben..." style="flex:1; background:var(--bg); border:1px solid var(--line); color:var(--ink); padding:9px 12px; border-radius:var(--radius-sm); font-size:13px;" onkeydown="if(event.key==='Enter') sendProductChatMessage()">
+            <button class="btn solid" style="padding:9px 16px; font-size:12.5px; white-space:nowrap;" onclick="sendProductChatMessage()" data-i18n="messages_send_btn">Senden</button>
+          </div>
+          <a href="#" style="display:block; margin-top:10px; font-size:11.5px;" onclick="event.preventDefault(); contactSeller(productChatSellerId, lightboxId && images.find(x=>x.id===lightboxId) ? images.find(x=>x.id===lightboxId).name : '')" data-i18n="messages_open_full">Vollständige Unterhaltung öffnen →</a>
+        </div>
         <p id="lightboxDescription" style="color:var(--muted); font-size:13.5px; margin:18px 0 0; white-space:pre-wrap;"></p>
       </div>
     </div>
@@ -924,7 +933,7 @@
       payout_connected:"Dein Stripe-Konto ist verknüpft — du bekommst dein Geld direkt.", payout_not_connected:"Noch nicht verknüpft — Geld aus deinen Verkäufen geht aktuell an den Admin.",
       payout_disconnected:"Verknüpfung aufgehoben.",
       cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten.",
-      nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben...",
+      nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben...", messages_send_btn:"Senden", messages_open_full:"Vollständige Unterhaltung öffnen →",
       lb_seller:"Verkäufer:in", lb_no_reviews:"Noch keine Bewertungen", lb_in_stock:"verfügbar", lb_unlimited_stock:"Unbegrenzt verfügbar", lb_last_one:"Nur noch 1 Stück!", lb_discount_badge:"Rabatt", back_to_products:"Zurück zu Produkten"
     },
     en: {
@@ -1426,7 +1435,7 @@
       payout_connected:"Din Stripe-konto er forbundet — du får dine penge direkte.", payout_not_connected:"Endnu ikke forbundet — penge fra dine salg går i øjeblikket til admin.",
       payout_disconnected:"Forbindelse fjernet.",
       cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang.",
-      nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked...",
+      nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked...", messages_send_btn:"Send", messages_open_full:"Åbn hele samtalen →",
       lb_seller:"Sælger", lb_no_reviews:"Endnu ingen anmeldelser", lb_in_stock:"tilgængelige", lb_unlimited_stock:"Ubegrænset tilgængeligt", lb_last_one:"Kun 1 stk tilbage!", lb_discount_badge:"Rabat", back_to_products:"Tilbage til produkter"
     }
   };
@@ -2680,6 +2689,40 @@
   }
 
   let currentThreadUserId = null;
+  let productChatSellerId = null;
+
+  async function renderProductChatBox(img){
+    const card = document.getElementById('productChatCard');
+    if(!card) return;
+    if(role() === 'guest' || !currentUserData || !img.uploadedBy || img.uploadedBy === currentUserData.id){
+      card.style.display = 'none';
+      productChatSellerId = null;
+      return;
+    }
+    card.style.display = 'block';
+    productChatSellerId = img.uploadedBy;
+    document.getElementById('productChatSellerName').textContent = img.uploadedByName || t('lb_seller');
+    try {
+      const r = await api('/api/messages/with/' + img.uploadedBy);
+      const msgsEl = document.getElementById('productChatMessages');
+      if(r.messages.length === 0){ msgsEl.innerHTML = `<div style="font-size:12px; color:var(--muted);">${t('messages_empty')}</div>`; return; }
+      msgsEl.innerHTML = r.messages.slice(-6).map(m => `<div style="align-self:${m.mine?'flex-end':'flex-start'}; background:${m.mine?'var(--amber)':'var(--bg)'}; color:${m.mine?'#1a1a1a':'var(--ink)'}; border:1px solid var(--line); padding:6px 10px; border-radius:10px; max-width:85%; font-size:12.5px;">${(m.text||'').replace(/</g,'&lt;')}</div>`).join('');
+      msgsEl.scrollTop = msgsEl.scrollHeight;
+    } catch(e){}
+  }
+
+  async function sendProductChatMessage(){
+    const input = document.getElementById('productChatInput');
+    const text = input.value.trim();
+    if(!text || !productChatSellerId) return;
+    try {
+      await api('/api/messages', { method:'POST', body:{ toUserId: productChatSellerId, text } });
+      input.value = '';
+      const img = images.find(x => x.id === lightboxId);
+      if(img) renderProductChatBox(img);
+      loadUnreadMessagesCount();
+    } catch(e){ alert(e.message); }
+  }
 
   function contactSeller(sellerId, productName){
     closeLightbox();
@@ -2773,11 +2816,11 @@
         ? `<button class="dl-btn" disabled>✓ Gekauft</button>`
         : `<button class="cart-btn ${inCart?'in-cart':''}" onclick="toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`)
       + ` <button class="btn muted" id="shareLinkBtn" style="padding:8px 12px; font-size:12px;" onclick="copyShareLink('${img.id}')">🔗 Teilen</button>`
-      + (role() !== 'guest' && img.uploadedBy !== currentUserData.id ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="contactSeller('${img.uploadedBy}', '${(img.name||'').replace(/'/g,"\\'")}')">✉️ Verkäufer kontaktieren</button>` : '')
       + (role() !== 'guest' ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="reportImage('${img.id}')">🚩 Melden</button>` : '');
     document.getElementById('lightboxCounter').textContent = (idx+1)+' / '+images.length;
     renderLightboxMeta(img);
     renderLightboxReviews(img);
+    renderProductChatBox(img);
   }
 
   function renderLightboxMeta(img){
