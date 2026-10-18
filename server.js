@@ -14,8 +14,6 @@ const PUBLIC_DIR = path.join(ROOT, 'public');
 
 const ADMIN_NAME = 'Matic';
 const SUPPORTED_LANGUAGES = ['de','en','es','fr','it','pt','nl','pl','sl','tr','ru','ar','zh','ja','ko','hi','da'];
-// Provision, die der Admin bei Verkäufen über ein verknüpftes Stripe-Konto eines Verkäufers automatisch erhält.
-const PLATFORM_FEE_PERCENT = 5;
 
 // Verzeichnisse sicherstellen (wichtig, falls der Ordner z.B. von GitHub leer war
 // und deshalb beim Hochladen des Projekts gar nicht mit übertragen wurde — Git
@@ -179,6 +177,8 @@ async function initDB(){
   if(!Array.isArray(db.flags)) db.flags = [];
   db.users.forEach(u => { if(typeof u.banned !== 'boolean') u.banned = false; if(!u.language) u.language = 'de'; });
   db.images.forEach((img, i) => { if(!img.name) img.name = 'Bild ' + (i + 1); });
+  db.images.forEach(img => { if(typeof img.discountPercent !== 'number') img.discountPercent = 0; });
+  if(typeof db.platformFeePercent !== 'number') db.platformFeePercent = 5;
   await ensureAdmin();
 }
 
@@ -571,6 +571,13 @@ function computeBestsellerId(){
   return bestCount > 0 ? best : null;
 }
 
+// Tatsächlicher Preis nach Verkäufer-Rabatt (falls einer gesetzt ist).
+function effectivePrice(img){
+  const pct = typeof img.discountPercent === 'number' ? img.discountPercent : 0;
+  if(!pct) return img.price;
+  return Math.round(img.price * (1 - pct / 100) * 100) / 100;
+}
+
 function publicImage(img, user){
   const purchased = user ? db.purchases.some(p => p.userId === user.id && p.imageId === img.id) : false;
   const admin = isAdmin(user);
@@ -584,6 +591,8 @@ function publicImage(img, user){
     description: img.description || '',
     photos: (img.photos || []).map(p => ({ url: USE_SUPABASE ? supabasePublicUrl(UPLOADS_BUCKET, p.filename) : ('/uploads/' + p.filename), type: p.type })),
     price: img.price,
+    discountPercent: typeof img.discountPercent === 'number' ? img.discountPercent : 0,
+    effectivePrice: effectivePrice(img),
     quantity: img.quantity === null ? null : (typeof img.quantity === 'number' ? img.quantity : 1),
     sold: !!img.sold,
     purchased,
@@ -697,7 +706,7 @@ function computeTotals(imageIds, user){
   const items = imageIds
     .map(id => db.images.find(i => i.id === id))
     .filter(img => img && !img.sold)
-    .map(img => ({ id: img.id, price: img.price }));
+    .map(img => ({ id: img.id, price: effectivePrice(img) }));
 
   const promos = db.promos;
   let remaining = [...items];
@@ -956,9 +965,10 @@ async function handleApi(req, res, pathname, method, parsed){
       if(Array.isArray(body.tags)){
         img.tags = body.tags.map(t => String(t).trim().toLowerCase().slice(0, 20)).filter(Boolean).slice(0, 8);
       }
-      if(typeof body.price === 'number' || typeof body.quantity === 'number' || typeof body.sold === 'boolean' || typeof body.unlimited === 'boolean'){
+      if(typeof body.price === 'number' || typeof body.quantity === 'number' || typeof body.sold === 'boolean' || typeof body.unlimited === 'boolean' || typeof body.discountPercent === 'number'){
         if(!(isAdmin(user) || img.uploadedBy === user.id)) return sendJson(res, 403, { error: 'Keine Berechtigung, Preise zu ändern.' });
         if(typeof body.price === 'number' && body.price >= 0) img.price = body.price;
+        if(typeof body.discountPercent === 'number') img.discountPercent = Math.max(0, Math.min(90, Math.round(body.discountPercent)));
         if(body.unlimited === true){
           img.quantity = null;
           img.sold = false;
@@ -1380,6 +1390,21 @@ async function handleApi(req, res, pathname, method, parsed){
     return sendJson(res, 200, { ok: true });
   }
 
+  // ---- Admin-Provision bei Verkäufen über verknüpfte Stripe-Konten ----
+  if(pathname === '/api/admin/platform-fee' && method === 'GET'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    return sendJson(res, 200, { percent: typeof db.platformFeePercent === 'number' ? db.platformFeePercent : 5 });
+  }
+  if(pathname === '/api/admin/platform-fee' && method === 'POST'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    const body = await readJsonBody(req);
+    const percent = Number(body.percent);
+    if(!isFinite(percent) || percent < 0 || percent > 50) return sendJson(res, 400, { error: 'Bitte einen Prozentsatz zwischen 0 und 50 angeben.' });
+    db.platformFeePercent = Math.round(percent * 10) / 10;
+    saveDB(db);
+    return sendJson(res, 200, { percent: db.platformFeePercent });
+  }
+
   // ---- Konten (nur Admin kann Konten für andere Leute erstellen — keine öffentliche Registrierung) ----
   if(pathname === '/api/accounts' && method === 'GET'){
     if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
@@ -1501,15 +1526,16 @@ async function handleApi(req, res, pathname, method, parsed){
         }]
       };
       if(destination !== 'platform'){
+        const feePercent = typeof db.platformFeePercent === 'number' ? db.platformFeePercent : 5;
         sessionParams.payment_intent_data = {
           transfer_data: { destination },
-          application_fee_amount: Math.round(totals.total * 100 * (PLATFORM_FEE_PERCENT / 100))
+          application_fee_amount: Math.round(totals.total * 100 * (feePercent / 100))
         };
       }
       const session = await stripeRequest('/v1/checkout/sessions', sessionParams);
       db.pendingCheckouts[session.id] = {
         userId: user.id, itemIds: totals.itemIds, usesFirstFree: totals.usesFirstFree,
-        itemPrices: totals.itemIds.map(id => { const im = db.images.find(x => x.id === id); return { id, price: im ? im.price : 0 }; }),
+        itemPrices: totals.itemIds.map(id => { const im = db.images.find(x => x.id === id); return { id, price: im ? effectivePrice(im) : 0 }; }),
         rawSubtotal: totals.rawSubtotal, actualTotal: totals.total,
         createdAt: new Date().toISOString()
       };

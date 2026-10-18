@@ -622,11 +622,18 @@
     </div>
 
     <div class="admin-subview" id="admintab-promo">
-      <div class="panel-card" id="promoPanel" style="max-width:520px;">
+      <div class="panel-card" id="promoPanel" style="max-width:520px; margin-bottom:24px;">
         <h3>Aktionen</h3>
         <div class="promo-row"><input type="checkbox" id="promoFirstFree" onchange="savePromos()"><label>Erstes Produkt gratis<small>Einmalig pro Kundenkonto</small></label></div>
         <div class="promo-row"><input type="checkbox" id="promoTwoForOne" onchange="savePromos()"><label>2 für 1<small>Günstigeres von je 2 Produkten gratis</small></label></div>
         <div class="promo-row"><input type="checkbox" id="promoPercent" onchange="savePromos()"><label>Prozent-Rabatt</label><input type="number" id="promoPercentValue" value="20" onchange="savePromos()"> %</div>
+      </div>
+      <div class="panel-card show" id="platformFeePanel" style="max-width:520px;">
+        <h3>Deine Provision</h3>
+        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Wie viel Prozent du automatisch von jedem Verkauf erhältst, bei dem der Verkäufer ein eigenes, verknüpftes Stripe-Konto hat. Bei Verkäufen ohne verknüpftes Konto (die komplett an dich gehen) spielt das keine Rolle.</p>
+        <div class="field"><label>Provision (%)</label><input type="number" id="platformFeeValue" min="0" max="50" step="0.5" value="5"></div>
+        <button class="btn solid" onclick="savePlatformFee()">Speichern</button>
+        <div class="redeem-msg" id="platformFeeMsg" style="margin-top:10px;"></div>
       </div>
     </div>
 
@@ -1580,14 +1587,16 @@
           : `<button class="cart-btn wide ${inCart?'in-cart':''}" onclick="event.stopPropagation(); toggleCart('${img.id}')">${inCart?t('cart_in_cart'):t('cart_add')}</button>`;
       const badges = [
         img.isBestseller ? '<span class="badge-pill bestseller">🔥 Bestseller</span>' : '',
-        (img.isNew && !img.isBestseller) ? '<span class="badge-pill new">✨ Neu</span>' : ''
+        (img.isNew && !img.isBestseller) ? '<span class="badge-pill new">✨ Neu</span>' : '',
+        (img.discountPercent > 0) ? `<span class="badge-pill new">-${img.discountPercent}%</span>` : ''
       ].join('');
       const stockNote = (!img.sold && img.quantity > 1) ? `<div style="padding:4px 14px 0; font-size:11px; color:var(--muted);">Nur noch ${img.quantity} verfügbar</div>` : '';
+      const priceTag = img.sold ? 'Ausverkauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
-            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Ausverkauft':fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${priceTag}</div>
             ${badges ? `<div class="badge-row">${badges}</div>` : ''}
             <div class="fav-heart ${img.isFavorite?'active':''}" onclick="event.stopPropagation(); toggleFavorite('${img.id}')">${img.isFavorite?'❤️':'🤍'}</div>
           </div>
@@ -1625,18 +1634,20 @@
       const adminControls = img.canSetPrice ? `
         <div class="admin-controls">
           <input type="number" min="0" step="0.5" value="${img.price}" onchange="setPrice('${img.id}', this.value)"> €
+          <input type="number" min="0" max="90" step="1" value="${img.discountPercent||0}" onchange="setDiscount('${img.id}', this.value)" title="Rabatt" style="width:55px;"> % Rabatt
           ${quantityControl}
         </div>` : '';
       const photoStrip = img.photos.length > 1
         ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
       const buyerNote = (img.sold && img.buyerName)
         ? `<div class="uploader-tag" style="color:var(--green);">✓ Verkauft an: <b>${img.buyerName}</b> — bitte übergeben</div>` : '';
+      const priceTag = img.sold ? 'Ausverkauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
             ${mediaTagHtml(img)}
             ${img.canDelete ? `<div class="del" onclick="event.stopPropagation(); deleteImage('${img.id}')">✕</div>` : ''}
-            <div class="tag ${img.sold?'free':'paid'}">${img.sold?'Ausverkauft':fmt(img.price)}</div>
+            <div class="tag ${img.sold?'free':'paid'}">${priceTag}</div>
           </div>
           ${photoStrip}
           <div class="uploader-tag">${img.quantity === null ? 'Unbegrenzt verfügbar' : 'Noch ' + img.quantity + ' auf Lager'}</div>
@@ -1671,6 +1682,12 @@
     const num = parseFloat(val);
     if(isNaN(num) || num < 0){ alert('Bitte einen gültigen Preis von 0 oder mehr eingeben.'); await loadImages(); return; }
     await api('/api/images/' + id, { method:'PATCH', body:{ price: num } });
+    await loadImages();
+  }
+  async function setDiscount(id, val){
+    const num = parseFloat(val);
+    if(isNaN(num) || num < 0 || num > 90){ alert('Bitte einen Rabatt zwischen 0 und 90% eingeben.'); await loadImages(); return; }
+    await api('/api/images/' + id, { method:'PATCH', body:{ discountPercent: num } });
     await loadImages();
   }
   async function setQuantity(id, val){
@@ -1983,7 +2000,7 @@
   }
 
   const ADMIN_TABS = {
-    promo: { panel:'promoPanel', loaders:[] },
+    promo: { panel:'promoPanel', loaders:[loadPlatformFee] },
     accounts: { panel:'accountsPanel', loaders:[loadAccountsList] },
     ban: { panel:'banPanel', loaders:[loadBannedList] },
     raffle: { panel:'rafflePanel', loaders:[loadRaffleList, loadRaffleSettings, loadRafflePromoStatus] },
@@ -2116,6 +2133,21 @@
     document.getElementById('promoPercent').checked = r.promos.percent;
     document.getElementById('promoPercentValue').value = r.promos.percentValue;
     return r.promos;
+  }
+
+  async function loadPlatformFee(){
+    try {
+      const r = await api('/api/admin/platform-fee');
+      document.getElementById('platformFeeValue').value = r.percent;
+    } catch(e){}
+  }
+  async function savePlatformFee(){
+    const msgEl = document.getElementById('platformFeeMsg');
+    try {
+      const r = await api('/api/admin/platform-fee', { method:'POST', body:{ percent: parseFloat(document.getElementById('platformFeeValue').value) } });
+      document.getElementById('platformFeeValue').value = r.percent;
+      msgEl.textContent = 'Gespeichert!'; msgEl.className = 'redeem-msg ok';
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
   }
 
   function dismissPromoBanner(){
@@ -2281,7 +2313,7 @@
     emptyEl.style.display='none'; summaryEl.style.display='block';
     listEl.innerHTML = items.map(img => `
       <div class="cart-item">${mediaTagHtml(img,{fill:true})}
-        <div style="flex:1;"><div>${img.name || (coverPhoto(img).type==='video'?'Video':'Produkt')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${fmt(img.price)}</div></div>
+        <div style="flex:1;"><div>${img.name || (coverPhoto(img).type==='video'?'Video':'Produkt')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6;">${fmt(img.price)}</span>` : fmt(img.price)}</div></div>
         <button class="btn muted" style="padding:6px 12px; font-size:11px;" onclick="toggleCart('${img.id}'); renderCartView();">${t('remove_btn')}</button>
       </div>`).join('');
 
@@ -2503,7 +2535,7 @@
     const descEl = document.getElementById('lightboxDescription');
     if(descEl) descEl.textContent = img.description || '';
     const priceEl = document.getElementById('lightboxPrice');
-    priceEl.textContent = img.sold ? 'Ausverkauft' : img.purchased ? 'Gekauft' : fmt(img.price);
+    priceEl.innerHTML = img.sold ? 'Ausverkauft' : img.purchased ? 'Gekauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.8em;">${fmt(img.price)}</span>` : fmt(img.price));
     priceEl.className = 'lb-price' + ((img.sold||img.purchased)?' free':'');
     const inCart = cart.has(img.id);
     document.getElementById('lightboxAction').innerHTML = (img.sold

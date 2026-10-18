@@ -57,7 +57,7 @@ Standardmäßig geht das Geld aus jedem Verkauf auf **dein** Stripe-Konto (das m
 - Jede Person, die ihr eigenes Konto verknüpfen will, durchläuft dabei einmalig Stripes eigene Verifizierung (Ausweis, Bankverbindung) — das übernimmt Stripe komplett, nicht die Website.
 - **Ein Warenkorb darf nur Produkte mit demselben Zahlungsempfänger enthalten** — z.B. nur Produkte von einem verknüpften Verkäufer, oder nur Produkte ohne eigenes Stripe-Konto (die dann an dich gehen). Sind beide gemischt, zeigt die Seite eine klare Fehlermeldung und bittet um zwei getrennte Bestellungen — eine einzelne Kartenzahlung kann technisch nicht automatisch auf zwei verschiedene Konten gleichzeitig aufgeteilt werden.
 - **Ohne verknüpftes Stripe-Konto kann ein Konto nicht verkaufen** (nur noch kaufen) — das Produkt-Einstellen-Formular ist dann ausgeblendet und zeigt stattdessen einen Hinweis. Als Admin kannst du das für einzelne Konten aber jederzeit unter "Verwaltung" → "Konten" mit der Checkbox **"Verkaufen ohne Stripe erlauben"** aufheben — dann darf dieses Konto trotzdem verkaufen, das Geld geht dabei ganz normal an dich (wie vor Einführung dieser Funktion). Der Admin selbst kann immer verkaufen, unabhängig von alldem.
-- **Du bekommst automatisch 5% Provision von jedem Verkauf über ein verknüpftes Stripe-Konto** (Konstante `PLATFORM_FEE_PERCENT` in `server.js`, dort änderbar) — Stripe zieht das direkt bei der Zahlung ab, der Verkäufer bekommt die restlichen 95%. Bei Verkäufen ohne verknüpftes Konto (die ganz an dich gehen) gibt es diesen Abzug logischerweise nicht.
+- **Du bekommst automatisch eine Provision von jedem Verkauf über ein verknüpftes Stripe-Konto** (Standard: 5%) — Stripe zieht das direkt bei der Zahlung ab, der Verkäufer bekommt den Rest. Bei Verkäufen ohne verknüpftes Konto (die ganz an dich gehen) gibt es diesen Abzug logischerweise nicht. Den Prozentsatz kannst du jederzeit unter "Verwaltung" → "Aktionen" → "Deine Provision" ändern (0–50%).
 
 ---
 
@@ -119,7 +119,8 @@ Ohne diese beiden Variablen läuft der Server automatisch im lokalen Datei-Modus
 | Eigene Verkäufe einsehen | ✅ (alle) | ✅ (nur eigene) |
 | Eigenes Stripe-Konto für direkte Auszahlung verknüpfen | ✅ | ✅ |
 | Konten erstellen/löschen | ✅ | ❌ |
-| Aktionen (Rabatte) verwalten | ✅ | ❌ |
+| Rabatt (%) auf eigene Produkte einstellen | ✅ (eigene) | ✅ (nur eigene) |
+| Shop-weite Aktionen (Erstes gratis, 2-für-1, Prozent-Rabatt) & Provision verwalten | ✅ | ❌ |
 | Gewinnspiel ein/aus schalten, Gewinner auslosen | ✅ | ❌ |
 | Konten sperren/entsperren | ✅ | ❌ |
 | Support-Nachrichten & Newsletter verwalten | ✅ | ❌ |
