@@ -846,6 +846,7 @@
       </div>
       <div id="lightboxAction"></div>
     </div>
+    <div id="lightboxMeta" style="display:flex; flex-wrap:wrap; gap:6px 14px; font-size:12px; color:var(--muted); margin:6px 0 0;"></div>
     <p id="lightboxDescription" style="color:var(--muted); font-size:13px; margin:4px 0 0; white-space:pre-wrap;"></p>
     <div class="lightbox-counter" id="lightboxCounter"></div>
     <div class="lightbox-reviews" id="lightboxReviews"></div>
@@ -919,7 +920,8 @@
       payout_connected:"Dein Stripe-Konto ist verknüpft — du bekommst dein Geld direkt.", payout_not_connected:"Noch nicht verknüpft — Geld aus deinen Verkäufen geht aktuell an den Admin.",
       payout_disconnected:"Verknüpfung aufgehoben.",
       cant_sell_notice:"Du musst zuerst dein eigenes Stripe-Konto verknüpfen, bevor du Produkte verkaufen kannst. Geh dafür zu \"Mein Konto\" → \"Auszahlung\" — oder bitte den Admin, dich dafür freizuschalten.",
-      nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben..."
+      nav_messages:"Nachrichten", messages_eyebrow:"Nachrichten", messages_title:"Nachrichten", messages_empty:"Noch keine Nachrichten.", messages_input_placeholder:"Nachricht schreiben...",
+      lb_seller:"Verkäufer:in", lb_no_reviews:"Noch keine Bewertungen", lb_in_stock:"verfügbar", lb_unlimited_stock:"Unbegrenzt verfügbar", lb_last_one:"Nur noch 1 Stück!", lb_discount_badge:"Rabatt"
     },
     en: {
       nav_gallery:"Gallery", nav_cart:"Cart", nav_account:"My Account", nav_support:"Support",
@@ -1420,7 +1422,8 @@
       payout_connected:"Din Stripe-konto er forbundet — du får dine penge direkte.", payout_not_connected:"Endnu ikke forbundet — penge fra dine salg går i øjeblikket til admin.",
       payout_disconnected:"Forbindelse fjernet.",
       cant_sell_notice:"Du skal først forbinde din egen Stripe-konto, før du kan sælge produkter. Gå til \"Min konto\" → \"Udbetaling\" — eller bed admin om at give dig adgang.",
-      nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked..."
+      nav_messages:"Beskeder", messages_eyebrow:"Beskeder", messages_title:"Beskeder", messages_empty:"Endnu ingen beskeder.", messages_input_placeholder:"Skriv en besked...",
+      lb_seller:"Sælger", lb_no_reviews:"Endnu ingen anmeldelser", lb_in_stock:"tilgængelige", lb_unlimited_stock:"Ubegrænset tilgængeligt", lb_last_one:"Kun 1 stk tilbage!", lb_discount_badge:"Rabat"
     }
   };
 
@@ -2769,7 +2772,23 @@
       + (role() !== 'guest' && img.uploadedBy !== currentUserData.id ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="contactSeller('${img.uploadedBy}', '${(img.name||'').replace(/'/g,"\\'")}')">✉️ Verkäufer kontaktieren</button>` : '')
       + (role() !== 'guest' ? ` <button class="btn muted" style="padding:8px 12px; font-size:12px;" onclick="reportImage('${img.id}')">🚩 Melden</button>` : '');
     document.getElementById('lightboxCounter').textContent = (idx+1)+' / '+images.length;
+    renderLightboxMeta(img);
     renderLightboxReviews(img);
+  }
+
+  function renderLightboxMeta(img){
+    const metaEl = document.getElementById('lightboxMeta');
+    if(!metaEl) return;
+    const parts = [];
+    if(img.uploadedByName) parts.push(`👤 ${t('lb_seller')}: <b style="color:var(--ink);">${img.uploadedByName}</b>`);
+    parts.push(img.reviewCount > 0 ? `⭐ ${img.avgRating} (${img.reviewCount})` : `⭐ ${t('lb_no_reviews')}`);
+    if(!img.sold && !img.purchased){
+      if(img.quantity === null) parts.push(`📦 ${t('lb_unlimited_stock')}`);
+      else if(img.quantity === 1) parts.push(`📦 <b style="color:var(--amber, #e0a800);">${t('lb_last_one')}</b>`);
+      else if(typeof img.quantity === 'number') parts.push(`📦 ${img.quantity} ${t('lb_in_stock')}`);
+    }
+    if(img.discountPercent > 0) parts.push(`🏷️ -${img.discountPercent}% ${t('lb_discount_badge')}`);
+    metaEl.innerHTML = parts.map(p => `<span>${p}</span>`).join('');
   }
 
   let selectedStarRating = 0;
