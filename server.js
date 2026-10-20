@@ -764,6 +764,25 @@ function stripeGet(path){
   });
 }
 
+// Generischer HTTPS-JSON-Request (für Google OAuth — bewusst ohne externe Pakete).
+function httpsJson(options, body){
+  return new Promise((resolve, reject) => {
+    const httpsReq = https.request(options, (httpsRes) => {
+      let data = '';
+      httpsRes.on('data', c => data += c);
+      httpsRes.on('end', () => {
+        let json = {};
+        try { json = data ? JSON.parse(data) : {}; } catch(e){ return reject(new Error('Ungültige Antwort von Google.')); }
+        if(httpsRes.statusCode >= 200 && httpsRes.statusCode < 300) resolve(json);
+        else reject(new Error(json.error_description || json.error || 'Anfrage an Google fehlgeschlagen.'));
+      });
+    });
+    httpsReq.on('error', reject);
+    if(body) httpsReq.write(body);
+    httpsReq.end();
+  });
+}
+
 // Gibt die Stripe-Connected-Account-ID des Verkäufers zurück, wenn er sein eigenes
 // Stripe-Konto verknüpft und fertig eingerichtet hat — sonst null (= Geld geht an den Admin/Platform-Account).
 function sellerDestination(sellerId){
@@ -865,6 +884,65 @@ const server = http.createServer(async (req, res) => {
       if(!already){ db.raffleEntries.push({ id: genId(), email, enteredAt: new Date().toISOString(), language: lang }); saveDB(db); }
       const REJOIN_OK = { de:'🎉 Du bist wieder dabei!', en:'🎉 You\'re back in!', es:'🎉 ¡Ya estás de vuelta!', fr:'🎉 Tu es de nouveau inscrit !', it:'🎉 Sei di nuovo dentro!', pt:'🎉 Você está de volta!', nl:'🎉 Je doet weer mee!', pl:'🎉 Znów bierzesz udział!', tr:'🎉 Tekrar dahilsin!', ru:'🎉 Вы снова участвуете!', ar:'🎉 أنت مشارك مجددًا!', zh:'🎉 你已再次参加！', ja:'🎉 再参加しました！', ko:'🎉 다시 참여했습니다!', hi:'🎉 आप फिर से शामिल हैं!' };
       return res.end(`<html><body style="font-family:sans-serif; background:#121119; color:#f1f0f7; padding:60px; text-align:center;"><h2>${REJOIN_OK[lang] || REJOIN_OK.de}</h2></body></html>`);
+    }
+
+    // ---- Anmeldung mit Google (nur für bereits bestehende Konten — keine öffentliche Registrierung über Google) ----
+    if(pathname === '/api/auth/google' && method === 'GET'){
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      if(!clientId){ res.writeHead(302, { Location: '/?google=notconfigured' }); return res.end(); }
+      const proto = req.headers['x-forwarded-proto'] || 'http';
+      const redirectUri = `${proto}://${req.headers.host}/api/auth/google/callback`;
+      const state = crypto.randomBytes(16).toString('hex');
+      res.setHeader('Set-Cookie', `google_oauth_state=${state}; HttpOnly; Path=/; Max-Age=600; SameSite=Lax`);
+      const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth?' + new URLSearchParams({
+        client_id: clientId, redirect_uri: redirectUri, response_type: 'code',
+        scope: 'openid email profile', state, prompt: 'select_account'
+      }).toString();
+      res.writeHead(302, { Location: authUrl });
+      return res.end();
+    }
+
+    if(pathname === '/api/auth/google/callback' && method === 'GET'){
+      const proto = req.headers['x-forwarded-proto'] || 'http';
+      const redirectUri = `${proto}://${req.headers.host}/api/auth/google/callback`;
+      const code = parsed.searchParams.get('code');
+      const stateParam = parsed.searchParams.get('state');
+      const cookies = parseCookies(req);
+      const expectedState = cookies['google_oauth_state'];
+      res.setHeader('Set-Cookie', 'google_oauth_state=; HttpOnly; Path=/; Max-Age=0');
+      if(!code || !stateParam || !expectedState || stateParam !== expectedState){
+        res.writeHead(302, { Location: '/?google=error' }); return res.end();
+      }
+      const clientId = process.env.GOOGLE_CLIENT_ID;
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+      if(!clientId || !clientSecret){ res.writeHead(302, { Location: '/?google=notconfigured' }); return res.end(); }
+      try {
+        const tokenBody = new URLSearchParams({
+          code, client_id: clientId, client_secret: clientSecret,
+          redirect_uri: redirectUri, grant_type: 'authorization_code'
+        }).toString();
+        const tokenRes = await httpsJson({
+          hostname: 'oauth2.googleapis.com', path: '/token', method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Content-Length': Buffer.byteLength(tokenBody) }
+        }, tokenBody);
+        const profile = await httpsJson({
+          hostname: 'www.googleapis.com', path: '/oauth2/v3/userinfo', method: 'GET',
+          headers: { 'Authorization': 'Bearer ' + tokenRes.access_token }
+        });
+        const email = (profile.email || '').trim().toLowerCase();
+        const found = email ? db.users.find(u => u.email && u.email.toLowerCase() === email) : null;
+        if(!found){ res.writeHead(302, { Location: '/?google=notfound' }); return res.end(); }
+        if(found.banned){ res.writeHead(302, { Location: '/?google=banned' }); return res.end(); }
+        const token = genId();
+        sessions.set(token, found.id);
+        setSessionCookie(res, token);
+        res.writeHead(302, { Location: '/?google=success' });
+        return res.end();
+      } catch(e){
+        console.error('Google-Login fehlgeschlagen:', e.message);
+        res.writeHead(302, { Location: '/?google=error' });
+        return res.end();
+      }
     }
 
     // API

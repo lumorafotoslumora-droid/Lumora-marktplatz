@@ -95,6 +95,24 @@ Für Gewinnspiel-, Newsletter- und Support-Mails nutzt die Seite [Brevo](https:/
 
 ---
 
+## Anmeldung mit Google einrichten (optional)
+
+Auf der Login-Karte gibt es einen Button "Mit Google anmelden". Er funktioniert **nur für bereits bestehende Konten** — es gibt weiterhin keine öffentliche Registrierung: Google-Login wird einfach über die beim Konto hinterlegte E-Mail-Adresse zugeordnet. Hat jemand noch kein Konto (oder keine passende E-Mail hinterlegt), bekommt er eine klare Fehlermeldung, dass er sich an den Admin wenden soll.
+
+1. [Google Cloud Console](https://console.cloud.google.com/) öffnen, neues Projekt anlegen (oder bestehendes nutzen)
+2. Links im Menü **"APIs & Services"** → **"OAuth consent screen"** → Nutzertyp **"External"** auswählen, App-Namen (z.B. "Lumora") und eine Support-E-Mail eintragen, speichern
+3. **"APIs & Services"** → **"Credentials"** → **"Create Credentials"** → **"OAuth client ID"** → Anwendungstyp **"Web application"**
+4. Unter **"Authorized redirect URIs"** genau diese URL eintragen (mit deiner echten Render-Adresse statt des Platzhalters):
+   `https://DEINE-RENDER-ADRESSE.onrender.com/api/auth/google/callback`
+5. Erstellen — du bekommst eine **Client ID** und ein **Client Secret** angezeigt
+6. Als Umgebungsvariablen setzen (lokal per `export`, auf Render unter "Environment"):
+   - **`GOOGLE_CLIENT_ID`**
+   - **`GOOGLE_CLIENT_SECRET`**
+
+Ohne diese beiden Variablen bleibt der Google-Button sichtbar, zeigt aber eine Meldung, dass die Google-Anmeldung noch nicht eingerichtet ist.
+
+---
+
 ## Dauerhafter Speicher mit Supabase (wichtig für kostenloses Hosting!)
 
 Bei kostenlosen Hosting-Stufen wie Render Free gehen hochgeladene Dateien und die Datenbank bei jedem Neu-Deploy verloren, da der Speicherplatz nicht dauerhaft ist. Die Seite kann stattdessen [Supabase](https://supabase.com) nutzen (kostenlos bis 500MB Datenbank + 1GB Dateispeicher) — dann bleiben Konten und Produkte auch über Deploys hinweg erhalten.

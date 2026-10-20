@@ -472,6 +472,16 @@
         <div class="field"><label data-i18n="label_password">Passwort</label><input type="password" id="loginPass"></div>
         <div class="err-text" id="loginErr"></div>
         <button class="btn solid" style="width:100%;" onclick="attemptLogin()" data-i18n="login_btn">Anmelden</button>
+        <div style="display:flex; align-items:center; gap:10px; margin:16px 0;">
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+          <span style="font-size:11px; color:var(--muted);" data-i18n="login_or">oder</span>
+          <div style="flex:1; height:1px; background:var(--line);"></div>
+        </div>
+        <button class="btn muted" style="width:100%; display:flex; align-items:center; justify-content:center; gap:10px;" onclick="loginWithGoogle()">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3.1 0 5.8 1.1 8 3l5.7-5.7C34.6 6 29.6 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/><path fill="#4CAF50" d="M24 44c5.5 0 10.4-1.9 14.3-5.1l-6.6-5.6C29.6 35.1 26.9 36 24 36c-5.3 0-9.7-3.3-11.3-7.9l-6.6 5.1C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.7l6.6 5.6C40.5 36.9 44 31 44 24c0-1.3-.1-2.7-.4-3.5z"/></svg>
+          <span data-i18n="login_google_btn">Mit Google anmelden</span>
+        </button>
+        <div class="err-text" id="googleLoginMsg" style="margin-top:8px;"></div>
         <div style="margin-top:12px; font-size:12.5px; display:flex; gap:14px; flex-wrap:wrap;">
           <a href="#" onclick="showAuthPanel('forgotPw'); return false;" data-i18n="forgot_pw_link">Passwort vergessen?</a>
           <a href="#" onclick="showAuthPanel('loginCode'); return false;" data-i18n="login_code_link">Mit E-Mail-Code anmelden</a>
@@ -887,6 +897,7 @@
       forgot_pw_link:"Passwort vergessen?", login_code_link:"Mit E-Mail-Code anmelden", back_to_login_link:"← Zurück zur Anmeldung", label_code:"Code",
       forgot_pw_title:"Passwort vergessen", forgot_pw_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Code zum Zurücksetzen.", forgot_pw_request_btn:"Code anfordern", forgot_pw_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", reset_pw_btn:"Neues Passwort setzen",
       login_code_title:"Anmeldung per E-Mail-Code", login_code_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Anmelde-Code, ganz ohne Passwort.", login_code_request_btn:"Code anfordern", login_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", login_code_confirm_btn:"Anmelden", reset_pw_success:"Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.",
+      login_or:"oder", login_google_btn:"Mit Google anmelden", google_err_notfound:"Für diese Google-E-Mail existiert kein Konto. Bitte wende dich an den Admin.", google_err_banned:"Dieses Konto wurde gesperrt.", google_err_notconfigured:"Google-Anmeldung ist aktuell nicht eingerichtet.", google_err_generic:"Google-Anmeldung fehlgeschlagen. Bitte versuch's erneut.",
       register_title:"Kein eigenes Konto?", register_sub:"Konten werden ausschließlich vom Admin erstellt — melde dich bei uns, um Zugang zu bekommen.", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", register_btn:"Konto erstellen",
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
@@ -1389,6 +1400,7 @@
       forgot_pw_link:"Glemt adgangskode?", login_code_link:"Log ind med e-mail-kode", back_to_login_link:"← Tilbage til login", label_code:"Kode",
       forgot_pw_title:"Glemt adgangskode", forgot_pw_sub:"Indtast dit navn eller din e-mail — vi sender dig en kode til nulstilling.", forgot_pw_request_btn:"Anmod om kode", forgot_pw_code_sent:"Koden er sendt! Tjek din indbakke.", reset_pw_btn:"Gem ny adgangskode",
       login_code_title:"Log ind med e-mail-kode", login_code_sub:"Indtast dit navn eller din e-mail — vi sender dig en login-kode, helt uden adgangskode.", login_code_request_btn:"Anmod om kode", login_code_sent:"Koden er sendt! Tjek din indbakke.", login_code_confirm_btn:"Log ind", reset_pw_success:"Adgangskode ændret! Du kan nu logge ind.",
+      login_or:"eller", login_google_btn:"Log ind med Google", google_err_notfound:"Der findes ingen konto til denne Google-e-mail. Kontakt venligst admin.", google_err_banned:"Denne konto er blevet spærret.", google_err_notconfigured:"Google-login er ikke konfigureret endnu.", google_err_generic:"Google-login mislykkedes. Prøv venligst igen.",
       register_title:"Ingen egen konto?", register_sub:"Konti oprettes udelukkende af admin — kontakt os for at få adgang.", label_name:"Navn", label_birthday:"Fødselsdag", label_email:"E-mail", register_btn:"Opret konto",
       pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
       change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
@@ -2677,6 +2689,31 @@
     }
   }
 
+  function loginWithGoogle(){
+    window.location.href = '/api/auth/google';
+  }
+
+  async function checkGoogleLoginReturn(){
+    const params = new URLSearchParams(window.location.search);
+    const google = params.get('google');
+    if(!google) return;
+    params.delete('google');
+    const newSearch = params.toString();
+    window.history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+    if(google === 'success'){
+      await loadMe();
+      if(currentUserData && currentUserData.language && currentUserData.language !== currentLang) applyLanguage(currentUserData.language);
+      applyRoleState(); await loadImages(); switchView('account');
+    } else {
+      switchView('account');
+      const msgEl = document.getElementById('googleLoginMsg');
+      if(!msgEl) return;
+      const key = { notfound:'google_err_notfound', banned:'google_err_banned', notconfigured:'google_err_notconfigured' }[google] || 'google_err_generic';
+      msgEl.textContent = t(key);
+      msgEl.classList.add('show');
+    }
+  }
+
   function renderRecentlyViewed(){
     let ids = [];
     try { ids = JSON.parse(localStorage.getItem('lumora_recent') || '[]'); } catch(e){}
@@ -2990,6 +3027,7 @@
       { keywords: [' kauf','warenkorb','bezahl','kasse'], answer: 'Klick bei einem Produkt auf "In den Warenkorb", geh dann zu "Warenkorb" und bezahle sicher per Karte.' },
       { keywords: ['erhalt','übergabe','abholen','liefer','versand'], answer: 'Es gibt keinen Versand — der Verkäufer sieht nach deinem Kauf deinen Namen und übergibt dir das Produkt persönlich.' },
       { keywords: ['passwort vergessen','code per email','ohne passwort anmelden','email-code','email code'], answer: 'Klick bei "Mein Konto" auf "Passwort vergessen?" oder "Mit E-Mail-Code anmelden" — du bekommst einen Code per E-Mail und kannst damit ein neues Passwort setzen oder dich direkt anmelden.' },
+      { keywords: ['mit google anmelden','google login','google konto'], answer: 'Unter "Mein Konto" gibt es den Button "Mit Google anmelden" — das funktioniert aber nur, wenn deine Google-E-Mail bereits bei einem von uns angelegten Konto hinterlegt ist.' },
       { keywords: ['passwort'], answer: 'Unter "Mein Konto" gibt es den Bereich "Passwort ändern".' },
       { keywords: ['stripe','auszahlung','ohne stripe','geld direkt','direkt bezahlt','eigenes konto verknüpf'], answer: 'Unter "Mein Konto" → "Auszahlung" kannst du dein eigenes Stripe-Konto verknüpfen — dann bekommst du das Geld für deine Verkäufe direkt, ohne über den Admin zu laufen. Ohne verknüpftes Stripe-Konto kannst du nur verkaufen, wenn dich der Admin extra dafür freischaltet.' },
       { keywords: ['provision','plattformgebühr','gebühr behalten'], answer: 'Bei Verkäufen über ein verknüpftes Stripe-Konto behält die Plattform eine kleine Provision ein (vom Admin einstellbar, standardmäßig 5%) — der Rest geht direkt an den Verkäufer.' },
@@ -3394,6 +3432,7 @@
       { keywords: ['modtag','aflevering','afhent','levering','forsendelse'], answer: 'Der er ingen forsendelse — sælgeren ser dit navn efter dit køb og afleverer produktet personligt til dig.' },
       { keywords: ['adgangskode','password'], answer: 'Under "Min konto" er der et afsnit "Skift adgangskode".' },
       { keywords: ['glemt adgangskode','kode via email','log ind uden adgangskode','email-kode','email kode'], answer: 'Klik på "Glemt adgangskode?" eller "Log ind med e-mail-kode" under "Min konto" — du får en kode på e-mail og kan bruge den til at vælge en ny adgangskode eller logge ind direkte.' },
+      { keywords: ['log ind med google','google login','google konto'], answer: 'Under "Min konto" er der knappen "Log ind med Google" — det virker dog kun, hvis din Google-e-mail allerede er tilknyttet en konto, vi har oprettet til dig.' },
       { keywords: ['stripe','udbetaling','uden stripe','penge direkte','betalt direkte','egen konto forbind'], answer: 'Under "Min konto" → "Udbetaling" kan du forbinde din egen Stripe-konto — så får du pengene for dine salg direkte, uden at det går via admin. Uden forbundet Stripe-konto kan du kun sælge, hvis admin giver dig særlig tilladelse.' },
       { keywords: ['provision','platformgebyr','gebyr beholder'], answer: 'Ved salg via en forbundet Stripe-konto beholder platformen en lille provision (indstillelig af admin, som standard 5%) — resten går direkte til sælgeren.' },
       { keywords: ['ubegrænset','lagerbeholdning','hvor mange har jeg'], answer: 'Når du opretter et produkt, kan du angive antallet — eller vælge "Ubegrænset", hvis mængden ikke spiller nogen rolle.' },
@@ -3474,6 +3513,7 @@
     renderFaqAccordion();
     await checkCheckoutReturn();
     await checkStripeConnectReturn();
+    await checkGoogleLoginReturn();
     const hashMatch = window.location.hash.match(/#img=([a-f0-9]+)/);
     if(hashMatch && images.some(img => img.id === hashMatch[1])){ openLightbox(hashMatch[1]); }
   })();
