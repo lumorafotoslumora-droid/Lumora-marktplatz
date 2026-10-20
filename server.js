@@ -225,6 +225,7 @@ const EMAIL_I18N = {
     promo_subject:'🎁 Mach mit beim Lumora-Gewinnspiel!', promo_title:'🎁 Gewinnspiel bei Lumora!', promo_body:'Trag dich jetzt ein und gewinne mit etwas Glück ein Gratis-Bild!', promo_button:'Jetzt mitmachen',
     daily_new:'🆕 Es gibt {count} neue Bilder in der Galerie!', daily_new1:'🆕 Es gibt 1 neues Bild in der Galerie!', daily_generic:'Schau doch mal wieder bei Lumora vorbei — es lohnt sich immer ein Blick in die Galerie. 📸', daily_button:'Zur Galerie',
     code_subject_reset:'Dein Code zum Zurücksetzen deines Passworts', code_subject_login:'Dein Anmelde-Code für Lumora', code_title:'Dein Lumora-Code', code_body_reset:'Du hast ein neues Passwort angefordert. Gib diesen Code auf der Website ein, um ein neues Passwort zu vergeben:', code_body_login:'Gib diesen Code auf der Website ein, um dich ohne Passwort anzumelden:', code_label:'Dein Code:', code_warning:'⏰ Dieser Code ist nur 15 Minuten gültig. Falls du das nicht warst, kannst du diese E-Mail ignorieren.',
+    invoice_subject:'Deine Rechnung von Lumora 🧾', invoice_title:'Vielen Dank für deinen Einkauf!', invoice_intro:'Hier ist die Bestätigung und Rechnung für deine Bestellung bei Lumora.', invoice_order_label:'Bestellnummer', invoice_date_label:'Datum', invoice_item_col:'Produkt', invoice_price_col:'Preis', invoice_subtotal_label:'Zwischensumme', invoice_discount_label:'Rabatt', invoice_total_label:'Gesamt bezahlt', invoice_footer:'Bei Fragen zu deiner Bestellung antworte einfach auf diese E-Mail oder schreib uns über den Support-Bereich auf der Website.',
     signoff:'LG,<br>dein Lumora-Team' },
   en: { verify_subject:'Confirm your email address at Lumora', verify_title:'Welcome to Lumora! 📸', verify_body:'Please confirm your email address to fully activate your account.', verify_button:'Confirm email', verify_footer:'If the button doesn\'t work, copy this link into your browser:',
     winner_subject:'🎉 You won! Your free image code (valid 24h)', winner_title:'Congratulations!', winner_body:'You won a free image in our Lumora giveaway!', winner_code_label:'Your code:', winner_button:'Redeem now', winner_warning:'⏰ This code is only valid for 24 hours!', winner_hint:'Just enter it in the "Redeem image code" field on our homepage.',
@@ -322,6 +323,7 @@ const EMAIL_I18N = {
     promo_subject:'🎁 Deltag i Lumora-konkurrencen!', promo_title:'🎁 Konkurrence hos Lumora!', promo_body:'Tilmeld dig nu og vind et gratis billede med lidt held!', promo_button:'Deltag nu',
     daily_new:'🆕 Der er {count} nye billeder i galleriet!', daily_new1:'🆕 Der er 1 nyt billede i galleriet!', daily_generic:'Kig forbi Lumora igen — det er altid et kig værd. 📸', daily_button:'Til galleriet',
     code_subject_reset:'Din kode til nulstilling af adgangskode', code_subject_login:'Din login-kode til Lumora', code_title:'Din Lumora-kode', code_body_reset:'Du har anmodet om en ny adgangskode. Indtast denne kode på hjemmesiden for at vælge en ny adgangskode:', code_body_login:'Indtast denne kode på hjemmesiden for at logge ind uden adgangskode:', code_label:'Din kode:', code_warning:'⏰ Denne kode er kun gyldig i 15 minutter. Hvis det ikke var dig, kan du ignorere denne e-mail.',
+    invoice_subject:'Din kvittering fra Lumora 🧾', invoice_title:'Tak for dit køb!', invoice_intro:'Her er bekræftelsen og kvitteringen for din bestilling hos Lumora.', invoice_order_label:'Ordrenummer', invoice_date_label:'Dato', invoice_item_col:'Produkt', invoice_price_col:'Pris', invoice_subtotal_label:'Subtotal', invoice_discount_label:'Rabat', invoice_total_label:'Betalt i alt', invoice_footer:'Har du spørgsmål til din ordre, så svar bare på denne e-mail eller skriv til os via support-området på hjemmesiden.',
     signoff:'Venlig hilsen,<br>dit Lumora-team' }
 };
 function et(lang, key){
@@ -356,6 +358,45 @@ function sendLoginCodeEmail(toEmail, code, lang, purpose){
       <p style="margin-top:24px;">${et(lang,'signoff')}</p>
     </div>`;
   return sendEmail(toEmail, subject, html);
+}
+
+function sendInvoiceEmail(toEmail, lang, orderId, items, subtotal, discount, total){
+  lang = lang || 'de';
+  const dateStr = new Date().toLocaleDateString(lang === 'da' ? 'da-DK' : 'de-DE', { year:'numeric', month:'long', day:'numeric' });
+  const itemRows = items.map(it => `
+    <tr>
+      <td style="padding:10px 0; border-bottom:1px solid #eee; color:#141220;">${escapeHtml(it.name)}</td>
+      <td style="padding:10px 0; border-bottom:1px solid #eee; text-align:right; color:#141220; white-space:nowrap;">${fmtEuro(it.price)}</td>
+    </tr>`).join('');
+  const summaryRows = (discount > 0 ? `
+    <tr><td style="padding:4px 0; color:#888; font-size:13px;">${et(lang,'invoice_subtotal_label')}</td><td style="padding:4px 0; text-align:right; color:#888; font-size:13px;">${fmtEuro(subtotal)}</td></tr>
+    <tr><td style="padding:4px 0 10px; color:#3d8a63; font-size:13px;">${et(lang,'invoice_discount_label')}</td><td style="padding:4px 0 10px; text-align:right; color:#3d8a63; font-size:13px;">−${fmtEuro(discount)}</td></tr>` : '') + `
+    <tr><td style="padding:12px 0 0; font-weight:bold; font-size:17px; border-top:2px solid #141220; color:#141220;">${et(lang,'invoice_total_label')}</td><td style="padding:12px 0 0; font-weight:bold; font-size:17px; text-align:right; border-top:2px solid #141220; color:#141220;">${fmtEuro(total)}</td></tr>`;
+  const html = `
+    <div style="font-family:sans-serif; max-width:560px; margin:0 auto;">
+      <div style="background:linear-gradient(135deg,#8f97ff,#c48fff); padding:22px 28px; border-radius:12px 12px 0 0;">
+        <span style="font-family:Georgia,serif; font-size:21px; color:#141220; font-weight:bold;">Lumora</span>
+      </div>
+      <div style="border:1px solid #e2e0eb; border-top:none; border-radius:0 0 12px 12px; padding:28px;">
+        <h2 style="margin:0 0 6px; color:#141220;">${et(lang,'invoice_title')}</h2>
+        <p style="color:#666; margin:0 0 20px; font-size:14px;">${et(lang,'invoice_intro')}</p>
+        <table style="width:100%; font-size:12.5px; color:#888; margin-bottom:20px;">
+          <tr><td>${et(lang,'invoice_order_label')}</td><td style="text-align:right; color:#141220;">#${orderId}</td></tr>
+          <tr><td>${et(lang,'invoice_date_label')}</td><td style="text-align:right; color:#141220;">${dateStr}</td></tr>
+        </table>
+        <table style="width:100%; border-collapse:collapse;">
+          <thead><tr>
+            <th style="text-align:left; padding:0 0 8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#888; border-bottom:2px solid #141220;">${et(lang,'invoice_item_col')}</th>
+            <th style="text-align:right; padding:0 0 8px; font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#888; border-bottom:2px solid #141220;">${et(lang,'invoice_price_col')}</th>
+          </tr></thead>
+          <tbody>${itemRows}</tbody>
+        </table>
+        <table style="width:100%; margin-top:4px;">${summaryRows}</table>
+        <p style="color:#888; font-size:12.5px; margin-top:26px;">${et(lang,'invoice_footer')}</p>
+        <p style="margin-top:20px; color:#141220;">${et(lang,'signoff')}</p>
+      </div>
+    </div>`;
+  return sendEmail(toEmail, et(lang,'invoice_subject'), html);
 }
 
 function sendRaffleWinnerEmail(toEmail, productName, siteUrl, lang){
@@ -504,6 +545,8 @@ function isValidBirthday(str){
 // ---------- Hilfsfunktionen ----------
 function genId(){ return crypto.randomBytes(9).toString('hex'); }
 function genCode(){ return String(crypto.randomInt(0, 1000000)).padStart(6, '0'); }
+function fmtEuro(n){ return (Math.round((n || 0) * 100) / 100).toFixed(2).replace('.', ',') + ' €'; }
+function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function findUserByIdentifier(id){
   id = (id || '').trim().toLowerCase();
   if(!id) return null;
@@ -1586,14 +1629,19 @@ async function handleApi(req, res, pathname, method, parsed){
     if(totals.total <= 0){
       // Gesamtbetrag ist 0 (z.B. komplett durch Aktionen abgedeckt) — direkt ohne Stripe abschließen
       if(!db.purchases) db.purchases = [];
+      const invoiceItems = [];
       totals.itemIds.forEach(id => {
         const alreadyPurchased = db.purchases.some(p => p.userId === user.id && p.imageId === id);
         if(!alreadyPurchased) db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid: 0, source: 'checkout-free' });
         const boughtImg = db.images.find(i => i.id === id);
-        if(boughtImg && !alreadyPurchased) decrementStock(boughtImg);
+        if(boughtImg && !alreadyPurchased){ decrementStock(boughtImg); invoiceItems.push({ name: boughtImg.name || 'Produkt', price: effectivePrice(boughtImg) }); }
       });
       if(totals.usesFirstFree) db.firstFreeUsed[user.id] = true;
       saveDB(db);
+      if(user.email && invoiceItems.length > 0){
+        const orderId = 'LUM-' + Date.now().toString(36).toUpperCase();
+        sendInvoiceEmail(user.email, user.language, orderId, invoiceItems, totals.rawSubtotal, totals.discount + totals.percentOff, totals.total);
+      }
       return sendJson(res, 200, { freeCheckout: true });
     }
 
@@ -1657,18 +1705,25 @@ async function handleApi(req, res, pathname, method, parsed){
       if(session.payment_status !== 'paid') return sendJson(res, 400, { error: 'Die Zahlung ist noch nicht abgeschlossen.' });
       if(!db.purchases) db.purchases = [];
       const ratio = (pending.rawSubtotal && pending.rawSubtotal > 0) ? (pending.actualTotal / pending.rawSubtotal) : 1;
+      const invoiceItems = [];
       pending.itemIds.forEach(id => {
+        const boughtImg = db.images.find(i => i.id === id);
         if(!db.purchases.some(p => p.userId === user.id && p.imageId === id)){
           const entry = pending.itemPrices && pending.itemPrices.find(x => x.id === id);
           const pricePaid = entry ? Math.round(entry.price * ratio * 100) / 100 : 0;
           db.purchases.push({ userId: user.id, imageId: id, purchasedAt: new Date().toISOString(), pricePaid, source: 'stripe' });
+          if(boughtImg) invoiceItems.push({ name: boughtImg.name || 'Produkt', price: pricePaid });
         }
-        const boughtImg = db.images.find(i => i.id === id);
         if(boughtImg) decrementStock(boughtImg);
       });
       if(pending.usesFirstFree) db.firstFreeUsed[user.id] = true;
       delete db.pendingCheckouts[sessionId];
       saveDB(db);
+      if(user.email && invoiceItems.length > 0){
+        const orderId = 'LUM-' + Date.now().toString(36).toUpperCase();
+        const discount = (pending.rawSubtotal || 0) - (pending.actualTotal || 0);
+        sendInvoiceEmail(user.email, user.language, orderId, invoiceItems, pending.rawSubtotal, discount, pending.actualTotal);
+      }
       return sendJson(res, 200, { ok: true, itemCount: pending.itemIds.length });
     } catch(e){
       return sendJson(res, 500, { error: e.message });

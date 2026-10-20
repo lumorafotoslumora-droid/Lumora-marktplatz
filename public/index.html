@@ -217,6 +217,7 @@
   .empty{ color:var(--muted); font-family:'Space Mono',monospace; font-size:13px; padding:60px 0; text-align:center; border:1.5px dashed var(--line); border-radius: var(--radius); }
   .cart-bar{ position:fixed; bottom:18px; left:50%; transform: translateX(-50%); background: rgba(31,28,23,0.94); backdrop-filter: blur(10px); border:1px solid var(--line); border-radius: 999px; padding:12px 12px 12px 24px; display:none; align-items:center; justify-content:space-between; gap:22px; font-family:'Space Mono',monospace; font-size:12.5px; max-width: calc(100% - 40px); z-index:25; }
   .cart-bar.show{ display:flex; }
+  .cart-bar.kb-hide, .chat-bubble.kb-hide, .chat-window.kb-hide{ display:none !important; }
   .cart-bar .breakdown{ display:flex; gap:16px; flex-wrap:wrap; color:var(--muted); }
   .cart-bar .breakdown b{ color:var(--ink); }
   .cart-bar .total{ color:var(--amber); font-weight:700; }
@@ -1530,6 +1531,26 @@
 
   function toggleMobileMenu(){
     document.getElementById('headerMid').classList.toggle('show');
+  }
+
+  // Auf dem Handy drängeln sich die schwebende "Zur Kasse"-Leiste und die Chat-Blase
+  // gern über ein gerade fokussiertes Eingabefeld (vor allem wenn die Tastatur aufklappt).
+  // Deshalb blenden wir beide kurz aus, solange man in ein Textfeld schreibt.
+  function setupMobileKeyboardFix(){
+    const isMobile = () => window.matchMedia('(max-width: 700px)').matches;
+    document.addEventListener('focusin', (e) => {
+      if(!isMobile()) return;
+      if(!e.target || (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) return;
+      document.getElementById('cartBar').classList.add('kb-hide');
+      document.querySelector('.chat-bubble').classList.add('kb-hide');
+      document.querySelector('.chat-window').classList.add('kb-hide');
+    });
+    document.addEventListener('focusout', (e) => {
+      if(!e.target || (e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA')) return;
+      document.getElementById('cartBar').classList.remove('kb-hide');
+      document.querySelector('.chat-bubble').classList.remove('kb-hide');
+      document.querySelector('.chat-window').classList.remove('kb-hide');
+    });
   }
 
   function switchAdminTab(name){
@@ -3440,6 +3461,7 @@
   (async () => {
     applyStoredTheme();
     applyLanguage(currentLang);
+    setupMobileKeyboardFix();
     await loadMe();
     await loadImages();
     const currentPromos = await loadPromosIntoForm();

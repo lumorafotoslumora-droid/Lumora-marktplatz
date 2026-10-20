@@ -25,6 +25,8 @@ Admin-Zugang beim ersten Start: Name `Matic`, Passwort `VIP` (unter "Mein Konto"
 
 **Passwort vergessen / Anmeldung ohne Passwort:** Auf der Anmelde-Karte gibt es die Links "Passwort vergessen?" und "Mit E-Mail-Code anmelden". Beide schicken einen 6-stelligen Code an die beim Konto hinterlegte E-Mail-Adresse (gültig 15 Minuten) — damit kann man entweder ein neues Passwort vergeben oder sich direkt ganz ohne Passwort anmelden. Voraussetzung: Beim Konto ist eine E-Mail-Adresse hinterlegt und der E-Mail-Versand (Brevo, siehe unten) ist eingerichtet.
 
+**Rechnung per E-Mail:** Nach jedem abgeschlossenen Kauf (egal ob per Stripe bezahlt oder komplett durch eine Aktion auf 0 € reduziert) bekommt der/die Käufer:in automatisch eine Rechnung per E-Mail — mit Bestellnummer, Datum, allen gekauften Produkten und dem bezahlten Betrag. Voraussetzung: Beim Konto ist eine E-Mail-Adresse hinterlegt und Brevo ist eingerichtet.
+
 Alle weiteren Konten (egal ob zum Verkaufen oder nur zum Einkaufen) legst du als Admin unter **Verwaltung → Konten** an.
 
 Ohne Stripe-Konfiguration (siehe unten) schlägt der Bezahlvorgang mit einer klaren Fehlermeldung fehl — bis auf Bestellungen, die durch eine 100%-Aktion (z.B. "Erstes Produkt gratis") komplett auf 0 € reduziert werden, die funktionieren immer auch ohne Stripe.
