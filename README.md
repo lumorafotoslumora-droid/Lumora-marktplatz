@@ -27,7 +27,7 @@ Admin-Zugang beim ersten Start: Name `Matic`, Passwort `VIP` (unter "Mein Konto"
 
 **Rechnung per E-Mail:** Nach jedem abgeschlossenen Kauf (egal ob per Stripe bezahlt oder komplett durch eine Aktion auf 0 € reduziert) bekommt der/die Käufer:in automatisch eine Rechnung per E-Mail — mit Bestellnummer, Datum, allen gekauften Produkten und dem bezahlten Betrag. Voraussetzung: Beim Konto ist eine E-Mail-Adresse hinterlegt und Brevo ist eingerichtet.
 
-Alle weiteren Konten (egal ob zum Verkaufen oder nur zum Einkaufen) legst du als Admin unter **Verwaltung → Konten** an.
+Alle weiteren Konten (egal ob zum Verkaufen oder nur zum Einkaufen) legst du als Admin unter **Verwaltung → Konten** an — oder du gibst jemandem den **Einladungscode**, der dort ebenfalls angezeigt wird: Damit kann sich die Person von ihrem eigenen Gerät selbst ein Konto erstellen (Name + Passwort eingeben). Der Code funktioniert nur einmal — danach wird automatisch ein neuer erzeugt, den du an die nächste Person weitergeben kannst. Es bleibt also weiterhin keine *offene* Registrierung: Ohne gültigen Code von dir kann niemand ein Konto anlegen.
 
 Ohne Stripe-Konfiguration (siehe unten) schlägt der Bezahlvorgang mit einer klaren Fehlermeldung fehl — bis auf Bestellungen, die durch eine 100%-Aktion (z.B. "Erstes Produkt gratis") komplett auf 0 € reduziert werden, die funktionieren immer auch ohne Stripe.
 

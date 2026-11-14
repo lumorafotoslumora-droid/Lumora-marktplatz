@@ -180,6 +180,7 @@ async function initDB(){
   db.images.forEach(img => { if(typeof img.discountPercent !== 'number') img.discountPercent = 0; });
   if(typeof db.platformFeePercent !== 'number') db.platformFeePercent = 5;
   if(!Array.isArray(db.messages)) db.messages = [];
+  if(!db.inviteCode || !db.inviteCode.code) db.inviteCode = { code: genInviteCode(), createdAt: new Date().toISOString() };
   await ensureAdmin();
 }
 
@@ -545,6 +546,7 @@ function isValidBirthday(str){
 // ---------- Hilfsfunktionen ----------
 function genId(){ return crypto.randomBytes(9).toString('hex'); }
 function genCode(){ return String(crypto.randomInt(0, 1000000)).padStart(6, '0'); }
+function genInviteCode(){ return String(crypto.randomInt(0, 100000000)).padStart(8, '0'); }
 function fmtEuro(n){ return (Math.round((n || 0) * 100) / 100).toFixed(2).replace('.', ',') + ' €'; }
 function escapeHtml(s){ return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function findUserByIdentifier(id){
@@ -1654,6 +1656,50 @@ async function handleApi(req, res, pathname, method, parsed){
     saveDB(db);
     return sendJson(res, 200, { account: publicUser(account) });
   }
+
+  // ---- Einladungscode: Admin kann einen Code an jemanden weitergeben, der sich damit
+  // einmalig selbst ein Konto erstellen kann (von seinem eigenen Gerät) — danach ist der
+  // Code verbraucht und ein neuer wird automatisch erzeugt.
+  if(pathname === '/api/admin/invite-code' && method === 'GET'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    return sendJson(res, 200, { code: db.inviteCode.code });
+  }
+  if(pathname === '/api/admin/invite-code/regenerate' && method === 'POST'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    db.inviteCode = { code: genInviteCode(), createdAt: new Date().toISOString() };
+    saveDB(db);
+    return sendJson(res, 200, { code: db.inviteCode.code });
+  }
+  if(pathname === '/api/register-with-code' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const code = (body.code || '').trim();
+    if(!code || code !== db.inviteCode.code) return sendJson(res, 400, { error: 'Dieser Einladungscode ist ungültig oder bereits verwendet.' });
+    const name = (body.name || '').trim();
+    const password = body.password || '';
+    const email = (body.email || '').trim().toLowerCase();
+    if(!name || !password) return sendJson(res, 400, { error: 'Name und Passwort erforderlich.' });
+    if(!(password.length >= 8 && /[A-Z]/.test(password) && /[0-9]/.test(password)))
+      return sendJson(res, 400, { error: 'Passwort erfüllt nicht alle Anforderungen (mind. 8 Zeichen, Großbuchstabe, Zahl).' });
+    if(email && !isValidEmail(email)) return sendJson(res, 400, { error: 'Diese E-Mail-Adresse sieht ungültig aus.' });
+    if(db.users.some(u => u.name.toLowerCase() === name.toLowerCase()))
+      return sendJson(res, 400, { error: 'Dieser Name ist bereits vergeben.' });
+    if(email && db.users.some(u => u.email && u.email.toLowerCase() === email))
+      return sendJson(res, 400, { error: 'Für diese E-Mail existiert bereits ein Konto.' });
+    const language = SUPPORTED_LANGUAGES.includes(body.language) ? body.language : 'de';
+    const { salt, hash } = hashPassword(password);
+    const account = {
+      id: genId(), name, email: email || null, role: 'customer', salt, hash, birthday: null,
+      emailVerified: true, language, createdAt: new Date().toISOString()
+    };
+    db.users.push(account);
+    db.inviteCode = { code: genInviteCode(), createdAt: new Date().toISOString() };
+    saveDB(db);
+    const token = genId();
+    sessions.set(token, account.id);
+    setSessionCookie(res, token);
+    return sendJson(res, 200, { user: publicUser(account) });
+  }
+
   const accMatch = pathname.match(/^\/api\/accounts\/([a-f0-9]+)$/);
   if(accMatch && method === 'DELETE'){
     if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
