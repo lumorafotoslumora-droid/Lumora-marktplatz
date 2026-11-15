@@ -3552,20 +3552,28 @@
     msgs.scrollTop = msgs.scrollHeight;
   }
 
-  function sendChatMessage(){
+  async function sendChatMessage(){
     const input = document.getElementById('chatInput');
     const question = input.value.trim();
     if(!question) return;
     addChatMsg(question, 'user');
     input.value = '';
-    setTimeout(() => {
-      const answer = matchFaq(question);
-      if(answer){
-        addChatMsg(answer, 'bot');
-      } else {
-        addChatMsg(t('chat_fallback'), 'bot');
-      }
-    }, 400);
+    const msgs = document.getElementById('chatMessages');
+    const typingEl = document.createElement('div');
+    typingEl.className = 'chat-msg bot';
+    typingEl.id = 'chatTypingIndicator';
+    typingEl.textContent = '…';
+    msgs.appendChild(typingEl);
+    msgs.scrollTop = msgs.scrollHeight;
+    let answer = null;
+    try {
+      const r = await api('/api/chat', { method:'POST', body:{ message: question, lang: currentLang } });
+      if(r.aiEnabled && r.answer) answer = r.answer;
+    } catch(e){}
+    const indicator = document.getElementById('chatTypingIndicator');
+    if(indicator) indicator.remove();
+    if(!answer) answer = matchFaq(question);
+    addChatMsg(answer || t('chat_fallback'), 'bot');
   }
 
   (async () => {

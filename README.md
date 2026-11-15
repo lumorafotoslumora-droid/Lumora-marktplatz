@@ -113,6 +113,19 @@ Ohne diese beiden Variablen bleibt der Google-Button sichtbar, zeigt aber eine M
 
 ---
 
+## Echte KI im Chatbot (optional, kostenlos über Google Gemini)
+
+Der Chat-Button unten rechts beantwortet Fragen standardmäßig mit einfachen, fest hinterlegten Stichwort-Antworten (komplett kostenlos, keine Einrichtung nötig). Wenn du möchtest, dass er stattdessen mit einer echten KI (Google Gemini, kostenlose Stufe) antwortet:
+
+1. [Google AI Studio](https://aistudio.google.com/) öffnen (mit demselben Google-Konto wie bei der Google-Anmeldung oben, oder einem anderen)
+2. **"Get API key"** → **"Create API key"**
+3. Den angezeigten Schlüssel kopieren
+4. Als Umgebungsvariable **`GEMINI_API_KEY`** setzen (lokal per `export`, auf Render unter "Environment")
+
+Ohne diese Variable antwortet der Chatbot automatisch weiter mit den einfachen Stichwort-Antworten — es ändert sich nichts. Mit der Variable beantwortet eine echte KI (Modell `gemini-2.0-flash`, anpassbar über die optionale Variable `GEMINI_MODEL`) jede Frage live; schlägt die Anfrage an Google einmal fehl (z.B. Gratis-Limit erreicht), springt die Seite automatisch zurück auf die Stichwort-Antworten, statt eine Fehlermeldung zu zeigen.
+
+---
+
 ## Dauerhafter Speicher mit Supabase (wichtig für kostenloses Hosting!)
 
 Bei kostenlosen Hosting-Stufen wie Render Free gehen hochgeladene Dateien und die Datenbank bei jedem Neu-Deploy verloren, da der Speicherplatz nicht dauerhaft ist. Die Seite kann stattdessen [Supabase](https://supabase.com) nutzen (kostenlos bis 500MB Datenbank + 1GB Dateispeicher) — dann bleiben Konten und Produkte auch über Deploys hinweg erhalten.

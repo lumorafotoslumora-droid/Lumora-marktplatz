@@ -774,14 +774,70 @@ function httpsJson(options, body){
       httpsRes.on('data', c => data += c);
       httpsRes.on('end', () => {
         let json = {};
-        try { json = data ? JSON.parse(data) : {}; } catch(e){ return reject(new Error('Ungültige Antwort von Google.')); }
+        try { json = data ? JSON.parse(data) : {}; } catch(e){ return reject(new Error('Ungültige Antwort erhalten.')); }
         if(httpsRes.statusCode >= 200 && httpsRes.statusCode < 300) resolve(json);
-        else reject(new Error(json.error_description || json.error || 'Anfrage an Google fehlgeschlagen.'));
+        else {
+          const errMsg = json.error_description || (json.error && (json.error.message || json.error)) || 'Anfrage fehlgeschlagen.';
+          reject(new Error(typeof errMsg === 'string' ? errMsg : 'Anfrage fehlgeschlagen.'));
+        }
       });
     });
     httpsReq.on('error', reject);
     if(body) httpsReq.write(body);
     httpsReq.end();
+  });
+}
+
+// ---------- Chatbot mit echter KI (Google Gemini, kostenlose Stufe) ----------
+// Ohne GEMINI_API_KEY bleibt der Chatbot auf den einfachen Stichwort-Antworten im Frontend.
+const CHATBOT_LANG_NAMES = {
+  de:'Deutsch', en:'Englisch', es:'Spanisch', fr:'Französisch', it:'Italienisch', pt:'Portugiesisch',
+  nl:'Niederländisch', pl:'Polnisch', sl:'Slowenisch', tr:'Türkisch', ru:'Russisch', ar:'Arabisch',
+  zh:'Chinesisch', ja:'Japanisch', ko:'Koreanisch', hi:'Hindi', da:'Dänisch'
+};
+function buildChatbotSystemPrompt(lang){
+  const langName = CHATBOT_LANG_NAMES[lang] || 'Deutsch';
+  return `Du bist der freundliche Kundenservice-Chatbot von "Lumora Marktplatz", einer Second-Hand- und Produkt-Verkaufsplattform für eine Familie und ihren Bekanntenkreis (ähnlich wie ein kleines Ricardo/eBay/Temu).
+
+So funktioniert die Seite:
+- Jedes Konto (nicht nur der Admin) kann eigene Produkte einstellen: Titel, Beschreibung, bis zu 8 Fotos/Videos, Preis, Anzahl (oder "unbegrenzt").
+- Es gibt KEINE offene, öffentliche Registrierung. Ein Konto bekommt man entweder vom Admin direkt, oder über einen 8-stelligen Einladungscode, den der Admin weitergibt (einmalig gültig, danach wird automatisch ein neuer erzeugt) — unter "Mein Konto" eingeben.
+- Anmelden geht per Passwort, per Google-Konto (nur wenn die Google-E-Mail schon bei einem bestehenden Konto hinterlegt ist), oder per Einmal-Code an die hinterlegte E-Mail (ganz ohne Passwort).
+- Passwort vergessen: Über "Mein Konto" → "Passwort vergessen?" kommt ein Code per E-Mail, damit kann man ein neues Passwort setzen.
+- Käufer legen Produkte in den Warenkorb und bezahlen sicher per Karte über Stripe. Nach dem Kauf kommt automatisch eine Rechnung per E-Mail.
+- Verkäufer können ihr eigenes Stripe-Konto verknüpfen (unter "Mein Konto" → "Auszahlung") — dann bekommen sie ihr Geld direkt, abzüglich einer kleinen, vom Admin festgelegten Provision. Ohne eigenes Stripe-Konto muss der Admin das Konto extra freischalten, damit es verkaufen darf.
+- Verkäufer können auf ihre eigenen Produkte einen Rabatt geben. Der Admin kann außerdem zusätzliche Aktionen schalten (z.B. "2 für 1").
+- Auf jeder Produktseite kann man direkt mit dem/der Verkäufer:in chatten (kleine Chat-Box), Favoriten setzen, eine Bewertung (Sterne + Text) abgeben — aber nur für bereits gekaufte Produkte — und das Produkt melden oder teilen.
+- Es gibt ein optionales Gewinnspiel, einen Newsletter, und eine Support-Seite für direkte Nachrichten ans Team.
+- Die Seite ist in vielen Sprachen verfügbar (Sprachauswahl oben rechts).
+
+Verhalten:
+- Antworte IMMER auf ${langName}, kurz und freundlich (2-4 Sätze reichen meistens).
+- Erfinde keine Funktionen, Preise oder Details, die du nicht sicher weißt.
+- Für Fragen zu einem konkreten eigenen Konto, einer Bestellung oder einem technischen Problem, das du nicht lösen kannst: verweise freundlich auf den "Support"-Bereich der Seite.
+- Du bist kein allgemeiner Assistent — bleib bei Themen rund um Lumora Marktplatz.`;
+}
+function askGemini(question, lang){
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if(!apiKey) return resolve(null);
+    const model = process.env.GEMINI_MODEL || 'gemini-2.0-flash';
+    const payload = JSON.stringify({
+      systemInstruction: { parts: [{ text: buildChatbotSystemPrompt(lang) }] },
+      contents: [{ role: 'user', parts: [{ text: question }] }],
+      generationConfig: { maxOutputTokens: 400, temperature: 0.4 }
+    });
+    httpsJson({
+      hostname: 'generativelanguage.googleapis.com',
+      path: `/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(payload) }
+    }, payload).then(json => {
+      const candidate = json.candidates && json.candidates[0];
+      const parts = candidate && candidate.content && candidate.content.parts;
+      const text = Array.isArray(parts) ? parts.map(p => p.text || '').join('').trim() : '';
+      resolve(text || null);
+    }).catch(reject);
   });
 }
 
@@ -995,6 +1051,23 @@ async function handleApi(req, res, pathname, method, parsed){
 
   if(pathname === '/api/me' && method === 'GET'){
     return sendJson(res, 200, { user: user ? publicUser(user) : null });
+  }
+
+  // ---- Chatbot mit echter KI (Google Gemini) — ohne GEMINI_API_KEY antwortet das Frontend
+  // stattdessen mit den lokalen Stichwort-Antworten (siehe aiEnabled: false). ----
+  if(pathname === '/api/chat' && method === 'POST'){
+    const body = await readJsonBody(req);
+    const question = (body.message || '').trim().slice(0, 500);
+    const lang = SUPPORTED_LANGUAGES.includes(body.lang) ? body.lang : 'de';
+    if(!question) return sendJson(res, 400, { error: 'Bitte eine Frage eingeben.' });
+    if(!process.env.GEMINI_API_KEY) return sendJson(res, 200, { aiEnabled: false });
+    try {
+      const answer = await askGemini(question, lang);
+      return sendJson(res, 200, { aiEnabled: true, answer });
+    } catch(e){
+      console.error('KI-Chatbot fehlgeschlagen:', e.message);
+      return sendJson(res, 200, { aiEnabled: true, answer: null });
+    }
   }
 
   if(pathname === '/api/resend-verification' && method === 'POST'){
