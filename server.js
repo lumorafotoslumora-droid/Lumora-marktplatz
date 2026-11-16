@@ -104,6 +104,7 @@ function emptyDB(){
     newsletterSubscribers: [],
     dailyEmail: { lastSentAt: null, pendingNote: '', intervalHours: 24 },
     raffleEmail: { lastPromoSentAt: null, intervalHours: 3 },
+    saleDayEmail: { lastSentFor: null },
     pendingCheckouts: {} // sessionId -> {userId, itemIds, usesFirstFree, createdAt}
   };
 }
@@ -170,6 +171,7 @@ async function initDB(){
   if(typeof db.dailyEmail.intervalHours !== 'number') db.dailyEmail.intervalHours = 24;
   if(!db.raffleEmail) db.raffleEmail = { lastPromoSentAt: null, intervalHours: 3 };
   if(typeof db.raffleEmail.intervalHours !== 'number') db.raffleEmail.intervalHours = 3;
+  if(!db.saleDayEmail) db.saleDayEmail = { lastSentFor: null };
   if(!db.pendingCheckouts) db.pendingCheckouts = {};
   if(!Array.isArray(db.reviews)) db.reviews = [];
   db.users.forEach(u => { if(!Array.isArray(u.favorites)) u.favorites = []; });
@@ -228,6 +230,7 @@ const EMAIL_I18N = {
     daily_new:'🆕 Es gibt {count} neue Bilder in der Galerie!', daily_new1:'🆕 Es gibt 1 neues Bild in der Galerie!', daily_generic:'Schau doch mal wieder bei Lumora vorbei — es lohnt sich immer ein Blick in die Galerie. 📸', daily_button:'Zur Galerie',
     code_subject_reset:'Dein Code zum Zurücksetzen deines Passworts', code_subject_login:'Dein Anmelde-Code für Lumora', code_title:'Dein Lumora-Code', code_body_reset:'Du hast ein neues Passwort angefordert. Gib diesen Code auf der Website ein, um ein neues Passwort zu vergeben:', code_body_login:'Gib diesen Code auf der Website ein, um dich ohne Passwort anzumelden:', code_label:'Dein Code:', code_warning:'⏰ Dieser Code ist nur 15 Minuten gültig. Falls du das nicht warst, kannst du diese E-Mail ignorieren.',
     invoice_subject:'Deine Rechnung von Lumora 🧾', invoice_title:'Vielen Dank für deinen Einkauf!', invoice_intro:'Hier ist die Bestätigung und Rechnung für deine Bestellung bei Lumora.', invoice_order_label:'Bestellnummer', invoice_date_label:'Datum', invoice_item_col:'Produkt', invoice_price_col:'Preis', invoice_subtotal_label:'Zwischensumme', invoice_discount_label:'Rabatt', invoice_total_label:'Gesamt bezahlt', invoice_footer:'Bei Fragen zu deiner Bestellung antworte einfach auf diese E-Mail oder schreib uns über den Support-Bereich auf der Website.',
+    saleday_subject:'🔥 {day} bei Lumora — mindestens 50% Rabatt!', saleday_title:'{emoji} {day} ist da!', saleday_intro:'Nur für kurze Zeit: ausgewählte Produkte bei Lumora mit mindestens 50% Rabatt. Jetzt zuschlagen, bevor es vorbei ist!', saleday_button:'Jetzt stöbern',
     signoff:'LG,<br>dein Lumora-Team' },
   en: { verify_subject:'Confirm your email address at Lumora', verify_title:'Welcome to Lumora! 📸', verify_body:'Please confirm your email address to fully activate your account.', verify_button:'Confirm email', verify_footer:'If the button doesn\'t work, copy this link into your browser:',
     winner_subject:'🎉 You won! Your free image code (valid 24h)', winner_title:'Congratulations!', winner_body:'You won a free image in our Lumora giveaway!', winner_code_label:'Your code:', winner_button:'Redeem now', winner_warning:'⏰ This code is only valid for 24 hours!', winner_hint:'Just enter it in the "Redeem image code" field on our homepage.',
@@ -326,6 +329,7 @@ const EMAIL_I18N = {
     daily_new:'🆕 Der er {count} nye billeder i galleriet!', daily_new1:'🆕 Der er 1 nyt billede i galleriet!', daily_generic:'Kig forbi Lumora igen — det er altid et kig værd. 📸', daily_button:'Til galleriet',
     code_subject_reset:'Din kode til nulstilling af adgangskode', code_subject_login:'Din login-kode til Lumora', code_title:'Din Lumora-kode', code_body_reset:'Du har anmodet om en ny adgangskode. Indtast denne kode på hjemmesiden for at vælge en ny adgangskode:', code_body_login:'Indtast denne kode på hjemmesiden for at logge ind uden adgangskode:', code_label:'Din kode:', code_warning:'⏰ Denne kode er kun gyldig i 15 minutter. Hvis det ikke var dig, kan du ignorere denne e-mail.',
     invoice_subject:'Din kvittering fra Lumora 🧾', invoice_title:'Tak for dit køb!', invoice_intro:'Her er bekræftelsen og kvitteringen for din bestilling hos Lumora.', invoice_order_label:'Ordrenummer', invoice_date_label:'Dato', invoice_item_col:'Produkt', invoice_price_col:'Pris', invoice_subtotal_label:'Subtotal', invoice_discount_label:'Rabat', invoice_total_label:'Betalt i alt', invoice_footer:'Har du spørgsmål til din ordre, så svar bare på denne e-mail eller skriv til os via support-området på hjemmesiden.',
+    saleday_subject:'🔥 {day} hos Lumora — mindst 50% rabat!', saleday_title:'{emoji} {day} er her!', saleday_intro:'Kun i kort tid: udvalgte produkter hos Lumora med mindst 50% rabat. Slå til, før det er forbi!', saleday_button:'Se tilbuddene',
     signoff:'Venlig hilsen,<br>dit Lumora-team' }
 };
 function et(lang, key){
@@ -399,6 +403,53 @@ function sendInvoiceEmail(toEmail, lang, orderId, items, subtotal, discount, tot
       </div>
     </div>`;
   return sendEmail(toEmail, et(lang,'invoice_subject'), html);
+}
+
+// ---------- Aktionstag-Werbemail (Black Friday, Cyber Monday, Singles Day) ----------
+const SALE_DAY_LABELS = {
+  blackfriday: { emoji:'🖤', name:'Black Friday' },
+  cybermonday: { emoji:'💻', name:'Cyber Monday' },
+  singlesday:  { emoji:'🛍️', name:'Singles Day' }
+};
+function buildSaleDaySubject(key, lang){
+  lang = lang || 'de';
+  const label = SALE_DAY_LABELS[key] || { emoji:'🎉', name:key };
+  return et(lang, 'saleday_subject').replace('{day}', label.name);
+}
+function buildSaleDayEmailHtml(key, lang, siteUrl){
+  lang = lang || 'de';
+  const label = SALE_DAY_LABELS[key] || { emoji:'🎉', name:key };
+  const title = et(lang, 'saleday_title').replace('{emoji}', label.emoji).replace('{day}', label.name);
+  return `
+    <div style="font-family:sans-serif; max-width:480px; margin:0 auto;">
+      <h2>${title}</h2>
+      <p>${et(lang,'saleday_intro')}</p>
+      <p><a href="${siteUrl}" style="background:#8f97ff; color:#141220; padding:12px 24px; border-radius:8px; text-decoration:none; font-weight:bold; display:inline-block;">${et(lang,'saleday_button')}</a></p>
+      <p style="margin-top:24px;">${et(lang,'signoff')}</p>
+    </div>`;
+}
+// Verschickt die Aktionstag-Mail an alle Newsletter-Abonnenten — höchstens einmal pro Aktionstag
+// und echtem Kalendertag, außer force=true (manueller "Jetzt senden"-Button im Admin-Bereich).
+// keyOverride erlaubt es dem Admin, mit der Test-Erzwingung (seasonOverride) manuell zu senden.
+async function runSaleDayEmailSend(siteUrl, force, keyOverride){
+  const key = keyOverride || computeAutomaticSeasonKey();
+  if(!SALE_DAYS[key]) return { skipped: true, reason: 'not-a-sale-day' };
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const marker = key + ':' + dateStr;
+  if(!force && db.saleDayEmail.lastSentFor === marker) return { skipped: true, reason: 'already-sent-today' };
+  if(db.newsletterSubscribers.length === 0){
+    if(!force){ db.saleDayEmail.lastSentFor = marker; saveDB(db); }
+    return { skipped: true, reason: 'no-subscribers' };
+  }
+  let sentCount = 0;
+  for(const sub of db.newsletterSubscribers){
+    const lang = sub.language || 'de';
+    const ok = await sendEmail(sub.email, buildSaleDaySubject(key, lang), buildSaleDayEmailHtml(key, lang, siteUrl));
+    if(ok) sentCount++;
+  }
+  db.saleDayEmail.lastSentFor = marker;
+  saveDB(db);
+  return { sentCount, total: db.newsletterSubscribers.length, key };
 }
 
 function sendRaffleWinnerEmail(toEmail, productName, siteUrl, lang){
@@ -1547,6 +1598,28 @@ async function handleApi(req, res, pathname, method, parsed){
     return sendJson(res, 200, result);
   }
 
+  // ---- Aktionstag-Werbemail (Black Friday & Co.) ----
+  if(pathname === '/api/saleday-email/status' && method === 'GET'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    const currentKey = computeCurrentSeasonKey();
+    return sendJson(res, 200, {
+      lastSentFor: db.saleDayEmail.lastSentFor,
+      currentSeason: currentKey,
+      isSaleDayNow: !!SALE_DAYS[currentKey],
+      subscriberCount: db.newsletterSubscribers.length
+    });
+  }
+  if(pathname === '/api/saleday-email/send-now' && method === 'POST'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    const key = computeCurrentSeasonKey();
+    if(!SALE_DAYS[key]) return sendJson(res, 400, { error: 'Aktuell ist kein Aktionstag aktiv (auch nicht über die Test-Erzwingung oben).' });
+    if(db.newsletterSubscribers.length === 0) return sendJson(res, 400, { error: 'Es gibt noch keine Newsletter-Abonnenten.' });
+    const proto = req.headers['x-forwarded-proto'] || 'http';
+    const siteUrl = process.env.SITE_URL || `${proto}://${req.headers.host}/`;
+    const result = await runSaleDayEmailSend(siteUrl, true, key);
+    return sendJson(res, 200, result);
+  }
+
   // ---- Ansichtszähler ----
   const viewMatch = pathname.match(/^\/api\/images\/([a-f0-9]+)\/view$/);
   if(viewMatch && method === 'POST'){
@@ -2091,6 +2164,15 @@ function scheduledRafflePromoCheck(){
   runRafflePromoSend(siteUrl, false).catch(e => console.error('Fehler bei Gewinnspiel-Werbung:', e.message));
 }
 
+// Prüft stündlich, ob heute ein echter Aktionstag (Black Friday & Co.) ist, und verschickt
+// dann einmalig die Werbemail an alle Newsletter-Abonnenten. Nutzt immer das echte Datum
+// (nie die Test-Erzwingung des Admins), damit das Testen des Saison-Designs nie versehentlich
+// eine echte Massen-Mail an alle Abonnenten auslöst.
+function scheduledSaleDayEmailCheck(){
+  const siteUrl = process.env.SITE_URL || `http://localhost:${PORT}`;
+  runSaleDayEmailSend(siteUrl, false).catch(e => console.error('Fehler bei Aktionstag-Mail:', e.message));
+}
+
 initDB().then(() => {
   server.listen(PORT, () => {
     console.log(`Lumora-Server läuft auf http://localhost:${PORT}` + (USE_SUPABASE ? ' (Speicher: Supabase)' : ' (Speicher: lokale Datei)'));
@@ -2099,6 +2181,8 @@ initDB().then(() => {
   setInterval(scheduledDailyCheck, 60 * 60 * 1000); // danach stündlich prüfen
   setTimeout(scheduledRafflePromoCheck, 90 * 1000); // kurz nach dem Start einmal prüfen
   setInterval(scheduledRafflePromoCheck, 60 * 60 * 1000); // stündlich prüfen, sendet aber wirklich nur alle 3h
+  setTimeout(scheduledSaleDayEmailCheck, 150 * 1000); // kurz nach dem Start einmal prüfen
+  setInterval(scheduledSaleDayEmailCheck, 60 * 60 * 1000); // danach stündlich prüfen
 }).catch(err => {
   console.error('Fataler Fehler beim Laden der Datenbank:', err.message);
   process.exit(1);

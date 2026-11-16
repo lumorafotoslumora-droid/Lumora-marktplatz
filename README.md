@@ -194,7 +194,11 @@ Produkte anderer Verkäufer sind davon nicht betroffen — nur die eigenen Produ
 
 Das ändert nur Deko-Elemente, ein kleines Badge und (nur an den drei Aktionstagen, nur beim Admin) den Rabatt — nicht die Farben von Buttons o.ä., damit die Seite immer gut lesbar bleibt.
 
-**Zum Testen oder um es manuell zu starten/verlängern:** Unter "Verwaltung" → "Aktionen" gibt es ganz unten die Karte "🎨 Saisonales Design testen / erzwingen" — dort kann der Admin jedes Design (inkl. der drei Aktionstage) manuell für alle Besucher erzwingen, unabhängig vom echten Datum. "Automatisch" schaltet wieder auf das echte Datum zurück.
+**Automatische Werbemail an den Aktionstagen:** Sobald Black Friday, Cyber Monday oder Singles Day wirklich beginnt (nach dem echten Kalenderdatum), verschickt der Server automatisch einmal eine kurze Werbemail ("🖤 Black Friday ist da! Mindestens 50% Rabatt...") an alle, die sich über das "Newsletter"-Feld auf der Startseite eingetragen haben. Pro Aktionstag und Kalendertag wird nur einmal verschickt. Das Testen/Erzwingen eines Designs über die Karte unten löst diese Mail **nicht** automatisch aus, damit beim Testen niemand aus Versehen Hunderte echte Mails bekommt.
+
+**Zum Testen oder um es manuell zu starten/verlängern:** Unter "Verwaltung" → "Aktionen" gibt es die Karte "🎨 Saisonales Design testen / erzwingen" — dort kann der Admin jedes Design (inkl. der drei Aktionstage) manuell für alle Besucher erzwingen, unabhängig vom echten Datum. "Automatisch" schaltet wieder auf das echte Datum zurück.
+
+Direkt darunter gibt es die Karte "✉️ Aktionstag-Werbemail" — sie zeigt, wie viele Newsletter-Abonnenten es gibt, wann zuletzt verschickt wurde, und ob gerade (echt oder per Erzwingung) ein Aktionstag aktiv ist. Über "Jetzt an alle Abonnenten senden" kann der Admin die Mail auch manuell auslösen — das funktioniert auch mit der Erzwingung oben, falls man die echte Mail einmal testen möchte.
 
 **Herbst extra:** Im Hintergrund der Startseite erscheint zusätzlich ein dezenter, **kahler** Baum (ohne Blätter — die liegen ja schon als fallende Blätter-Deko vor), und die Haupt-Buttons bekommen eine laubfarbene, blattähnliche Form.
 

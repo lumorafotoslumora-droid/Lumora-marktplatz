@@ -828,6 +828,16 @@
         <div class="redeem-msg" id="seasonOverrideMsg" style="margin-top:10px;"></div>
         <p style="color:var(--muted); font-size:11.5px; margin-top:10px;">Automatisch wäre heute aktiv: <b id="seasonAutomaticLabel">–</b></p>
       </div>
+      <div class="panel-card show" id="saleDayEmailPanel" style="max-width:520px; margin-top:24px;">
+        <h3>✉️ Aktionstag-Werbemail</h3>
+        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">An Black Friday, Cyber Monday und Singles Day wird automatisch (einmal pro Tag) eine Werbemail an alle Newsletter-Abonnenten verschickt. Das Testen des Designs oben über "erzwingen" löst diese Mail NICHT automatisch aus — so kannst du gefahrlos testen.</p>
+        <p style="font-size:13px; margin-bottom:4px;">Newsletter-Abonnenten: <b id="saleDayEmailSubCount">–</b></p>
+        <p style="font-size:13px; margin-bottom:4px;">Zuletzt verschickt für: <b id="saleDayEmailLastSent">–</b></p>
+        <p style="font-size:13px; margin-bottom:14px;">Gerade aktiver Aktionstag: <b id="saleDayEmailIsActive">–</b></p>
+        <button class="btn solid" onclick="sendSaleDayEmailNow()">Jetzt an alle Abonnenten senden</button>
+        <div class="redeem-msg" id="saleDayEmailMsg" style="margin-top:10px;"></div>
+        <p style="color:var(--muted); font-size:11px; margin-top:8px;">Hinweis: "Jetzt senden" nutzt das oben erzwungene oder das echte Design — ist das gerade kein Aktionstag, erscheint eine Fehlermeldung.</p>
+      </div>
     </div>
 
     <div class="admin-subview" id="admintab-accounts">
@@ -2563,7 +2573,7 @@
   }
 
   const ADMIN_TABS = {
-    promo: { panel:'promoPanel', loaders:[loadPlatformFee, loadSeasonOverride] },
+    promo: { panel:'promoPanel', loaders:[loadPlatformFee, loadSeasonOverride, loadSaleDayEmailStatus] },
     accounts: { panel:'accountsPanel', loaders:[loadAccountsList, loadInviteCode] },
     ban: { panel:'banPanel', loaders:[loadBannedList] },
     raffle: { panel:'rafflePanel', loaders:[loadRaffleList, loadRaffleSettings, loadRafflePromoStatus] },
@@ -2753,6 +2763,23 @@
       msgEl.textContent = 'Gespeichert — gilt jetzt für alle Besucher!'; msgEl.className = 'redeem-msg ok';
       applySeasonalTheme();
       await loadImages();
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
+  }
+
+  async function loadSaleDayEmailStatus(){
+    try {
+      const r = await api('/api/saleday-email/status');
+      document.getElementById('saleDayEmailSubCount').textContent = r.subscriberCount;
+      document.getElementById('saleDayEmailLastSent').textContent = r.lastSentFor || 'noch nie';
+      document.getElementById('saleDayEmailIsActive').textContent = r.isSaleDayNow ? (SEASON_ADMIN_LABELS[r.currentSeason] || r.currentSeason) : 'kein Aktionstag';
+    } catch(e){}
+  }
+  async function sendSaleDayEmailNow(){
+    const msgEl = document.getElementById('saleDayEmailMsg');
+    try {
+      const r = await api('/api/saleday-email/send-now', { method:'POST' });
+      msgEl.textContent = `Versendet an ${r.sentCount} von ${r.total} Abonnenten!`; msgEl.className = 'redeem-msg ok';
+      await loadSaleDayEmailStatus();
     } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
   }
 
