@@ -86,6 +86,9 @@
   .hero-glow.g2{ background:var(--accent2); top:40px; right:-100px; }
   .hero h2 .accent-word{ background:linear-gradient(120deg,var(--amber),var(--accent2)); -webkit-background-clip:text; background-clip:text; color:transparent; }
   .hero-badge{ display:inline-flex; align-items:center; gap:6px; background:var(--amber-soft); color:var(--amber); border:1px solid var(--amber-dim); padding:6px 14px; border-radius:999px; font-family:'Space Mono',monospace; font-size:11.5px; margin-bottom:18px; }
+  #seasonalDecor{ position:fixed; inset:0; pointer-events:none; z-index:5; overflow:hidden; display:none; }
+  .season-particle{ position:absolute; top:-40px; animation-name:seasonFall; animation-timing-function:linear; animation-iteration-count:infinite; opacity:0.8; user-select:none; }
+  @keyframes seasonFall{ from{ transform:translateY(-10vh) rotate(0deg); } to{ transform:translateY(110vh) rotate(360deg); } }
   .hero h2{ font-family:'Fraunces',serif; font-weight:600; font-size:36px; line-height:1.12; margin:0 0 14px; }
   .hero > p{ color:var(--muted); font-size:15.5px; line-height:1.6; margin:0 0 24px; max-width:520px; }
   .cta-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
@@ -311,6 +314,8 @@
 </head>
 <body>
 
+<div id="seasonalDecor"></div>
+
 <header>
   <div class="brand"><div class="mark">L</div><div class="txt"><h1>Lumora</h1><span data-i18n="brand_tagline">Marktplatz</span></div></div>
   <button class="menu-toggle" onclick="toggleMobileMenu()" aria-label="Menü">☰</button>
@@ -361,6 +366,7 @@
       <div class="hero-glow g1"></div>
       <div class="hero-glow g2"></div>
       <span class="hero-badge" data-i18n="hero_badge">✦ Läuft auf einem echten Server</span>
+      <span class="hero-badge" id="seasonalBadge" style="display:none; margin-left:8px;"></span>
       <h2 data-i18n-html="hero_title_html">Marktplatz, auf dem <span class="accent-word">jeder</span> verkauft.</h2>
       <p data-i18n="hero_sub">Produkte von echten Verkäufern — durchsuchen, entdecken und sicher kaufen.</p>
       <div class="cta-row">
@@ -1481,6 +1487,58 @@
     return dict[key] !== undefined ? dict[key] : (I18N.de[key] || key);
   }
 
+  // ---------- Saisonales Design (automatisch, jedes Jahr wiederkehrend) ----------
+  let currentSeason = null;
+  const SEASON_THEMES = {
+    christmas: { emoji:'🎄', particle:'❄️', color:'#d13b3b' },
+    spring:    { emoji:'🌸', particle:'🌸', color:'#e8829a' },
+    summer:    { emoji:'☀️', particle:'🌼', color:'#e0a83a' },
+    autumn:    { emoji:'🍂', particle:'🍂', color:'#c2703a' }
+  };
+  const SEASON_GREETING_I18N = {
+    de: { christmas:'Frohe Weihnachten bei Lumora!', spring:'Frühling bei Lumora!', summer:'Sommer bei Lumora!', autumn:'Herbst bei Lumora!' },
+    da: { christmas:'Glædelig jul hos Lumora!', spring:'Forår hos Lumora!', summer:'Sommer hos Lumora!', autumn:'Efterår hos Lumora!' }
+  };
+  function getCurrentSeason(){
+    const month = new Date().getMonth(); // 0 = Januar
+    if(month === 11) return 'christmas'; // Dezember
+    if(month >= 2 && month <= 4) return 'spring'; // März-Mai
+    if(month >= 5 && month <= 7) return 'summer'; // Juni-August
+    if(month >= 8 && month <= 10) return 'autumn'; // September-November
+    return null; // Januar/Februar: kein Saison-Design
+  }
+  function updateSeasonalBadgeText(){
+    const badge = document.getElementById('seasonalBadge');
+    if(!badge) return;
+    if(!currentSeason){ badge.style.display = 'none'; return; }
+    const theme = SEASON_THEMES[currentSeason];
+    const dict = SEASON_GREETING_I18N[currentLang] || SEASON_GREETING_I18N.de;
+    badge.textContent = theme.emoji + ' ' + (dict[currentSeason] || SEASON_GREETING_I18N.de[currentSeason]);
+    badge.style.display = 'inline-flex';
+    badge.style.color = theme.color;
+    badge.style.borderColor = theme.color + '55';
+    badge.style.background = theme.color + '1f';
+  }
+  function renderSeasonalParticles(emoji){
+    const container = document.getElementById('seasonalDecor');
+    if(!container) return;
+    let html = '';
+    for(let i = 0; i < 18; i++){
+      const left = Math.random() * 100;
+      const duration = 9 + Math.random() * 10;
+      const delay = Math.random() * 12;
+      const size = 14 + Math.random() * 10;
+      html += `<span class="season-particle" style="left:${left}%; font-size:${size}px; animation-duration:${duration}s; animation-delay:-${delay}s;">${emoji}</span>`;
+    }
+    container.innerHTML = html;
+    container.style.display = 'block';
+  }
+  function applySeasonalTheme(){
+    currentSeason = getCurrentSeason();
+    updateSeasonalBadgeText();
+    if(currentSeason) renderSeasonalParticles(SEASON_THEMES[currentSeason].particle);
+  }
+
   function applyLanguage(lang){
     if(!I18N[lang]) lang = 'de';
     currentLang = lang;
@@ -1496,6 +1554,7 @@
     if(document.getElementById('view-cart') && document.getElementById('view-cart').classList.contains('active')) renderCartView();
     if(document.getElementById('view-account') && document.getElementById('view-account').classList.contains('active')) renderAccountView();
     if(document.getElementById('faqAccordion')) renderFaqAccordion();
+    updateSeasonalBadgeText();
   }
   function toggleTheme(){
     const isLight = document.documentElement.getAttribute('data-theme') === 'light';
@@ -3580,6 +3639,7 @@
     applyStoredTheme();
     applyLanguage(currentLang);
     setupMobileKeyboardFix();
+    applySeasonalTheme();
     await loadMe();
     await loadImages();
     const currentPromos = await loadPromosIntoForm();

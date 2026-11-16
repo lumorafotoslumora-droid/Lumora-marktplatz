@@ -173,3 +173,15 @@ Es gibt **keine öffentliche Registrierung** — der `/api/register`-Endpunkt ex
 ## Sprachen
 
 Die Seite (inkl. Chatbot und automatischer E-Mails) ist in 17 Sprachen verfügbar: Deutsch, Englisch, Spanisch, Französisch, Italienisch, Portugiesisch, Niederländisch, Polnisch, Slowenisch, Türkisch, Russisch, Arabisch, Chinesisch, Japanisch, Koreanisch, Hindi und Dänisch. Die Auswahl (oben rechts im Dropdown) wird pro Konto gespeichert und auch für E-Mails an dieses Konto verwendet.
+
+## Saisonales Design
+
+Die Startseite bekommt automatisch ein kleines saisonales Deko-Element (fallende Schneeflocken/Blätter/Blüten + ein farbiges Badge neben "Läuft auf einem echten Server"), je nachdem, welcher Monat gerade ist — ganz ohne manuelles Umschalten, jedes Jahr aufs Neue:
+
+- **Dezember** → Weihnachten 🎄 (Schneeflocken)
+- **März–Mai** → Frühling 🌸 (Blüten)
+- **Juni–August** → Sommer ☀️ (Blumen)
+- **September–November** → Herbst 🍂 (Blätter)
+- Januar/Februar bleiben ohne Saison-Design.
+
+Das ändert nur Deko-Elemente und ein kleines Badge — nicht die Farben von Buttons o.ä., damit die Seite immer gut lesbar bleibt.
