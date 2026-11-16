@@ -736,6 +736,26 @@
         <button class="btn solid" onclick="savePlatformFee()">Speichern</button>
         <div class="redeem-msg" id="platformFeeMsg" style="margin-top:10px;"></div>
       </div>
+      <div class="panel-card show" id="seasonOverridePanel" style="max-width:520px; margin-top:24px;">
+        <h3>🎨 Saisonales Design testen / erzwingen</h3>
+        <p style="color:var(--muted); font-size:12px; margin:-8px 0 14px;">Erzwingt ein bestimmtes Design für ALLE Besucher — z.B. zum Testen, oder um einen Aktionstag wie Black Friday manuell zu starten oder zu verlängern. Bei den drei Aktionstagen bekommen deine eigenen Produkte automatisch mindestens 50% Rabatt. "Automatisch" richtet sich einfach nach dem heutigen Datum.</p>
+        <div class="field">
+          <label>Design</label>
+          <select id="seasonOverrideSelect">
+            <option value="">Automatisch (heutiges Datum)</option>
+            <option value="christmas">🎄 Weihnachten</option>
+            <option value="spring">🌸 Frühling</option>
+            <option value="summer">☀️ Sommer</option>
+            <option value="autumn">🍂 Herbst</option>
+            <option value="blackfriday">🖤 Black Friday (50% auf deine Produkte)</option>
+            <option value="cybermonday">💻 Cyber Monday (50% auf deine Produkte)</option>
+            <option value="singlesday">🛍️ Singles Day (50% auf deine Produkte)</option>
+          </select>
+        </div>
+        <button class="btn solid" onclick="saveSeasonOverride()">Übernehmen</button>
+        <div class="redeem-msg" id="seasonOverrideMsg" style="margin-top:10px;"></div>
+        <p style="color:var(--muted); font-size:11.5px; margin-top:10px;">Automatisch wäre heute aktiv: <b id="seasonAutomaticLabel">–</b></p>
+      </div>
     </div>
 
     <div class="admin-subview" id="admintab-accounts">
@@ -1490,14 +1510,19 @@
   // ---------- Saisonales Design (automatisch, jedes Jahr wiederkehrend) ----------
   let currentSeason = null;
   const SEASON_THEMES = {
-    christmas: { emoji:'🎄', particle:'❄️', color:'#d13b3b' },
-    spring:    { emoji:'🌸', particle:'🌸', color:'#e8829a' },
-    summer:    { emoji:'☀️', particle:'🌼', color:'#e0a83a' },
-    autumn:    { emoji:'🍂', particle:'🍂', color:'#c2703a' }
+    christmas:   { emoji:'🎄', particle:'❄️', color:'#d13b3b' },
+    spring:      { emoji:'🌸', particle:'🌸', color:'#e8829a' },
+    summer:      { emoji:'☀️', particle:'🌼', color:'#e0a83a' },
+    autumn:      { emoji:'🍂', particle:'🍂', color:'#c2703a' },
+    blackfriday: { emoji:'🖤', particle:'🏷️', color:'#f5b800' },
+    cybermonday: { emoji:'💻', particle:'⚡', color:'#5b8cf2' },
+    singlesday:  { emoji:'🛍️', particle:'❤️', color:'#e0383f' }
   };
   const SEASON_GREETING_I18N = {
-    de: { christmas:'Frohe Weihnachten bei Lumora!', spring:'Frühling bei Lumora!', summer:'Sommer bei Lumora!', autumn:'Herbst bei Lumora!' },
-    da: { christmas:'Glædelig jul hos Lumora!', spring:'Forår hos Lumora!', summer:'Sommer hos Lumora!', autumn:'Efterår hos Lumora!' }
+    de: { christmas:'Frohe Weihnachten bei Lumora!', spring:'Frühling bei Lumora!', summer:'Sommer bei Lumora!', autumn:'Herbst bei Lumora!',
+      blackfriday:'Black Friday — 50% auf ausgewählte Produkte!', cybermonday:'Cyber Monday — 50% auf ausgewählte Produkte!', singlesday:'Singles Day — 50% auf ausgewählte Produkte!' },
+    da: { christmas:'Glædelig jul hos Lumora!', spring:'Forår hos Lumora!', summer:'Sommer hos Lumora!', autumn:'Efterår hos Lumora!',
+      blackfriday:'Black Friday — 50% på udvalgte produkter!', cybermonday:'Cyber Monday — 50% på udvalgte produkter!', singlesday:'Singles Day — 50% på udvalgte produkter!' }
   };
   function getCurrentSeason(){
     const month = new Date().getMonth(); // 0 = Januar
@@ -1533,10 +1558,15 @@
     container.innerHTML = html;
     container.style.display = 'block';
   }
-  function applySeasonalTheme(){
-    currentSeason = getCurrentSeason();
+  async function applySeasonalTheme(){
+    try {
+      const r = await api('/api/season');
+      currentSeason = r.season;
+    } catch(e){
+      currentSeason = getCurrentSeason(); // Fallback, falls der Server nicht erreichbar ist
+    }
     updateSeasonalBadgeText();
-    if(currentSeason) renderSeasonalParticles(SEASON_THEMES[currentSeason].particle);
+    if(currentSeason && SEASON_THEMES[currentSeason]) renderSeasonalParticles(SEASON_THEMES[currentSeason].particle);
   }
 
   function applyLanguage(lang){
@@ -1801,10 +1831,10 @@
       const badges = [
         img.isBestseller ? '<span class="badge-pill bestseller">🔥 Bestseller</span>' : '',
         (img.isNew && !img.isBestseller) ? '<span class="badge-pill new">✨ Neu</span>' : '',
-        (img.discountPercent > 0) ? `<span class="badge-pill new">-${img.discountPercent}%</span>` : ''
+        (img.displayDiscountPercent > 0) ? `<span class="badge-pill new">-${img.displayDiscountPercent}%</span>` : ''
       ].join('');
       const stockNote = (!img.sold && img.quantity > 1) ? `<div style="padding:4px 14px 0; font-size:11px; color:var(--muted);">Nur noch ${img.quantity} verfügbar</div>` : '';
-      const priceTag = img.sold ? 'Ausverkauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
+      const priceTag = img.sold ? 'Ausverkauft' : (img.displayDiscountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
@@ -1854,7 +1884,7 @@
         ? `<div style="display:flex; gap:4px; padding:8px 14px 0; overflow-x:auto;">${img.photos.map(p => `<img src="${p.url}" style="width:44px; height:44px; object-fit:cover; border-radius:6px; flex-shrink:0;">`).join('')}</div>` : '';
       const buyerNote = (img.sold && img.buyerName)
         ? `<div class="uploader-tag" style="color:var(--green);">✓ Verkauft an: <b>${img.buyerName}</b> — bitte übergeben</div>` : '';
-      const priceTag = img.sold ? 'Ausverkauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
+      const priceTag = img.sold ? 'Ausverkauft' : (img.displayDiscountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.85em;">${fmt(img.price)}</span>` : fmt(img.price));
       return `
         <div class="frame">
           <div class="imgwrap" onclick="openLightbox('${img.id}')">
@@ -2312,7 +2342,7 @@
   }
 
   const ADMIN_TABS = {
-    promo: { panel:'promoPanel', loaders:[loadPlatformFee] },
+    promo: { panel:'promoPanel', loaders:[loadPlatformFee, loadSeasonOverride] },
     accounts: { panel:'accountsPanel', loaders:[loadAccountsList, loadInviteCode] },
     ban: { panel:'banPanel', loaders:[loadBannedList] },
     raffle: { panel:'rafflePanel', loaders:[loadRaffleList, loadRaffleSettings, loadRafflePromoStatus] },
@@ -2487,6 +2517,24 @@
     } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
   }
 
+  const SEASON_ADMIN_LABELS = { christmas:'🎄 Weihnachten', spring:'🌸 Frühling', summer:'☀️ Sommer', autumn:'🍂 Herbst', blackfriday:'🖤 Black Friday', cybermonday:'💻 Cyber Monday', singlesday:'🛍️ Singles Day' };
+  async function loadSeasonOverride(){
+    try {
+      const r = await api('/api/admin/season-override');
+      document.getElementById('seasonOverrideSelect').value = r.override || '';
+      document.getElementById('seasonAutomaticLabel').textContent = r.automatic ? (SEASON_ADMIN_LABELS[r.automatic] || r.automatic) : 'Kein besonderes Design';
+    } catch(e){}
+  }
+  async function saveSeasonOverride(){
+    const msgEl = document.getElementById('seasonOverrideMsg');
+    try {
+      await api('/api/admin/season-override', { method:'POST', body:{ value: document.getElementById('seasonOverrideSelect').value } });
+      msgEl.textContent = 'Gespeichert — gilt jetzt für alle Besucher!'; msgEl.className = 'redeem-msg ok';
+      applySeasonalTheme();
+      await loadImages();
+    } catch(e){ msgEl.textContent = e.message; msgEl.className = 'redeem-msg err'; }
+  }
+
   function dismissPromoBanner(){
     document.getElementById('promoBanner').style.display = 'none';
     sessionStorage.setItem('lumora_banner_dismissed', '1');
@@ -2650,7 +2698,7 @@
     emptyEl.style.display='none'; summaryEl.style.display='block';
     listEl.innerHTML = items.map(img => `
       <div class="cart-item">${mediaTagHtml(img,{fill:true})}
-        <div style="flex:1;"><div>${img.name || (coverPhoto(img).type==='video'?'Video':'Produkt')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6;">${fmt(img.price)}</span>` : fmt(img.price)}</div></div>
+        <div style="flex:1;"><div>${img.name || (coverPhoto(img).type==='video'?'Video':'Produkt')}</div><div style="font-family:'Space Mono',monospace; font-size:12px; color:var(--muted);">${img.displayDiscountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6;">${fmt(img.price)}</span>` : fmt(img.price)}</div></div>
         <button class="btn muted" style="padding:6px 12px; font-size:11px;" onclick="toggleCart('${img.id}'); renderCartView();">${t('remove_btn')}</button>
       </div>`).join('');
 
@@ -2993,7 +3041,7 @@
     const descEl = document.getElementById('lightboxDescription');
     if(descEl) descEl.textContent = img.description || '';
     const priceEl = document.getElementById('lightboxPrice');
-    priceEl.innerHTML = img.sold ? 'Ausverkauft' : img.purchased ? 'Gekauft' : (img.discountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.8em;">${fmt(img.price)}</span>` : fmt(img.price));
+    priceEl.innerHTML = img.sold ? 'Ausverkauft' : img.purchased ? 'Gekauft' : (img.displayDiscountPercent > 0 ? `${fmt(img.effectivePrice)} <span style="text-decoration:line-through; opacity:0.6; font-size:0.8em;">${fmt(img.price)}</span>` : fmt(img.price));
     priceEl.className = 'lb-price' + ((img.sold||img.purchased)?' free':'');
     const inCart = cart.has(img.id);
     document.getElementById('lightboxAction').innerHTML = (img.sold
@@ -3020,7 +3068,7 @@
       else if(img.quantity === 1) parts.push(`📦 <b style="color:var(--amber, #e0a800);">${t('lb_last_one')}</b>`);
       else if(typeof img.quantity === 'number') parts.push(`📦 ${img.quantity} ${t('lb_in_stock')}`);
     }
-    if(img.discountPercent > 0) parts.push(`🏷️ -${img.discountPercent}% ${t('lb_discount_badge')}`);
+    if(img.displayDiscountPercent > 0) parts.push(`🏷️ -${img.displayDiscountPercent}% ${t('lb_discount_badge')}`);
     metaEl.innerHTML = parts.map(p => `<span>${p}</span>`).join('');
   }
 

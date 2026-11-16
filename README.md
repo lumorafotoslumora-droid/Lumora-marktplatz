@@ -184,4 +184,14 @@ Die Startseite bekommt automatisch ein kleines saisonales Deko-Element (fallende
 - **September–November** → Herbst 🍂 (Blätter)
 - Januar/Februar bleiben ohne Saison-Design.
 
-Das ändert nur Deko-Elemente und ein kleines Badge — nicht die Farben von Buttons o.ä., damit die Seite immer gut lesbar bleibt.
+Zusätzlich gibt es drei **Aktionstage**, die automatisch anhand des Kalenders erkannt werden und bei denen **alle Produkte des Admins** automatisch mindestens **50% Rabatt** bekommen (eigene, höhere Rabatte bleiben erhalten — es wird nie nach unten überschrieben):
+
+- **Black Friday** → 4. Freitag im November 🖤
+- **Cyber Monday** → der Montag danach 💻
+- **Singles Day** → 11. November 🛍️
+
+Produkte anderer Verkäufer sind davon nicht betroffen — nur die eigenen Produkte des Admin-Kontos.
+
+Das ändert nur Deko-Elemente, ein kleines Badge und (nur an den drei Aktionstagen, nur beim Admin) den Rabatt — nicht die Farben von Buttons o.ä., damit die Seite immer gut lesbar bleibt.
+
+**Zum Testen oder um es manuell zu starten/verlängern:** Unter "Verwaltung" → "Aktionen" gibt es ganz unten die Karte "🎨 Saisonales Design testen / erzwingen" — dort kann der Admin jedes Design (inkl. der drei Aktionstage) manuell für alle Besucher erzwingen, unabhängig vom echten Datum. "Automatisch" schaltet wieder auf das echte Datum zurück.

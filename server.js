@@ -181,6 +181,7 @@ async function initDB(){
   if(typeof db.platformFeePercent !== 'number') db.platformFeePercent = 5;
   if(!Array.isArray(db.messages)) db.messages = [];
   if(!db.inviteCode || !db.inviteCode.code) db.inviteCode = { code: genInviteCode(), createdAt: new Date().toISOString() };
+  if(typeof db.seasonOverride === 'undefined') db.seasonOverride = null;
   await ensureAdmin();
 }
 
@@ -641,9 +642,69 @@ function computeBestsellerId(){
   return bestCount > 0 ? best : null;
 }
 
-// Tatsächlicher Preis nach Verkäufer-Rabatt (falls einer gesetzt ist).
-function effectivePrice(img){
+// ---------- Saisonales Design & Rabatt-Aktionstage (Black Friday etc.) ----------
+// Die 4 Jahreszeiten sind rein optisch (fallende Deko + Badge). Die "Aktionstage" lösen
+// zusätzlich automatisch mindestens 50% Rabatt auf die eigenen Produkte des Admins aus.
+const SALE_DAYS = {
+  blackfriday: { discountPercent: 50 },
+  cybermonday: { discountPercent: 50 },
+  singlesday:  { discountPercent: 50 }
+};
+const ALL_SEASON_KEYS = ['christmas', 'spring', 'summer', 'autumn', 'blackfriday', 'cybermonday', 'singlesday'];
+
+function nthWeekdayOfMonth(year, monthIndex, weekday, n){
+  const d = new Date(year, monthIndex, 1);
+  let count = 0;
+  while(d.getMonth() === monthIndex){
+    if(d.getDay() === weekday){ count++; if(count === n) return new Date(d); }
+    d.setDate(d.getDate() + 1);
+  }
+  return null;
+}
+function isSameCalendarDate(a, b){
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+function computeAutomaticSeasonKey(now){
+  now = now || new Date();
+  const month = now.getMonth(); // 0 = Januar
+  if(month === 10){ // November: erst die Aktionstage prüfen
+    const blackFriday = nthWeekdayOfMonth(now.getFullYear(), 10, 5, 4); // 4. Freitag im November
+    if(blackFriday && isSameCalendarDate(now, blackFriday)) return 'blackfriday';
+    if(blackFriday){
+      const cyberMonday = new Date(blackFriday);
+      cyberMonday.setDate(blackFriday.getDate() + 3);
+      if(isSameCalendarDate(now, cyberMonday)) return 'cybermonday';
+    }
+    if(now.getDate() === 11) return 'singlesday';
+  }
+  if(month === 11) return 'christmas'; // Dezember
+  if(month >= 2 && month <= 4) return 'spring'; // März-Mai
+  if(month >= 5 && month <= 7) return 'summer'; // Juni-August
+  if(month >= 8 && month <= 10) return 'autumn'; // September-November
+  return null;
+}
+// Admin-Override gewinnt immer (z.B. zum Testen oder um einen Aktionstag manuell zu verlängern).
+function computeCurrentSeasonKey(){
+  if(db.seasonOverride) return db.seasonOverride;
+  return computeAutomaticSeasonKey();
+}
+function isAdminUploader(uploadedBy){
+  const admin = db.users.find(u => u.role === 'admin');
+  return !!(admin && uploadedBy && admin.id === uploadedBy);
+}
+// Rabatt, der dem Käufer tatsächlich berechnet wird: der vom Verkäufer gesetzte Rabatt,
+// oder — an einem Aktionstag wie Black Friday — mindestens der dafür vorgesehene Rabatt,
+// aber NUR für Produkte vom Admin selbst.
+function computeEffectiveDiscountPercent(img){
   const pct = typeof img.discountPercent === 'number' ? img.discountPercent : 0;
+  const saleDay = SALE_DAYS[computeCurrentSeasonKey()];
+  if(saleDay && isAdminUploader(img.uploadedBy)) return Math.max(pct, saleDay.discountPercent);
+  return pct;
+}
+
+// Tatsächlicher Preis nach Rabatt (Verkäufer-Rabatt oder Aktionstag, je nachdem was höher ist).
+function effectivePrice(img){
+  const pct = computeEffectiveDiscountPercent(img);
   if(!pct) return img.price;
   return Math.round(img.price * (1 - pct / 100) * 100) / 100;
 }
@@ -662,6 +723,7 @@ function publicImage(img, user){
     photos: (img.photos || []).map(p => ({ url: USE_SUPABASE ? supabasePublicUrl(UPLOADS_BUCKET, p.filename) : ('/uploads/' + p.filename), type: p.type })),
     price: img.price,
     discountPercent: typeof img.discountPercent === 'number' ? img.discountPercent : 0,
+    displayDiscountPercent: computeEffectiveDiscountPercent(img),
     effectivePrice: effectivePrice(img),
     quantity: img.quantity === null ? null : (typeof img.quantity === 'number' ? img.quantity : 1),
     sold: !!img.sold,
@@ -1051,6 +1113,24 @@ async function handleApi(req, res, pathname, method, parsed){
 
   if(pathname === '/api/me' && method === 'GET'){
     return sendJson(res, 200, { user: user ? publicUser(user) : null });
+  }
+
+  // ---- Saisonales Design: welches Design (Weihnachten, Black Friday, ...) aktuell gilt ----
+  if(pathname === '/api/season' && method === 'GET'){
+    return sendJson(res, 200, { season: computeCurrentSeasonKey() });
+  }
+  if(pathname === '/api/admin/season-override' && method === 'GET'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    return sendJson(res, 200, { override: db.seasonOverride || null, automatic: computeAutomaticSeasonKey() });
+  }
+  if(pathname === '/api/admin/season-override' && method === 'POST'){
+    if(!isAdmin(user)) return sendJson(res, 403, { error: 'Keine Berechtigung.' });
+    const body = await readJsonBody(req);
+    const value = (body.value || '').trim();
+    if(value && !ALL_SEASON_KEYS.includes(value)) return sendJson(res, 400, { error: 'Unbekanntes Design.' });
+    db.seasonOverride = value || null;
+    saveDB(db);
+    return sendJson(res, 200, { override: db.seasonOverride });
   }
 
   // ---- Chatbot mit echter KI (Google Gemini) — ohne GEMINI_API_KEY antwortet das Frontend
