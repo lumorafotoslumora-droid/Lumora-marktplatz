@@ -176,19 +176,19 @@ Die Seite (inkl. Chatbot und automatischer E-Mails) ist in 17 Sprachen verfügba
 
 ## Saisonales Design
 
-Die Startseite bekommt automatisch ein kleines saisonales Deko-Element + ein farbiges Badge neben "Läuft auf einem echten Server", je nachdem, welcher Monat gerade ist — ganz ohne manuelles Umschalten, jedes Jahr aufs Neue. Jede Saison bewegt sich dabei anders, damit es nicht immer nur "alles fällt runter" ist:
+Die Startseite bekommt automatisch ein kleines saisonales Deko-Element + ein farbiges Badge neben "Läuft auf einem echten Server", je nachdem, welcher Monat gerade ist — ganz ohne manuelles Umschalten, jedes Jahr aufs Neue. Jede Saison bewegt sich dabei anders, damit es nicht immer nur "alles fällt runter" ist, und hat zusätzlich ein großes, ruhig pulsierendes "Herzstück" im Hintergrund der Startseite statt nur kleiner Symbole:
 
-- **Dezember** → Weihnachten 🎄 (Schneeflocken + Geschenke fallen gerade runter)
-- **März–Mai** → Frühling 🌸 (Blüten & Schmetterlinge schweben sanft hin und her)
-- **Juni–August** → Sommer ☀️ (Blumen, Seifenblasen & Melonen steigen nach oben)
-- **September–November** → Herbst 🍂 (Blätter taumeln mit Dreheffekt wie im Wind)
+- **Dezember** → Weihnachten 🎄 (Schneeflocken + Geschenke fallen gerade runter, dazu ein großer, leuchtender Stern über der Überschrift)
+- **März–Mai** → Frühling 🌸 (Blüten & Schmetterlinge schweben sanft hin und her, dazu ein sanft schwebender Regenbogen)
+- **Juni–August** → Sommer ☀️ (Blumen, Seifenblasen & Melonen steigen nach oben, dazu eine große, "brennende" Sonne mit Strahlen in der Mitte)
+- **September–November** → Herbst 🍂 (Blätter taumeln mit Dreheffekt wie im Wind, dazu der kahle Baum als Herzstück)
 - Januar/Februar bleiben ohne Saison-Design.
 
 Zusätzlich gibt es drei **Aktionstage**, die automatisch anhand des Kalenders erkannt werden und bei denen **alle Produkte des Admins** automatisch mindestens **50% Rabatt** bekommen (eigene, höhere Rabatte bleiben erhalten — es wird nie nach unten überschrieben):
 
-- **Black Friday** → 4. Freitag im November 🖤 (Angebote blitzen an zufälligen Stellen auf statt zu fallen)
-- **Cyber Monday** → der Montag danach 💻 (schnelle, elektrische Blitze schießen diagonal durchs Bild)
-- **Singles Day** → 11. November 🛍️ (Flammen & Funken steigen flackernd nach oben)
+- **Black Friday** → 4. Freitag im November 🖤 (Angebote blitzen an zufälligen Stellen auf statt zu fallen, dazu ein pulsierender goldener Lichtkegel in der Mitte)
+- **Cyber Monday** → der Montag danach 💻 (schnelle, elektrische Blitze schießen diagonal durchs Bild, dazu ein großer, flackernder Blitz in der Mitte)
+- **Singles Day** → 11. November 🛍️ (Flammen & Funken steigen flackernd nach oben, dazu eine große, flackernde Feuer-Glut unten)
 
 Produkte anderer Verkäufer sind davon nicht betroffen — nur die eigenen Produkte des Admin-Kontos.
 

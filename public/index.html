@@ -129,6 +129,59 @@
   body[data-season="autumn"] .autumn-tree{ display:block; }
   @media (max-width:860px){ .autumn-tree{ display:none !important; } }
   body[data-season="autumn"] .btn.solid{ background:linear-gradient(135deg, #d98a3d, #8a5a2b); border-radius:4px 20px 4px 20px; }
+
+  /* ---- Große Saison-"Centerpieces" im Hintergrund (nicht nur fallende Symbole) ---- */
+  .summer-sun{ display:none; position:absolute; top:50%; left:50%; width:260px; height:260px; border-radius:50%; z-index:-1; pointer-events:none; user-select:none; opacity:0.55;
+    background:radial-gradient(circle at 35% 35%, #fff5cf, #ffcf4d 40%, #ff9d2e 75%, #ff7a1a 100%);
+    box-shadow:0 0 90px 40px rgba(255,170,40,0.35), 0 0 180px 90px rgba(255,170,40,0.15);
+    animation:sunBreathe 5s ease-in-out infinite; transform:translate(-50%,-50%); }
+  .summer-sun::before{ content:''; position:absolute; inset:-60px; border-radius:50%;
+    background:repeating-conic-gradient(rgba(255,200,80,0.25) 0deg 8deg, transparent 8deg 24deg);
+    animation:sunRotate 40s linear infinite; }
+  @keyframes sunBreathe{ 0%,100%{ transform:translate(-50%,-50%) scale(1); } 50%{ transform:translate(-50%,-50%) scale(1.08); } }
+  @keyframes sunRotate{ from{ transform:rotate(0deg); } to{ transform:rotate(360deg); } }
+  body[data-season="summer"] .summer-sun{ display:block; }
+
+  .christmas-star{ display:none; position:absolute; top:-30px; left:50%; transform:translateX(-50%); font-size:130px; line-height:1; color:#ffd966; z-index:-1; pointer-events:none; user-select:none; opacity:0.45;
+    text-shadow:0 0 40px rgba(255,217,102,0.8), 0 0 90px rgba(255,217,102,0.4); animation:starTwinkle 3s ease-in-out infinite; }
+  @keyframes starTwinkle{ 0%,100%{ opacity:0.3; transform:translateX(-50%) scale(1); } 50%{ opacity:0.6; transform:translateX(-50%) scale(1.08); } }
+  body[data-season="christmas"] .christmas-star{ display:block; }
+
+  .spring-rainbow{ display:none; position:absolute; bottom:-30px; left:50%; width:420px; height:210px; z-index:-1; pointer-events:none; user-select:none; opacity:0.4;
+    transform:translateX(-50%); animation:rainbowFloat 6s ease-in-out infinite; }
+  .spring-rainbow div{ position:absolute; left:50%; bottom:0; border-radius:999px 999px 0 0; transform:translateX(-50%); border:18px solid transparent; box-sizing:border-box; }
+  .spring-rainbow div:nth-child(1){ width:420px; height:210px; border-top-color:#ff8fa3; }
+  .spring-rainbow div:nth-child(2){ width:368px; height:184px; border-top-color:#ffc168; }
+  .spring-rainbow div:nth-child(3){ width:316px; height:158px; border-top-color:#ffe27a; }
+  .spring-rainbow div:nth-child(4){ width:264px; height:132px; border-top-color:#9ee2a0; }
+  .spring-rainbow div:nth-child(5){ width:212px; height:106px; border-top-color:#8fc8ff; }
+  .spring-rainbow div:nth-child(6){ width:160px; height:80px; border-top-color:#c39bf0; }
+  @keyframes rainbowFloat{ 0%,100%{ transform:translateX(-50%) translateY(0); } 50%{ transform:translateX(-50%) translateY(-8px); } }
+  body[data-season="spring"] .spring-rainbow{ display:block; }
+
+  .blackfriday-spotlight{ display:none; position:absolute; top:50%; left:50%; width:480px; height:480px; border-radius:50%; z-index:-1; pointer-events:none; user-select:none;
+    background:radial-gradient(circle, rgba(245,184,0,0.35), rgba(245,184,0,0.08) 55%, transparent 75%); animation:spotlightPulse 2.4s ease-in-out infinite; }
+  @keyframes spotlightPulse{ 0%,100%{ opacity:0.4; transform:translate(-50%,-50%) scale(0.92); } 50%{ opacity:0.85; transform:translate(-50%,-50%) scale(1.06); } }
+  body[data-season="blackfriday"] .blackfriday-spotlight{ display:block; }
+
+  .cybermonday-bolt{ display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); font-size:170px; line-height:1; color:#5b8cf2; z-index:-1; pointer-events:none; user-select:none; opacity:0.3;
+    text-shadow:0 0 50px rgba(91,140,242,0.8), 0 0 110px rgba(91,140,242,0.4); animation:boltFlicker 2.6s steps(2) infinite; }
+  @keyframes boltFlicker{ 0%,100%{ opacity:0.18; } 10%{ opacity:0.55; } 20%{ opacity:0.15; } 55%{ opacity:0.5; } 70%{ opacity:0.2; } }
+  body[data-season="cybermonday"] .cybermonday-bolt{ display:block; }
+
+  .singlesday-flame{ display:none; position:absolute; bottom:-60px; left:50%; width:200px; height:260px; z-index:-1; pointer-events:none; user-select:none; opacity:0.45; filter:blur(2px);
+    transform:translateX(-50%); background:radial-gradient(ellipse at center, rgba(255,120,40,0.9), rgba(224,56,63,0.35) 50%, transparent 75%); animation:flameFlicker 1.8s ease-in-out infinite; }
+  @keyframes flameFlicker{ 0%,100%{ transform:translateX(-50%) scaleY(1); } 50%{ transform:translateX(-50%) scaleY(1.12) scaleX(0.95); } }
+  body[data-season="singlesday"] .singlesday-flame{ display:block; }
+
+  @media (max-width:860px){
+    .summer-sun{ width:170px; height:170px; opacity:0.4; }
+    .christmas-star{ font-size:80px; }
+    .spring-rainbow{ width:280px; height:140px; }
+    .blackfriday-spotlight{ width:300px; height:300px; }
+    .cybermonday-bolt{ font-size:100px; }
+    .singlesday-flame{ width:140px; height:180px; }
+  }
   /* ---- Saison-Minispiel (pro Saison eigene Mechanik) ---- */
   .game-launcher-btn{ display:none; position:fixed; bottom:24px; left:24px; width:56px; height:56px; border-radius:50%; align-items:center; justify-content:center; font-size:24px; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.3); z-index:90; border:none; background:var(--panel); border:1px solid var(--line); }
   .game-launcher-btn.show{ display:flex; }
@@ -437,6 +490,12 @@
           <path d="M100 258 L100 150 M100 150 L62 95 M62 95 L40 50 M62 95 L75 48 M100 150 L138 90 M138 90 L158 48 M138 90 L122 45 M100 150 L100 70 M100 70 L78 28 M100 70 L120 25 M100 70 L100 20"/>
         </svg>
       </div>
+      <div class="summer-sun" aria-hidden="true"></div>
+      <div class="christmas-star" aria-hidden="true">★</div>
+      <div class="spring-rainbow" aria-hidden="true"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+      <div class="blackfriday-spotlight" aria-hidden="true"></div>
+      <div class="cybermonday-bolt" aria-hidden="true">⚡</div>
+      <div class="singlesday-flame" aria-hidden="true"></div>
       <span class="hero-badge" data-i18n="hero_badge">✦ Läuft auf einem echten Server</span>
       <span class="hero-badge" id="seasonalBadge" style="display:none; margin-left:8px;"></span>
       <h2 data-i18n-html="hero_title_html">Marktplatz, auf dem <span class="accent-word">jeder</span> verkauft.</h2>
