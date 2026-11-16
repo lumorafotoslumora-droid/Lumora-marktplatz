@@ -709,6 +709,12 @@
         <div class="err-text" id="changeEmailMsg"></div>
         <button class="btn solid" style="width:100%;" onclick="changeEmail()" data-i18n="email_save_btn">E-Mail speichern</button>
       </div>
+      <div class="auth-card" style="max-width:420px; margin-bottom:36px;">
+        <h3 data-i18n="seasonal_toggle_title">🎨 Saisonales Design</h3>
+        <p class="sub" data-i18n="seasonal_toggle_sub">Weihnachtsdeko, Black Friday & Co., das Minispiel und der Badge oben — du kannst das nur für dein eigenes Konto ausschalten. Dann siehst du immer die ganz normale Seite, egal was gerade los ist.</p>
+        <div class="promo-row"><input type="checkbox" id="seasonalToggleCheckbox" onchange="toggleSeasonalDesign()"><label data-i18n="seasonal_toggle_label">Saisonales Design anzeigen</label></div>
+        <div class="redeem-msg" id="seasonalToggleMsg" style="margin-top:10px;"></div>
+      </div>
       <div class="auth-card" style="max-width:420px; margin-bottom:36px;" id="payoutCard">
         <h3 data-i18n="payout_title">Auszahlung</h3>
         <p class="sub" data-i18n="payout_sub">Verknüpfe dein eigenes Stripe-Konto, damit du das Geld für deine Verkäufe direkt bekommst — statt über den Admin.</p>
@@ -1091,6 +1097,7 @@
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
       email_title:"E-Mail", email_sub:"Hinterlege oder ändere deine E-Mail-Adresse — z.B. um dich künftig per E-Mail-Code anzumelden oder dein Passwort zurückzusetzen.", email_save_btn:"E-Mail speichern", email_saved_msg:"E-Mail gespeichert.",
+      seasonal_toggle_title:"🎨 Saisonales Design", seasonal_toggle_sub:"Weihnachtsdeko, Black Friday & Co., das Minispiel und der Badge oben — du kannst das nur für dein eigenes Konto ausschalten. Dann siehst du immer die ganz normale Seite, egal was gerade los ist.", seasonal_toggle_label:"Saisonales Design anzeigen",
       my_purchases:"Meine Bestellungen", no_purchases:"Noch nichts gekauft.",
       support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Schreib uns eine Nachricht direkt hier auf der Seite, oder per E-Mail.",
       support_form_title:"Nachricht senden", support_form_sub:"Wir antworten dir per E-Mail, falls du eine angibst.",
@@ -1595,6 +1602,7 @@
       pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
       change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
       email_title:"E-mail", email_sub:"Angiv eller skift din e-mailadresse — f.eks. for at logge ind med e-mail-kode i fremtiden eller nulstille din adgangskode.", email_save_btn:"Gem e-mail", email_saved_msg:"E-mail gemt.",
+      seasonal_toggle_title:"🎨 Sæsonbetonet design", seasonal_toggle_sub:"Juledekoration, Black Friday osv., minispillet og badget ovenfor — du kan slå dette fra kun for din egen konto. Så ser du altid den helt normale side, uanset hvad der foregår.", seasonal_toggle_label:"Vis sæsonbetonet design",
       my_purchases:"Mine bestillinger", no_purchases:"Endnu intet købt.",
       support_eyebrow:"Kontakt", support_title:"Support", support_sub:"Skriv til os direkte her på siden, eller send en e-mail.",
       support_form_title:"Send besked", support_form_sub:"Vi svarer dig på e-mail, hvis du angiver en.",
@@ -1744,10 +1752,16 @@
     } catch(e){
       currentSeason = getCurrentSeason(); // Fallback, falls der Server nicht erreichbar ist
     }
+    // Wer das für sein eigenes Konto ausgeschaltet hat, sieht immer die normale Seite.
+    if(currentUserData && currentUserData.seasonalDesignDisabled) currentSeason = null;
     document.body.setAttribute('data-season', currentSeason || '');
     updateSeasonalBadgeText();
     updateGameLauncherVisibility();
     if(currentSeason && SEASON_THEMES[currentSeason]) renderSeasonalParticles(currentSeason);
+    else {
+      const decorEl = document.getElementById('seasonalDecor');
+      if(decorEl){ decorEl.innerHTML = ''; decorEl.style.display = 'none'; }
+    }
   }
 
   // ---------- Saison-Minispiel: so viele fallende Symbole wie möglich "fangen" ----------
@@ -2606,7 +2620,22 @@
     } catch(e){ msgEl.style.color=''; msgEl.textContent = e.message; msgEl.classList.add('show'); }
   }
 
+  async function toggleSeasonalDesign(){
+    const msgEl = document.getElementById('seasonalToggleMsg');
+    const disabled = !document.getElementById('seasonalToggleCheckbox').checked;
+    try {
+      const r = await api('/api/account/seasonal-design', { method:'POST', body:{ disabled } });
+      if(currentUserData) currentUserData.seasonalDesignDisabled = r.seasonalDesignDisabled;
+      msgEl.textContent = 'Gespeichert!'; msgEl.className = 'redeem-msg ok';
+      applySeasonalTheme();
+    } catch(e){
+      document.getElementById('seasonalToggleCheckbox').checked = !disabled;
+      msgEl.textContent = e.message; msgEl.className = 'redeem-msg err';
+    }
+  }
+
   function applyRoleState(){
+    applySeasonalTheme();
     const r = role();
     const isAdmin = r === 'admin', isCustomer = r === 'customer';
     const loggedIn = isAdmin || isCustomer;
@@ -3091,6 +3120,7 @@
     document.getElementById('profileRole').textContent = role()==='admin'?t('role_admin'):t('role_customer');
     document.getElementById('changeEmailInput').value = currentUserData.email || '';
     renderPayoutStatus();
+    document.getElementById('seasonalToggleCheckbox').checked = !currentUserData.seasonalDesignDisabled;
 
     const detailsEl = document.getElementById('profileDetails'), statRow = document.getElementById('statRow');
     if(role() === 'customer'){

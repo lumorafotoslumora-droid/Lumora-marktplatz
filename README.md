@@ -208,3 +208,5 @@ Direkt darunter gibt es die Karte "✉️ Aktionstag-Werbemail" — sie zeigt, w
 - **Black Friday:** statt Fangen heißt es "Angebote schnappen" — die Preisschilder blitzen kurz an zufälligen Stellen im Spielfeld auf und müssen schnell angeklickt werden, bevor sie wieder verschwinden (wie "Montag Mäuse").
 
 Rein zum Spaß, ohne Auswirkung auf Konto oder Bestellungen.
+
+**Saisonales Design für das eigene Konto ausschalten:** Wer die Deko, den Badge und das Minispiel nicht sehen möchte, kann das unter "Mein Konto" → Karte "🎨 Saisonales Design" einfach abschalten. Das gilt nur für das eigene, angemeldete Konto — alle anderen sehen weiterhin ganz normal das Design. Der tatsächliche Rabatt an Aktionstagen (z.B. Black Friday) wird davon **nicht** beeinflusst — der gilt serverseitig für alle Käufer gleich, unabhängig von dieser Einstellung.

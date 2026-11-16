@@ -676,7 +676,7 @@ function sendJson(res, status, obj){
 }
 
 function publicUser(u){
-  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de', stripeConnected: !!u.stripeOnboarded, sellingExempt: !!u.sellingExempt };
+  return { id: u.id, name: u.name, email: u.email, role: u.role, birthday: u.birthday, createdAt: u.createdAt, emailVerified: !!u.emailVerified, language: u.language || 'de', stripeConnected: !!u.stripeOnboarded, sellingExempt: !!u.sellingExempt, seasonalDesignDisabled: !!u.seasonalDesignDisabled };
 }
 
 // Darf dieses Konto Produkte verkaufen? Admin immer; sonst nur mit eigenem
@@ -1241,6 +1241,16 @@ async function handleApi(req, res, pathname, method, parsed){
     user.emailVerified = true;
     saveDB(db);
     return sendJson(res, 200, { user: publicUser(user) });
+  }
+
+  // Jedes Konto kann das saisonale Design (Deko, Badge, Minispiel) nur für sich selbst ausschalten.
+  // Betrifft nie den tatsächlichen Rabatt an Aktionstagen — der gilt serverseitig für alle gleich.
+  if(pathname === '/api/account/seasonal-design' && method === 'POST'){
+    if(!user) return sendJson(res, 401, { error: 'Nicht angemeldet.' });
+    const body = await readJsonBody(req);
+    user.seasonalDesignDisabled = !!body.disabled;
+    saveDB(db);
+    return sendJson(res, 200, { ok: true, seasonalDesignDisabled: user.seasonalDesignDisabled });
   }
 
   // ---- Passwort vergessen (Code per E-Mail) & Anmeldung per E-Mail-Code ----
