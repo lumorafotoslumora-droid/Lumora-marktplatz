@@ -176,19 +176,19 @@ Die Seite (inkl. Chatbot und automatischer E-Mails) ist in 17 Sprachen verfügba
 
 ## Saisonales Design
 
-Die Startseite bekommt automatisch ein kleines saisonales Deko-Element (fallende Schneeflocken/Blätter/Blüten + ein farbiges Badge neben "Läuft auf einem echten Server"), je nachdem, welcher Monat gerade ist — ganz ohne manuelles Umschalten, jedes Jahr aufs Neue:
+Die Startseite bekommt automatisch ein kleines saisonales Deko-Element + ein farbiges Badge neben "Läuft auf einem echten Server", je nachdem, welcher Monat gerade ist — ganz ohne manuelles Umschalten, jedes Jahr aufs Neue. Jede Saison bewegt sich dabei anders, damit es nicht immer nur "alles fällt runter" ist:
 
-- **Dezember** → Weihnachten 🎄 (Schneeflocken)
-- **März–Mai** → Frühling 🌸 (Blüten)
-- **Juni–August** → Sommer ☀️ (Blumen)
-- **September–November** → Herbst 🍂 (Blätter)
+- **Dezember** → Weihnachten 🎄 (Schneeflocken + Geschenke fallen gerade runter)
+- **März–Mai** → Frühling 🌸 (Blüten & Schmetterlinge schweben sanft hin und her)
+- **Juni–August** → Sommer ☀️ (Blumen, Seifenblasen & Melonen steigen nach oben)
+- **September–November** → Herbst 🍂 (Blätter taumeln mit Dreheffekt wie im Wind)
 - Januar/Februar bleiben ohne Saison-Design.
 
 Zusätzlich gibt es drei **Aktionstage**, die automatisch anhand des Kalenders erkannt werden und bei denen **alle Produkte des Admins** automatisch mindestens **50% Rabatt** bekommen (eigene, höhere Rabatte bleiben erhalten — es wird nie nach unten überschrieben):
 
-- **Black Friday** → 4. Freitag im November 🖤
-- **Cyber Monday** → der Montag danach 💻
-- **Singles Day** → 11. November 🛍️
+- **Black Friday** → 4. Freitag im November 🖤 (Angebote blitzen an zufälligen Stellen auf statt zu fallen)
+- **Cyber Monday** → der Montag danach 💻 (schnelle, elektrische Blitze schießen diagonal durchs Bild)
+- **Singles Day** → 11. November 🛍️ (Flammen & Funken steigen flackernd nach oben)
 
 Produkte anderer Verkäufer sind davon nicht betroffen — nur die eigenen Produkte des Admin-Kontos.
 
@@ -196,6 +196,11 @@ Das ändert nur Deko-Elemente, ein kleines Badge und (nur an den drei Aktionstag
 
 **Zum Testen oder um es manuell zu starten/verlängern:** Unter "Verwaltung" → "Aktionen" gibt es ganz unten die Karte "🎨 Saisonales Design testen / erzwingen" — dort kann der Admin jedes Design (inkl. der drei Aktionstage) manuell für alle Besucher erzwingen, unabhängig vom echten Datum. "Automatisch" schaltet wieder auf das echte Datum zurück.
 
-**Herbst extra:** Im Hintergrund der Startseite erscheint zusätzlich ein dezenter Baum, und die Haupt-Buttons bekommen eine laubfarbene, blattähnliche Form.
+**Herbst extra:** Im Hintergrund der Startseite erscheint zusätzlich ein dezenter, **kahler** Baum (ohne Blätter — die liegen ja schon als fallende Blätter-Deko vor), und die Haupt-Buttons bekommen eine laubfarbene, blattähnliche Form.
 
-**Minispiel:** Solange ein Saison-Design oder ein Aktionstag aktiv ist, erscheint unten links ein 🎮-Button. Er öffnet ein kleines Fang-Spiel: 30 Sekunden lang so viele der fallenden Symbole (Schneeflocken, Blätter, Blüten, Preisschilder, ...) wie möglich anklicken, bevor sie verschwinden — rein zum Spaß, ohne Auswirkung auf Konto oder Bestellungen.
+**Minispiel (für jede Saison unterschiedlich):** Solange ein Saison-Design oder ein Aktionstag aktiv ist, erscheint unten links ein 🎮-Button. Er öffnet ein kleines Minispiel, das zur jeweiligen Saison passt — nicht überall dieselbe Mechanik:
+
+- Weihnachten, Frühling, Sommer, Herbst, Cyber Monday & Singles Day: 30 Sekunden lang so viele der sich bewegenden Symbole wie möglich anklicken, bevor sie verschwinden — jeweils mit der eigenen Bewegung (fallend, schwebend, steigend, taumelnd oder blitzschnell diagonal).
+- **Black Friday:** statt Fangen heißt es "Angebote schnappen" — die Preisschilder blitzen kurz an zufälligen Stellen im Spielfeld auf und müssen schnell angeklickt werden, bevor sie wieder verschwinden (wie "Montag Mäuse").
+
+Rein zum Spaß, ohne Auswirkung auf Konto oder Bestellungen.
