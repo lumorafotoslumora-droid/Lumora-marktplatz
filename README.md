@@ -195,3 +195,7 @@ Produkte anderer Verkäufer sind davon nicht betroffen — nur die eigenen Produ
 Das ändert nur Deko-Elemente, ein kleines Badge und (nur an den drei Aktionstagen, nur beim Admin) den Rabatt — nicht die Farben von Buttons o.ä., damit die Seite immer gut lesbar bleibt.
 
 **Zum Testen oder um es manuell zu starten/verlängern:** Unter "Verwaltung" → "Aktionen" gibt es ganz unten die Karte "🎨 Saisonales Design testen / erzwingen" — dort kann der Admin jedes Design (inkl. der drei Aktionstage) manuell für alle Besucher erzwingen, unabhängig vom echten Datum. "Automatisch" schaltet wieder auf das echte Datum zurück.
+
+**Herbst extra:** Im Hintergrund der Startseite erscheint zusätzlich ein dezenter Baum, und die Haupt-Buttons bekommen eine laubfarbene, blattähnliche Form.
+
+**Minispiel:** Solange ein Saison-Design oder ein Aktionstag aktiv ist, erscheint unten links ein 🎮-Button. Er öffnet ein kleines Fang-Spiel: 30 Sekunden lang so viele der fallenden Symbole (Schneeflocken, Blätter, Blüten, Preisschilder, ...) wie möglich anklicken, bevor sie verschwinden — rein zum Spaß, ohne Auswirkung auf Konto oder Bestellungen.

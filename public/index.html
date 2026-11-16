@@ -89,6 +89,24 @@
   #seasonalDecor{ position:fixed; inset:0; pointer-events:none; z-index:5; overflow:hidden; display:none; }
   .season-particle{ position:absolute; top:-40px; animation-name:seasonFall; animation-timing-function:linear; animation-iteration-count:infinite; opacity:0.8; user-select:none; }
   @keyframes seasonFall{ from{ transform:translateY(-10vh) rotate(0deg); } to{ transform:translateY(110vh) rotate(360deg); } }
+  .autumn-tree{ display:none; position:absolute; top:-50px; right:-50px; font-size:260px; line-height:1; opacity:0.16; filter:sepia(0.4) saturate(1.3); z-index:-1; pointer-events:none; user-select:none; }
+  body[data-season="autumn"] .autumn-tree{ display:block; }
+  @media (max-width:860px){ .autumn-tree{ display:none !important; } }
+  body[data-season="autumn"] .btn.solid{ background:linear-gradient(135deg, #d98a3d, #8a5a2b); border-radius:4px 20px 4px 20px; }
+  /* ---- Saison-Minispiel ("Fang so viele wie möglich") ---- */
+  .game-launcher-btn{ display:none; position:fixed; bottom:24px; left:24px; width:56px; height:56px; border-radius:50%; align-items:center; justify-content:center; font-size:24px; cursor:pointer; box-shadow:0 8px 24px rgba(0,0,0,0.3); z-index:90; border:none; background:var(--panel); border:1px solid var(--line); }
+  .game-launcher-btn.show{ display:flex; }
+  .game-launcher-btn:hover{ filter:brightness(1.1); }
+  #seasonGameModal{ position:fixed; inset:0; background:rgba(8,7,5,0.78); backdrop-filter:blur(4px); display:none; align-items:center; justify-content:center; z-index:200; padding:20px; }
+  #seasonGameModal.show{ display:flex; }
+  #seasonGameBox{ background:var(--panel); border:1px solid var(--line); border-radius:var(--radius); padding:26px; max-width:460px; width:100%; text-align:center; position:relative; }
+  #seasonGameBox .game-close{ position:absolute; top:12px; right:16px; cursor:pointer; font-size:18px; color:var(--muted); background:none; border:none; }
+  .game-stats{ display:flex; justify-content:center; gap:28px; font-family:'Space Mono',monospace; font-size:13px; margin:6px 0 14px; }
+  .game-stats b{ color:var(--amber); font-size:16px; }
+  #gamePlayArea{ position:relative; height:340px; background:var(--bg); border-radius:var(--radius-sm); overflow:hidden; margin-bottom:14px; border:1px solid var(--line); }
+  .game-particle{ position:absolute; top:-44px; font-size:30px; cursor:pointer; animation-name:gameFall; animation-timing-function:linear; user-select:none; background:none; border:none; padding:0; line-height:1; }
+  @keyframes gameFall{ from{ top:-44px; } to{ top:100%; } }
+  .game-particle.caught{ animation:none !important; transform:scale(1.6); opacity:0; transition:all .25s ease; }
   .hero h2{ font-family:'Fraunces',serif; font-weight:600; font-size:36px; line-height:1.12; margin:0 0 14px; }
   .hero > p{ color:var(--muted); font-size:15.5px; line-height:1.6; margin:0 0 24px; max-width:520px; }
   .cta-row{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
@@ -365,6 +383,7 @@
     <div class="hero">
       <div class="hero-glow g1"></div>
       <div class="hero-glow g2"></div>
+      <div class="autumn-tree">🌳</div>
       <span class="hero-badge" data-i18n="hero_badge">✦ Läuft auf einem echten Server</span>
       <span class="hero-badge" id="seasonalBadge" style="display:none; margin-left:8px;"></span>
       <h2 data-i18n-html="hero_title_html">Marktplatz, auf dem <span class="accent-word">jeder</span> verkauft.</h2>
@@ -945,6 +964,7 @@
       forgot_pw_title:"Passwort vergessen", forgot_pw_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Code zum Zurücksetzen.", forgot_pw_request_btn:"Code anfordern", forgot_pw_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", reset_pw_btn:"Neues Passwort setzen",
       login_code_title:"Anmeldung per E-Mail-Code", login_code_sub:"Gib deinen Namen oder deine E-Mail ein — wir schicken dir einen Anmelde-Code, ganz ohne Passwort.", login_code_request_btn:"Code anfordern", login_code_sent:"Code wurde gesendet! Prüfe dein Postfach.", login_code_confirm_btn:"Anmelden", reset_pw_success:"Passwort erfolgreich geändert! Du kannst dich jetzt anmelden.",
       login_or:"oder", login_google_btn:"Mit Google anmelden", google_err_notfound:"Für diese Google-E-Mail existiert kein Konto. Bitte wende dich an den Admin.", google_err_banned:"Dieses Konto wurde gesperrt.", google_err_notconfigured:"Google-Anmeldung ist aktuell nicht eingerichtet.", google_err_generic:"Google-Anmeldung fehlgeschlagen. Bitte versuch's erneut.",
+      game_score_label:"Punkte:", game_time_label:"Zeit:", game_start_btn:"Spiel starten", game_result_text:"Dein Ergebnis:", game_play_again_btn:"Nochmal spielen",
       register_title:"Kein eigenes Konto?", register_sub:"Hast du einen Einladungscode bekommen? Dann kannst du dir hier selbst ein Konto erstellen — ohne Code wende dich an den Admin.", label_name:"Name", label_birthday:"Geburtstag", label_email:"E-Mail", label_invite_code:"Einladungscode", register_btn:"Konto erstellen",
       pw_len:"Mindestens 8 Zeichen", pw_upper:"Ein Großbuchstabe", pw_number:"Eine Zahl",
       change_pw_title:"Passwort ändern", label_current_password:"Aktuelles Passwort", label_new_password:"Neues Passwort", change_pw_btn:"Passwort speichern",
@@ -1448,6 +1468,7 @@
       forgot_pw_title:"Glemt adgangskode", forgot_pw_sub:"Indtast dit navn eller din e-mail — vi sender dig en kode til nulstilling.", forgot_pw_request_btn:"Anmod om kode", forgot_pw_code_sent:"Koden er sendt! Tjek din indbakke.", reset_pw_btn:"Gem ny adgangskode",
       login_code_title:"Log ind med e-mail-kode", login_code_sub:"Indtast dit navn eller din e-mail — vi sender dig en login-kode, helt uden adgangskode.", login_code_request_btn:"Anmod om kode", login_code_sent:"Koden er sendt! Tjek din indbakke.", login_code_confirm_btn:"Log ind", reset_pw_success:"Adgangskode ændret! Du kan nu logge ind.",
       login_or:"eller", login_google_btn:"Log ind med Google", google_err_notfound:"Der findes ingen konto til denne Google-e-mail. Kontakt venligst admin.", google_err_banned:"Denne konto er blevet spærret.", google_err_notconfigured:"Google-login er ikke konfigureret endnu.", google_err_generic:"Google-login mislykkedes. Prøv venligst igen.",
+      game_score_label:"Point:", game_time_label:"Tid:", game_start_btn:"Start spil", game_result_text:"Dit resultat:", game_play_again_btn:"Spil igen",
       register_title:"Ingen egen konto?", register_sub:"Har du fået en invitationskode? Så kan du oprette en konto her selv — uden kode, kontakt admin.", label_name:"Navn", label_birthday:"Fødselsdag", label_email:"E-mail", label_invite_code:"Invitationskode", register_btn:"Opret konto",
       pw_len:"Mindst 8 tegn", pw_upper:"Et stort bogstav", pw_number:"Et tal",
       change_pw_title:"Skift adgangskode", label_current_password:"Nuværende adgangskode", label_new_password:"Ny adgangskode", change_pw_btn:"Gem adgangskode",
@@ -1516,7 +1537,11 @@
     autumn:      { emoji:'🍂', particle:'🍂', color:'#c2703a' },
     blackfriday: { emoji:'🖤', particle:'🏷️', color:'#f5b800' },
     cybermonday: { emoji:'💻', particle:'⚡', color:'#5b8cf2' },
-    singlesday:  { emoji:'🛍️', particle:'❤️', color:'#e0383f' }
+    singlesday:  { emoji:'🛍️', particle:'🔥', color:'#e0383f' }
+  };
+  const SEASON_NAME_I18N = {
+    de: { christmas:'Weihnachten', spring:'Frühling', summer:'Sommer', autumn:'Herbst', blackfriday:'Black Friday', cybermonday:'Cyber Monday', singlesday:'Singles Day' },
+    da: { christmas:'Jul', spring:'Forår', summer:'Sommer', autumn:'Efterår', blackfriday:'Black Friday', cybermonday:'Cyber Monday', singlesday:'Singles Day' }
   };
   const SEASON_GREETING_I18N = {
     de: { christmas:'Frohe Weihnachten bei Lumora!', spring:'Frühling bei Lumora!', summer:'Sommer bei Lumora!', autumn:'Herbst bei Lumora!',
@@ -1565,8 +1590,92 @@
     } catch(e){
       currentSeason = getCurrentSeason(); // Fallback, falls der Server nicht erreichbar ist
     }
+    document.body.setAttribute('data-season', currentSeason || '');
     updateSeasonalBadgeText();
+    updateGameLauncherVisibility();
     if(currentSeason && SEASON_THEMES[currentSeason]) renderSeasonalParticles(SEASON_THEMES[currentSeason].particle);
+  }
+
+  // ---------- Saison-Minispiel: so viele fallende Symbole wie möglich "fangen" ----------
+  function updateGameLauncherVisibility(){
+    const btn = document.getElementById('gameLauncherBtn');
+    if(!btn) return;
+    btn.classList.toggle('show', !!(currentSeason && SEASON_THEMES[currentSeason]));
+  }
+  let gameState = { active:false, score:0, timeLeft:30, spawnInterval:null, timerInterval:null };
+  function openSeasonGame(){
+    if(!currentSeason || !SEASON_THEMES[currentSeason]) return;
+    const nameDict = SEASON_NAME_I18N[currentLang] || SEASON_NAME_I18N.de;
+    const label = nameDict[currentSeason] || currentSeason;
+    document.getElementById('gameTitle').textContent = SEASON_THEMES[currentSeason].emoji + ' ' + label;
+    document.getElementById('seasonGameModal').classList.add('show');
+    resetSeasonGame();
+  }
+  function closeSeasonGame(){
+    document.getElementById('seasonGameModal').classList.remove('show');
+    stopSeasonGame();
+  }
+  function resetSeasonGame(){
+    stopSeasonGame();
+    gameState.score = 0; gameState.timeLeft = 30;
+    updateGameScoreUI();
+    document.getElementById('gamePlayArea').innerHTML = '';
+    document.getElementById('gameStartScreen').style.display = 'block';
+    document.getElementById('gameResultScreen').style.display = 'none';
+  }
+  function startSeasonGame(){
+    stopSeasonGame();
+    gameState.active = true;
+    gameState.score = 0; gameState.timeLeft = 30;
+    updateGameScoreUI();
+    document.getElementById('gamePlayArea').innerHTML = '';
+    document.getElementById('gameStartScreen').style.display = 'none';
+    document.getElementById('gameResultScreen').style.display = 'none';
+    gameState.spawnInterval = setInterval(spawnGameParticle, 550);
+    gameState.timerInterval = setInterval(() => {
+      gameState.timeLeft--;
+      updateGameScoreUI();
+      if(gameState.timeLeft <= 0) endSeasonGame();
+    }, 1000);
+  }
+  function spawnGameParticle(){
+    if(!gameState.active || !currentSeason) return;
+    const area = document.getElementById('gamePlayArea');
+    if(!area) return;
+    const theme = SEASON_THEMES[currentSeason];
+    const el = document.createElement('button');
+    el.className = 'game-particle';
+    el.textContent = theme.particle;
+    const left = Math.random() * 88;
+    const duration = 2.6 + Math.random() * 2;
+    el.style.left = left + '%';
+    el.style.animationDuration = duration + 's';
+    el.onclick = () => {
+      if(!gameState.active) return;
+      gameState.score++;
+      updateGameScoreUI();
+      el.classList.add('caught');
+      setTimeout(() => el.remove(), 250);
+    };
+    el.addEventListener('animationend', () => el.remove());
+    area.appendChild(el);
+  }
+  function updateGameScoreUI(){
+    const scoreEl = document.getElementById('gameScoreVal'), timeEl = document.getElementById('gameTimeVal');
+    if(scoreEl) scoreEl.textContent = gameState.score;
+    if(timeEl) timeEl.textContent = gameState.timeLeft;
+  }
+  function endSeasonGame(){
+    stopSeasonGame();
+    document.getElementById('gamePlayArea').innerHTML = '';
+    document.getElementById('gameResultScreen').style.display = 'block';
+    document.getElementById('gameResultScore').textContent = gameState.score;
+  }
+  function stopSeasonGame(){
+    gameState.active = false;
+    if(gameState.spawnInterval) clearInterval(gameState.spawnInterval);
+    if(gameState.timerInterval) clearInterval(gameState.timerInterval);
+    gameState.spawnInterval = null; gameState.timerInterval = null;
   }
 
   function applyLanguage(lang){
@@ -3715,6 +3824,26 @@
   <div class="chat-input-row">
     <input type="text" id="chatInput" placeholder="Deine Frage..." onkeydown="if(event.key==='Enter') sendChatMessage()">
     <button class="btn solid" style="padding:9px 14px;" onclick="sendChatMessage()">➤</button>
+  </div>
+</div>
+
+<button class="game-launcher-btn" id="gameLauncherBtn" onclick="openSeasonGame()" title="Saison-Minispiel spielen">🎮</button>
+<div id="seasonGameModal">
+  <div id="seasonGameBox">
+    <button class="game-close" onclick="closeSeasonGame()">✕</button>
+    <h3 id="gameTitle" style="font-family:'Fraunces',serif; margin:0 0 4px;"></h3>
+    <div class="game-stats">
+      <span><span data-i18n="game_score_label">Punkte:</span> <b id="gameScoreVal">0</b></span>
+      <span><span data-i18n="game_time_label">Zeit:</span> <b id="gameTimeVal">30</b></span>
+    </div>
+    <div id="gamePlayArea"></div>
+    <div id="gameStartScreen">
+      <button class="btn solid" style="width:100%;" onclick="startSeasonGame()" data-i18n="game_start_btn">Spiel starten</button>
+    </div>
+    <div id="gameResultScreen" style="display:none;">
+      <p><span data-i18n="game_result_text">Dein Ergebnis:</span> <b id="gameResultScore">0</b></p>
+      <button class="btn solid" style="width:100%;" onclick="startSeasonGame()" data-i18n="game_play_again_btn">Nochmal spielen</button>
+    </div>
   </div>
 </div>
 
